@@ -1,0 +1,149 @@
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+required-version = "==0.14.2"
+output-format="concise"
+exclude = [
+    "*/venv*/",
+    "venv*/",
+    "*/migrations/",
+    ".*",
+]
+include = [
+    "app/**/*.py",
+    "tests/**/*.py",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# TODO: это бы поправить
+"lib/utils/langly/*py" = [
+    "ANN401",
+    "UP007",
+]
+
+
+# на это можно забить
+"test**.py" = ["ANN001",]
+"**/tests/**" = ["ANN001", "ARG", "N806", ]
+"factories.py" = ["ANN001",]
+
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "I",    # isort
+    "C90",  # mccabe - ниже настройка - понижаем порог и ловим ошибки
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "F",    # pyflakes
+    "ANN",  # flake8-annotations,
+    "S",    # bandit
+    "T20",  # print
+    "TC",   # flake8-type-checking
+    "LOG",  # flake8-logging
+    "G",    # flake8-logging-format
+    "RUF",
+    "FURB", # refurb
+    "PERF", # Perflint
+    "FLY",  # flynt
+    "PYI",  # flake8-pyi
+    "PLE",
+    "PT001",
+    "PIE",   #flake8-pie
+    "A",
+    # TODO: круто было бы все проверки включить - запуск линтера и исправление ошибок
+#    "ARG", # flake8-arguments
+#    "PTH", # flake8-use-pathlib - обсудить, нужно ли
+#    "SIM", # flake8-simplify - обсудить, нужно ли
+#    "PT", #flake8-pytest-style
+#    "DTZ", #flake8-datetimez
+]
+ignore = [
+    # не нужны нам, будем игнорить
+    "ANN002",   # Missing type annotation for `*args`
+    "ANN003",   # Missing type annotation for `**kwargs`
+    "S1",       # игнор хардкода (мб в будущем что-то возьмем из этого)
+    "RUF003",
+    "RUF002",
+    "RUF001",
+    "PYI024",
+    # TODO: это бы поправить
+    "N818",     # Exception name should be named with an Error suffix - 138 errors
+    "UP006",    # Use `list` instead of `List` for type annotation - 163 errors
+    "UP035",    # typing.List` is deprecated, use `list` instead - 75 errors
+    "UP045",    #  Use `X | None` for type annotations - 214 errors
+    "S608",     # Possible SQL injection - 69 errors
+    "S603",     # `subprocess` call: check for execution of untrusted input - 4 errors
+    "S324",     # Probable use of insecure hash functions in `hashlib`: `md5` - 5 errors
+    "S311",     # Standard pseudo-random generators are not suitable for cryptographic purposes - 27 errors
+    "RUF100",
+    "RUF012",
+    "RUF013",
+    "RUF015",
+    "RUF007",
+    "B008",
+]
+
+
+[tool.ruff.lint.isort]
+known-third-party = [
+    "numpy",
+    "pandas",
+    "pytest",
+    "pytz",
+    "django",
+    "django_yauth",
+    "rest_framework",
+    "aiohttp",
+    "bitarray",
+    "asyncpg",
+    "pypika",
+    "pyscopg2",
+    "yappi",
+]
+known-first-party = ["langly", "education"]
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+case-sensitive = true
+default-section = "first-party"
+force-sort-within-sections = true
+force-to-top = ["langly"]
+lines-after-imports = 2
+
+[tool.ruff.lint.mccabe]
+# Максимальная цикломатическая сложность
+max-complexity = 46  # TODO: ее бы уменьшить, хотя бы в 2 раза
+
+[tool.ruff.lint.flake8-annotations]
+suppress-none-returning = true
+suppress-dummy-args = true
+allow-star-arg-any = true
+
+[tool.ruff.format]
+quote-style = "double"
+docstring-code-format = true
+docstring-code-line-length = 10
+
+
+[tool.mypy]
+python_version = "3.12"
+
+# Основные настройки
+ignore_missing_imports = true   # Не ругаться на неизвестные внешние библиотеки
+#strict_optional = true         # Строжайшая проверка Optional
+check_untyped_defs = true       # Проверять даже функции без аннотаций
+#disallow_untyped_defs = true   # Запретить неаннотированные функции
+warn_unused_ignores = true      # Предупреждать о неиспользуемых # type: ignore
+
+#exclude = [
+#    "lib/recipe/",
+#    "tests/",
+#    "lib/metric_exporter/",
+#]
+
+files = [
+    "app/**/*.py",
+    "tests/**/*.py",
+]
