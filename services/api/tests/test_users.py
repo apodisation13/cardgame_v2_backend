@@ -2,11 +2,11 @@ from typing import List
 
 import pytest
 
-from app.models import User
+from services.api.app.apps.models import User
 from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from tests.factories import UserFactory
+from services.api.tests.factories import UserFactory
 
 
 class TestUsersAPI:

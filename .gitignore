@@ -4,7 +4,6 @@ venv/
 
 # Environments
 *.env
-
 ../.DS_Store
 ../documents/.DS_Store
 
@@ -21,14 +20,9 @@ htmlcov/
 __pycache__/
 
 # service assets
-data/
-static/
-media/
 *.sqlite3
 *.db
 db.json
 .vscode/launch.json
 .gitignore
 *.http
-google.json
-database.ods

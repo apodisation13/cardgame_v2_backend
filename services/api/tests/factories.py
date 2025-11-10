@@ -1,4 +1,4 @@
-from app.models import User
+from services.api.app.apps.models import User
 import factory
 from factory.alchemy import SQLAlchemyModelFactory
 

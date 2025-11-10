@@ -1,12 +1,12 @@
 import pytest
 
-from app.db import Base, get_db
-from app.main import app
-from app.models import User
+from services.api.app.apps.db import Base, get_db
+from services.api.app.apps.main import app
+from services.api.app.apps.models import User
 from httpx import AsyncClient
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from tests.factories import UserFactory
+from services.api.tests.factories import UserFactory
 
 
 # Тестовая база данных в памяти (SQLite)
