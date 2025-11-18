@@ -1,9 +1,10 @@
 import asyncio
+from collections.abc import AsyncGenerator
 import os
-from typing import AsyncGenerator
 
 import asyncpg
 import pytest
+
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import create_async_engine
 
@@ -13,9 +14,7 @@ os.environ["CONFIG"] = "test_local"
 
 
 from lib.utils.config.base import config
-from lib.utils.db.pool import Database
 from lib.utils.models import Base  # Ваш базовый класс для моделей
-
 
 
 @pytest.fixture(scope="session")
@@ -98,11 +97,13 @@ async def clean_data(db_pool):
 
     async with db_pool.acquire() as conn:
         # Получаем список всех таблиц (кроме системных)
-        tables = await conn.fetch("""
-            SELECT tablename 
-            FROM pg_tables 
-            WHERE schemaname = 'public'
-        """)
+        tables = await conn.fetch(
+            """
+                SELECT tablename 
+                FROM pg_tables 
+                WHERE schemaname = 'public'
+            """
+        )
 
         if tables:
             # Отключаем проверку внешних ключей
@@ -123,14 +124,3 @@ async def db_connection(db_pool) -> AsyncGenerator[asyncpg.Connection, None]:
     """Подключение для каждого теста"""
     async with db_pool.acquire() as conn:
         yield conn
-
-
-@pytest_asyncio.fixture
-async def db(db_pool) -> Database:
-    """Database instance для тестов"""
-    test_db = Database()
-    print(133)
-    test_db.pool = db_pool
-    print(134)
-    print(test_db.pool)
-    yield test_db

@@ -1,8 +1,7 @@
 import os
 
 from dotenv import load_dotenv
-
-from lib.utils.config.env_types import EnvType
+from lib.utils.config.env_types import EnvType, get_secret
 
 
 if "CONFIG" not in os.environ:
@@ -13,45 +12,43 @@ class BaseConfig:
     """Все настройки через env переменные"""
     ENV_TYPE: EnvType = EnvType.DEVELOPMENT_LOCAL
 
-    DEBUG: bool = False
-    TESTING: bool = False
+    DEBUG: bool = get_secret("DEBUG", default=False)
+    TESTING: bool = get_secret("DEBUG", default=False)
 
     # Environment
-    CONFIG: str = os.getenv("CONFIG")
+    CONFIG: str = get_secret("CONFIG")
 
     # Database
-    DB_USER: str = os.getenv("DB_USER")
-    DB_PASSWORD: str = os.getenv("DB_PASSWORD")
-    DB_HOST: str = os.getenv("DB_HOST", "localhost")
-    DB_PORT: int = int(os.getenv("DB_PORT", "5432"))
-    DB_NAME: str = os.getenv("DB_NAME")
+    DB_USER: str = get_secret("DB_USER")
+    DB_PASSWORD: str = get_secret("DB_PASSWORD")
+    DB_HOST: str = get_secret("DB_USER", default="localhost")
+    DB_PORT: int = int(get_secret("DB_PORT", default=5432))
+    DB_NAME: str = get_secret("DB_NAME")
+    DB_URL: str = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-    DB_URL: str = f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-
-class TestingConfig(BaseConfig):
+class BaseTestingConfig(BaseConfig):
     ENV_TYPE: EnvType = EnvType.TESTING
 
 
-class ProductionConfig(BaseConfig):
+class BaseProductionConfig(BaseConfig):
     ENV_TYPE: EnvType = EnvType.PRODUCTION
 
 
-class DevelopmentLocalConfig(BaseConfig):
+class BaseDevelopmentLocalConfig(BaseConfig):
     ENV_TYPE: EnvType = EnvType.DEVELOPMENT_LOCAL
 
 
-class TestsLocalConfig(BaseConfig):
+class BaseTestLocalConfig(BaseConfig):
     load_dotenv()
 
     ENV_TYPE: EnvType = EnvType.TEST_LOCAL
 
-    DB_USER: str = os.getenv("TEST_DB_USER", "postgres")
-    DB_PASSWORD: str = os.getenv("TEST_DB_PASSWORD")
-    DB_HOST: str = os.getenv("TEST_DB_HOST", "localhost")
-    DB_PORT: int = int(os.getenv("TEST_DB_HOST", "5432"))
-    DB_NAME: str = os.getenv("TEST_DB_NAME", "test_db")
-
+    DB_USER: str = get_secret("TEST_DB_USER", default="postgres")
+    DB_PASSWORD: str = get_secret("TEST_DB_PASSWORD")
+    DB_HOST: str = get_secret("TEST_DB_HOST", default="localhost")
+    DB_PORT: int = int(get_secret("TEST_DB_HOST", default=5432))
+    DB_NAME: str = get_secret("TEST_DB_NAME", default="test_db")
     DB_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
     DEBUG: bool = True
@@ -59,15 +56,15 @@ class TestsLocalConfig(BaseConfig):
 
 
 CONFIG_MAP = {
-    EnvType.TEST_LOCAL: TestsLocalConfig,
-    EnvType.DEVELOPMENT_LOCAL: DevelopmentLocalConfig,
-    EnvType.TESTING: TestingConfig,
-    EnvType.PRODUCTION: ProductionConfig,
+    EnvType.TEST_LOCAL: BaseTestLocalConfig,
+    EnvType.DEVELOPMENT_LOCAL: BaseDevelopmentLocalConfig,
+    EnvType.TESTING: BaseTestingConfig,
+    EnvType.PRODUCTION: BaseProductionConfig,
 }
 
 
 def get_config() -> BaseConfig:
-    config_name: str = os.getenv("CONFIG", "development_local")
+    config_name: str = get_secret("CONFIG")
 
     if config_name not in CONFIG_MAP:
         raise ValueError(f"Unknown config: {config_name}")

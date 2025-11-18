@@ -11,13 +11,13 @@ class Database:
 
     async def connect(self) -> asyncpg.Pool:
         """Создание пула подключений"""
+        print("STR14, connect to db")
         if not self.pool:
-            print("STR15--------------------------------", config.DB_URL)
             self.pool = await asyncpg.create_pool(
-                dsn=config.DB_URL.replace("postgresql+asyncpg://", "postgresql://"),
+                dsn=config.DB_URL,
                 min_size=1,
                 max_size=10,
-                command_timeout=60
+                command_timeout=60,
             )
         print("STR22!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         return self.pool
@@ -47,16 +47,3 @@ class Database:
 
 # Глобальный инстанс БД
 db = Database()
-
-
-# async def get_db_pool():
-#     """Зависимость для получения самого пула"""
-#     if not db.pool:
-#         print("STR55")
-#         await db.connect()
-#     print("STR57")
-#     return db.pool
-
-
-async def get_db_pool() -> Database:
-    return db

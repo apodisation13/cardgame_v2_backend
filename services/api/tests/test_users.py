@@ -9,12 +9,12 @@
 #
 #
 # class TestUsersAPI:
-#     """Асинхронные тесты для эндпоинта /users"""
+#     """Асинхронные тесты для эндпоинта /auth"""
 #
 #     @pytest.mark.asyncio
 #     async def test_get_users_empty(self, client: AsyncClient) -> None:
 #         """Тест получения пустого списка пользователей"""
-#         response = await client.get("/users")
+#         response = await client.get("/auth")
 #
 #         assert response.status_code == 200
 #         assert response.json() == []
@@ -22,7 +22,7 @@
 #     @pytest.mark.asyncio
 #     async def test_get_users_with_data(self, client: AsyncClient, sample_users: list[User]) -> None:
 #         """Тест получения списка пользователей с данными"""
-#         response = await client.get("/users")
+#         response = await client.get("/auth")
 #
 #         assert response.status_code == 200
 #         data = response.json()
@@ -40,7 +40,7 @@
 #     @pytest.mark.asyncio
 #     async def test_get_users_structure(self, client: AsyncClient, single_user: User) -> None:
 #         """Тест структуры ответа пользователей"""
-#         response = await client.get("/users")
+#         response = await client.get("/auth")
 #
 #         assert response.status_code == 200
 #         data = response.json()
@@ -60,7 +60,7 @@
 #             "email": "new@example.com"
 #         }
 #
-#         response = await client.post("/users", json=user_data)
+#         response = await client.post("/auth", json=user_data)
 #
 #         assert response.status_code == 200
 #         data = response.json()
@@ -84,7 +84,7 @@
 #             "email": single_user.email  # Используем email существующего пользователя
 #         }
 #
-#         response = await client.post("/users", json=user_data)
+#         response = await client.post("/auth", json=user_data)
 #
 #         assert response.status_code == 400
 #         assert "already registered" in response.json()["detail"]
@@ -92,7 +92,7 @@
 #     @pytest.mark.asyncio
 #     async def test_get_user_by_id(self, client: AsyncClient, single_user: User) -> None:
 #         """Тест получения пользователя по ID"""
-#         response = await client.get(f"/users/{single_user.id}")
+#         response = await client.get(f"/auth/{single_user.id}")
 #
 #         assert response.status_code == 200
 #         data = response.json()
@@ -104,7 +104,7 @@
 #     @pytest.mark.asyncio
 #     async def test_get_user_not_found(self, client: AsyncClient) -> None:
 #         """Тест получения несуществующего пользователя"""
-#         response = await client.get("/users/999")
+#         response = await client.get("/auth/999")
 #
 #         assert response.status_code == 404
 #         assert "not found" in response.json()["detail"]
@@ -183,11 +183,11 @@
 #
 #     def test_user_factory_batch_build(self) -> None:
 #         """Тест массового создания объектов через фабрику"""
-#         users = UserFactory.build_batch(5)
+#         auth = UserFactory.build_batch(5)
 #
-#         assert len(users) == 5
-#         assert all(isinstance(user, User) for user in users)
+#         assert len(auth) == 5
+#         assert all(isinstance(user, User) for user in auth)
 #
 #         # Проверяем что все email уникальны
-#         emails = [user.email for user in users]
+#         emails = [user.email for user in auth]
 #         assert len(emails) == len(set(emails))

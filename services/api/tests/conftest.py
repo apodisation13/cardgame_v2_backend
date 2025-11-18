@@ -72,18 +72,18 @@
 # @pytest_asyncio.fixture
 # async def sample_users(db_session: AsyncSession) -> list[User]:
 #     """Создает несколько тестовых пользователей через фабрику"""
-#     users = UserFactory.build_batch(3)
+#     auth = UserFactory.build_batch(3)
 #
-#     for user in users:
+#     for user in auth:
 #         db_session.add(user)
 #
 #     await db_session.commit()
 #
 #     # Refresh всех пользователей чтобы получить их ID
-#     for user in users:
+#     for user in auth:
 #         await db_session.refresh(user)
 #
-#     return users
+#     return auth
 #
 #
 # @pytest_asyncio.fixture

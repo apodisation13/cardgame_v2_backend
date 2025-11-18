@@ -1,43 +1,42 @@
-from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, status
-from fastapi.responses import JSONResponse
 
-from lib.utils.db.pool import db
-from services.api.app.apps.users.routes import router as users_router
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+from lib.utils.db.pool import Database
+from services.api.app.apps.api_docs.routes import router as swagger_router
+
+# from lib.utils.db.pool import db
+from services.api.app.apps.auth.routes import router as users_router
+from services.api.app.config import get_config as get_app_settings
+from services.api.app.dependencies import set_global_app
+from services.api.app.exceptions.handlers import add_exceptions
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
-    print(1111)
+    app.state.config = get_app_settings()
+
+    db = Database()
     await db.connect()
-    print(2222)
+    app.state.db = db
+
+    set_global_app(app)
+
     yield
-    # Shutdown
-    print(3333)
     await db.disconnect()
-    print(4444)
+
 
 app = FastAPI(
     title="Project API",
-    lifespan=lifespan
+    lifespan=lifespan,
+    version="1.0.0",
+    docs_url=None,
+    redoc_url=None,
+    openapi_url="/api/v1/openapi.json",
 )
 
-
-# Глобальный обработчик всех исключений
-@app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={
-            "error": {
-                "code": "INTERNAL_SERVER_ERROR",
-                "message": exc.__class__.__name__,
-                "details": exc.__repr__()
-            }
-        }
-    )
+add_exceptions(app)
 
 
-# Подключаем роутеры
-app.include_router(users_router, prefix="/users", tags=["users"])
+app.include_router(swagger_router, prefix="", tags=["swagger"])
+app.include_router(users_router, prefix="/users", tags=["auth"])
