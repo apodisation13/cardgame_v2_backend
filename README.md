@@ -8,7 +8,7 @@ alembic revision --autogenerate -m "Create users table"
 alembic upgrade head
 
 # Запуск API
-uvicorn services.api.app.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn services.api.app.main:app --reload --host 0.0.0.0 --port 8001
 
 # Запуск всех тестов
 pytest -s -v >output.log

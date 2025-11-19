@@ -1,8 +1,12 @@
 from contextlib import asynccontextmanager
 
 import asyncpg
+import logging
 
 from lib.utils.config.base import config
+
+
+logger = logging.getLogger(__name__)
 
 
 class Database:
@@ -10,8 +14,6 @@ class Database:
         self.pool = None
 
     async def connect(self) -> asyncpg.Pool:
-        """Создание пула подключений"""
-        print("STR14, connect to db", config.DB_URL)
         if not self.pool:
             self.pool = await asyncpg.create_pool(
                 dsn=config.DB_URL,
@@ -19,18 +21,17 @@ class Database:
                 max_size=10,
                 command_timeout=60,
             )
-        print("STR22!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        logger.info("Connected to db")
         return self.pool
 
     async def disconnect(self) -> None:
-        """Закрытие пула подключений"""
         if self.pool:
             await self.pool.close()
             self.pool = None
 
     @asynccontextmanager
     async def connection(self):
-        """Контекстный менеджер для одного подключения"""
+
         if not self.pool:
             await self.connect()
 

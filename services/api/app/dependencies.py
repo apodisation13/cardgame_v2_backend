@@ -23,5 +23,9 @@ async def get_db():
 
 async def get_auth_service(
     db_pool = Depends(get_db),
+    config = Depends(get_config),
 ):
-    return AuthService(db_pool=db_pool)
+    return AuthService(
+        db_pool=db_pool,
+        config=config,
+    )

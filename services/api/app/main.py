@@ -1,3 +1,4 @@
+import logging.config
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -13,6 +14,11 @@ from services.api.app.exceptions.handlers import add_exceptions
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.state.config = get_app_settings()
+
+    logger = logging.getLogger(__name__)
+    logging.config.dictConfig(app.state.config.LOGGING)
+
+    logger.info("Starting API")
 
     db = Database()
     await db.connect()

@@ -1,6 +1,8 @@
 from asyncpg import UniqueViolationError
 
 from fastapi import HTTPException, status
+
+from lib.utils.db.pool import Database
 from services.api.app.apps.auth.lib import (
     create_access_token,
     decode_token,
@@ -8,14 +10,21 @@ from services.api.app.apps.auth.lib import (
     verify_password,
 )
 from services.api.app.apps.auth.schemas import Token, User, UserLogin, UserRegister
+from services.api.app.config import Config
 from services.api.app.exceptions import ErrorUserAlreadyExists, ErrorUserNotFound
 
 
 class AuthService:
-    def __init__(self, db_pool):
+    def __init__(
+        self,
+        db_pool: Database,
+        config: Config,
+    ):
         self.db_pool = db_pool
+        self.config = config
 
     async def get_users(self) -> list[User]:
+        print("STR28!!!!!!!!!!!!!!!!!!!!", self.config.AAA)
         async with self.db_pool.connection() as conn:
             result = await conn.fetch("""select id, username, email from users""")
 
