@@ -23,8 +23,5 @@ async def test_create_user(db_connection, db_pool):
 @pytest.mark.asyncio
 async def test_create_user_2(db_connection, db_pool):
     print(type(db_connection), type(db_pool))
-    result = await db_connection.fetchrow(
-        "SELECT * FROM users",
-
-    )
-    print(21, result)
+    result = await db_connection.fetchrow("SELECT * FROM users")
+    print(32, result)

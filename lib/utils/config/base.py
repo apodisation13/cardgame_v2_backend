@@ -1,4 +1,5 @@
 import os
+import sys
 
 from dotenv import load_dotenv
 from lib.utils.config.env_types import EnvType, get_secret
@@ -9,7 +10,6 @@ if "CONFIG" not in os.environ:
 
 
 class BaseConfig:
-    """Все настройки через env переменные"""
     ENV_TYPE: EnvType = EnvType.DEVELOPMENT_LOCAL
 
     DEBUG: bool = get_secret("DEBUG", default=False)
@@ -25,6 +25,33 @@ class BaseConfig:
     DB_PORT: int = int(get_secret("DB_PORT", default=5432))
     DB_NAME: str = get_secret("DB_NAME")
     DB_URL: str = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+
+    # Logging
+    LOGGING_LEVEL = get_secret("LOGGING_LEVEL", default="INFO")
+    LOGGING = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "default": {
+                "format": "%(asctime)s | %(name)s:%(lineno)d | %(levelname)s | %(message)s",
+                "datefmt": "%H:%M:%S",
+            },
+        },
+        "handlers": {
+            "console": {
+                "level": "DEBUG",
+                "formatter": "default",
+                "class": "logging.StreamHandler",
+                "stream": sys.stdout,
+            },
+        },
+        "loggers": {
+            "": {
+                "handlers": ["console"],
+                "level": LOGGING_LEVEL,
+            },
+        },
+    }
 
 
 class BaseTestingConfig(BaseConfig):

@@ -1,3 +1,6 @@
+import logging.config
+import os
+import sys
 from collections.abc import AsyncGenerator
 import threading
 
@@ -6,14 +9,25 @@ import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import create_async_engine
 from lib.utils.config.base import BaseConfig, get_config
+from lib.utils.config.env_types import EnvType
 from lib.utils.models import Base
+
+
+logger = logging.getLogger(__name__)
+logging.config.dictConfig(BaseConfig.LOGGING)
 
 
 _db_setup_lock = threading.Lock()
 _db_setup_done = False
 
 
-@pytest_asyncio.fixture(scope="session", loop_scope="session")
+@pytest.fixture(autouse=True, scope="session")
+def setup_tests_config():
+    os.environ["CONFIG"] = EnvType.TEST_LOCAL
+    logger.info("!!!!!!!!!!STR14 SET CONFIG")
+
+
+@pytest.fixture(scope="session")
 def config() -> BaseConfig:
     return get_config()
 
@@ -28,7 +42,7 @@ def check_test_db_name(
 async def check_db_connection(
     config: BaseConfig,
 ) -> None:
-    print("\n🔧 Setting up database...")
+    logger.info("🔧 Setting up database...")
     try:
         conn = await asyncpg.connect(
             host=config.DB_HOST,
@@ -38,7 +52,7 @@ async def check_db_connection(
             database=config.DB_NAME
         )
         await conn.close()
-        print(f"✅ Connected to test database '{config.DB_NAME}'")
+        logger.info(f"✅ Connected to test database '{config.DB_NAME}'")
     except asyncpg.InvalidCatalogNameError:
         raise Exception("Can not connect to test database")
 
@@ -50,7 +64,7 @@ async def apply_migrations(
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
-        print("✅ Tables created, migrations applied \n")
+        logger.info("✅ Tables created, migrations applied")
     await engine.dispose()
 
 
@@ -62,11 +76,12 @@ async def teardown_db(
     # Очистка в конце
     with _db_setup_lock:
         if _db_setup_done:
-            print("\n🧹 Cleaning up database...")
+            print()
+            logger.info("🧹 Cleaning up database...")
             engine = create_async_engine(config.DB_URL, echo=False)
             async with engine.begin() as conn:
                 await conn.run_sync(Base.metadata.drop_all)
-                print("✅ Tables dropped")
+                logger.info("✅ Tables dropped")
             await engine.dispose()
             _db_setup_done = False
 
@@ -74,14 +89,14 @@ async def teardown_db(
 async def create_pool(
     config: BaseConfig,
 ) -> asyncpg.pool.Pool:
-    print("\n🔌 Creating NEW connection pool...")
+    logger.info("🔌 Creating NEW connection pool...")
     db_pool = await asyncpg.create_pool(
         dsn=config.DB_URL.replace("postgresql+asyncpg://", "postgresql://"),
         min_size=1,
         max_size=10,
         command_timeout=60
     )
-    print("✅ Connection pool created")
+    logger.info("✅ Connection pool created")
     return db_pool
 
 
@@ -99,7 +114,7 @@ async def clean_data(pool: asyncpg.pool.Pool) -> None:
             for table in tables:
                 await conn.execute(f'TRUNCATE TABLE "{table["tablename"]}" CASCADE')
             await conn.execute('SET session_replication_role = DEFAULT;')
-            print("\n✅ Data cleaned")
+            logger.info("✅ Data cleaned")
 
 
 @pytest_asyncio.fixture(scope="session", loop_scope="session")
@@ -113,7 +128,7 @@ async def setup_database(config):
             await apply_migrations(config)
             _db_setup_done = True
         else:
-            print("\n♻️ Database already setup")
+            logger.info("♻️ Database already setup")
 
     yield
 
@@ -131,7 +146,7 @@ async def db_pool(
     await clean_data(_db_pool)
 
     await _db_pool.close()
-    print("✅ Connection pool closed")
+    logger.info("✅ Connection pool closed")
 
 
 @pytest_asyncio.fixture
