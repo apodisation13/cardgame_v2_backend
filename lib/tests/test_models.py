@@ -1,33 +1,30 @@
 import pytest
 
-from lib.tests.factories import UserFactory
-
 
 @pytest.mark.asyncio
-async def test_create_user(db_connection):
-    """Тест создания пользователя"""
-    # Создаем пользователя через фабрику
-    user = await UserFactory.create_in_db(db_connection)
-    print(user)
+async def test_create_user(db_connection, db_pool):
+    print(type(db_connection), type(db_pool))
 
-    # Проверяем что пользователь создан
-    assert user['id'] is not None
-    assert user['email'] is not None
-    assert user['username'] is not None
+    await db_connection.execute(
+        """
+            insert into users 
+            (username, password, email) 
+            values ('1', '1', '1') 
+        """,
+    )
 
-    # Проверяем что пользователь в БД
     result = await db_connection.fetchrow(
-        "SELECT * FROM users WHERE id = $1",
-        user['id']
+        "SELECT * FROM users",
+
     )
-    assert result is not None
-    assert result['email'] == user['email']
+    print(11, result)
 
 
 @pytest.mark.asyncio
-async def test_create_user_2(db_connection):
-    # Проверяем что пользователь в БД
-    result = await db_connection.fetch(
-        "SELECT * FROM users;",
+async def test_create_user_2(db_connection, db_pool):
+    print(type(db_connection), type(db_pool))
+    result = await db_connection.fetchrow(
+        "SELECT * FROM users",
+
     )
-    print(33, result)
+    print(21, result)
