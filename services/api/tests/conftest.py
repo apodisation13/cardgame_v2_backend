@@ -7,3 +7,8 @@ print(f"\n🔍 Loading conftest.py from: {os.path.abspath(__file__)}")
 
 from lib.tests.fixtures import *
 from services.api.tests.fixtures import *
+
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_runtest_setup(item):
+    print(f"\n🚀")

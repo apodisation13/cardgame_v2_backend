@@ -10,6 +10,7 @@ import pytest_asyncio
 from sqlalchemy.ext.asyncio import create_async_engine
 from lib.utils.config.base import BaseConfig, get_config
 from lib.utils.config.env_types import EnvType
+from lib.utils.db.pool import Database
 from lib.utils.models import Base
 
 
@@ -155,3 +156,9 @@ async def db_connection(
 ) -> AsyncGenerator[asyncpg.Connection, None]:
     async with db_pool.acquire() as conn:
         yield conn
+
+
+@pytest_asyncio.fixture
+async def db():
+    db_ = Database()
+    yield db_

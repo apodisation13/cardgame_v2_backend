@@ -1,3 +1,4 @@
+import pytest
 import pytest_asyncio
 from fastapi import FastAPI
 from httpx import AsyncClient
@@ -5,7 +6,7 @@ from httpx import AsyncClient
 from lib.utils.db.pool import Database
 
 from services.api.app.main import app as fastapi_app
-from services.api.app.config import get_config as get_app_settings
+from services.api.app.config import get_config as get_app_settings, get_config, Config
 
 
 @pytest_asyncio.fixture
@@ -36,3 +37,8 @@ async def client(app: FastAPI) -> AsyncClient:
         headers={"Content-Type": "application/json"}
     ) as ac:
         yield ac
+
+
+@pytest.fixture(scope="session")
+def config() -> Config:
+    return get_config()
