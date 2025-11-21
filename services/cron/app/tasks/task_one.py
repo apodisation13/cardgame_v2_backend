@@ -1,5 +1,7 @@
 import logging
 
+from lib.utils.events import event_sender
+from lib.utils.events.event_types import EventType
 from lib.utils.tasks.base import TaskBase
 
 
@@ -18,7 +20,10 @@ class TaskOne(TaskBase):
             users = await conn.fetch("SELECT * FROM users")
             logger.info(f"Total tasks in database: {len(users)}")
 
-        # for user in users:
-        #     logger.info(user)
+        await event_sender.event(
+            event_type=EventType.EVENT_1,
+            payload={"users": users[0]},
+            config=self.config,
+        )
 
         logger.info("TaskOne completed successfully")

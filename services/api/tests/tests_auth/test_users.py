@@ -10,6 +10,7 @@ class TestUsersAPI:
         self,
         client: AsyncClient,
         db_connection,
+        event_sender_mock,
     ) -> None:
         a = await db_connection.fetch("SELECT * FROM users")
         print("STR20", a)
@@ -19,3 +20,5 @@ class TestUsersAPI:
 
         assert response.status_code == 200
         assert response.json() == []
+
+        print(event_sender_mock.call_args_list)

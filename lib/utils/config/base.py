@@ -53,6 +53,10 @@ class BaseConfig:
         },
     }
 
+    # Kafka
+    KAFKA_BOOTSTRAP_SERVERS = get_secret('KAFKA_BOOTSTRAP_SERVERS', default='localhost:9092')
+    KAFKA_TOPIC = get_secret('KAFKA_TOPIC', default='events')
+
 
 class BaseTestingConfig(BaseConfig):
     ENV_TYPE: EnvType = EnvType.TESTING

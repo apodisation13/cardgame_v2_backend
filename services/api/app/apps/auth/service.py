@@ -3,6 +3,8 @@ from asyncpg import UniqueViolationError
 from fastapi import HTTPException, status
 
 from lib.utils.db.pool import Database
+from lib.utils.events import event_sender
+from lib.utils.events.event_types import EventType
 from services.api.app.apps.auth.lib import (
     create_access_token,
     decode_token,
@@ -30,6 +32,13 @@ class AuthService:
 
         # auth = [UsersList(id=row['id'], username=row['username'], email="s") for row in result]
         # return [UsersList(**dict(row)) for row in result]
+
+        await event_sender.event(
+            event_type=EventType.EVENT_1,
+            payload={"users": dict(result[0]) if result else []},
+            config=self.config,
+        )
+
         return [User.model_validate(dict(row)) for row in result]
 
     async def register_user(

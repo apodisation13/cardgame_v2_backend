@@ -3,6 +3,7 @@ import os
 import sys
 from collections.abc import AsyncGenerator
 import threading
+from unittest.mock import patch, AsyncMock, MagicMock
 
 import asyncpg
 import pytest
@@ -162,3 +163,10 @@ async def db_connection(
 async def db():
     db_ = Database()
     yield db_
+
+
+@pytest.fixture
+def event_sender_mock():
+    with patch('lib.utils.events.event_sender.event', new_callable=AsyncMock) as mock:
+        mock.return_value = True
+        yield mock
