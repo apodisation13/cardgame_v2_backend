@@ -9,22 +9,30 @@ import asyncpg
 
 from alembic import context
 from dotenv import load_dotenv
-from lib.utils.config.base import BaseConfig
 from sqlalchemy import engine_from_config, pool
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+# Путь к папке app микросервиса
+app_dir = os.path.dirname(os.path.dirname(__file__))
+sys.path.insert(0, app_dir)
+
+# Путь к корню проекта (где находится lib/)
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../'))
+sys.path.insert(0, project_root)
 
 from lib.utils.models import *  # noqa: F403
+from services.migrant.app.config import get_config
 
 
 load_dotenv()
 
 config = context.config
 
+app_config = get_config()
+
 # Переопределяем URL из alembic.ini нашим конфигом
-url = BaseConfig.DB_URL.replace("postgresql://", "postgresql+asyncpg://")
+url = app_config.DB_URL
 config.set_main_option("sqlalchemy.url", url)
 
 if config.config_file_name is not None:

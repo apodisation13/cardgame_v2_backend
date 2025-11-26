@@ -1,0 +1,75 @@
+#!/usr/bin/env python3
+import os
+import subprocess
+import sys
+import logging.config
+from pathlib import Path
+
+# Добавляем корневую директорию проекта в Python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+
+from alembic.config import Config
+from alembic import command
+from services.migrant.app.config import get_config
+
+config = get_config()
+logger = logging.getLogger(__name__)
+logging.config.dictConfig(config.LOGGING)
+
+
+def run_migrations():
+    try:
+        logger.info("Запуск миграций базы данных...")
+
+        # Путь к alembic.ini
+        app_dir = Path(__file__).parent
+        alembic_ini_path = app_dir / 'alembic.ini'
+
+        if not alembic_ini_path.exists():
+            logger.error(f"Файл alembic.ini не найден: {alembic_ini_path}")
+            return False
+
+        logger.info("Применение миграций...")
+
+        # Используем subprocess для большего контроля
+        result = subprocess.run(
+            [sys.executable, '-m', 'alembic', '-c', str(alembic_ini_path), 'upgrade', 'head'],
+            capture_output=True,
+            text=True,
+            cwd=str(app_dir)
+        )
+
+        # Выводим результаты
+        if result.stdout:
+            logger.info(f"STDOUT: {result.stdout}")
+        if result.stderr:
+            logger.info(f"STDERR: {result.stderr}")
+
+        if result.returncode == 0:
+            logger.info("Миграции успешно выполнены")
+            return True
+        else:
+            logger.error(f"Ошибка выполнения миграций, код возврата: {result.returncode}")
+            return False
+
+    except Exception as e:
+        logger.error(f"Ошибка при выполнении миграций: {e}")
+        return False
+
+
+def main():
+    """Основная функция"""
+    logger.info("Запуск сервиса миграций")
+
+    success = run_migrations()
+
+    if success:
+        logger.info("Сервис миграций завершил работу успешно")
+        sys.exit(0)
+    else:
+        logger.error("Сервис миграций завершил работу с ошибкой")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

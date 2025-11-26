@@ -5,6 +5,7 @@ PYTEST = $(VENV_PATH)/bin/pytest
 RUFF = $(VENV_PATH)/bin/ruff
 ALEMBIC = $(VENV_PATH)/bin/alembic
 UVICORN = $(VENV_PATH)/bin/uvicorn
+ALEMBIC_INI = services/migrant/app/alembic.ini
 
 # ----------------------------TESTS----------------------------
 # run all tests with output in terminal
@@ -32,11 +33,16 @@ ruff_check:
 	$(RUFF) check
 
 # ----------------------------MIGRATIONS----------------------------
-# create new migration
+# create migration with message
 make_migrations:
 	@echo "Enter migration message:"
 	@read -p "Message: " msg; \
-	$(ALEMBIC) revision --autogenerate -m "$$msg"
-# apply migrations
+	$(ALEMBIC) -c $(ALEMBIC_INI) revision --autogenerate -m "$$msg"
+
+# migrate using alembic - directly
 migrate:
-	$(ALEMBIC) upgrade head
+	$(ALEMBIC) -c $(ALEMBIC_INI) upgrade head
+
+# alternative migration through the service
+migrate_service:
+	$(PYTHON) services/migrant/app/main.py
