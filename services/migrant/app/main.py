@@ -8,8 +8,6 @@ from pathlib import Path
 # Добавляем корневую директорию проекта в Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 
-from alembic.config import Config
-from alembic import command
 from services.migrant.app.config import get_config
 
 config = get_config()
@@ -26,7 +24,7 @@ def run_migrations():
         alembic_ini_path = app_dir / 'alembic.ini'
 
         if not alembic_ini_path.exists():
-            logger.error(f"Файл alembic.ini не найден: {alembic_ini_path}")
+            logger.error("Файл alembic.ini не найден: %s", alembic_ini_path)
             return False
 
         logger.info("Применение миграций...")
@@ -41,19 +39,19 @@ def run_migrations():
 
         # Выводим результаты
         if result.stdout:
-            logger.info(f"STDOUT: {result.stdout}")
+            logger.info("STDOUT: %s", result.stdout)
         if result.stderr:
-            logger.info(f"STDERR: {result.stderr}")
+            logger.info(f"STDERR: %s", result.stderr)
 
         if result.returncode == 0:
             logger.info("Миграции успешно выполнены")
             return True
         else:
-            logger.error(f"Ошибка выполнения миграций, код возврата: {result.returncode}")
+            logger.error("Ошибка выполнения миграций, код возврата: %s", result.returncode)
             return False
 
     except Exception as e:
-        logger.error(f"Ошибка при выполнении миграций: {e}")
+        logger.error("Ошибка при выполнении миграций: %s", e)
         return False
 
 

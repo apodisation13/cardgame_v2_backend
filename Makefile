@@ -39,10 +39,10 @@ make_migrations:
 	@read -p "Message: " msg; \
 	$(ALEMBIC) -c $(ALEMBIC_INI) revision --autogenerate -m "$$msg"
 
-# migrate using alembic - directly
-migrate:
-	$(ALEMBIC) -c $(ALEMBIC_INI) upgrade head
-
 # alternative migration through the service
 migrate_service:
 	$(PYTHON) services/migrant/app/main.py
+
+# migrate using alembic - directly
+migrate:
+	$(ALEMBIC) -c $(ALEMBIC_INI) upgrade head
