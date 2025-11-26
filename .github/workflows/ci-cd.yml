@@ -40,14 +40,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run ruff check
-      run: |
-        ruff check .
-        if [ $? -ne 0 ]; then
-          echo "❌ Ruff check failed"
-          exit 1
-        fi
-
     - name: Create test environment file
       run: |
         cat > .env << EOF
@@ -59,3 +51,11 @@ jobs:
     - name: Run tests
       run: |
         pytest -s -v
+
+    - name: Run ruff check
+      run: |
+        ruff check .
+        if [ $? -ne 0 ]; then
+          echo "❌ Ruff check failed"
+          exit 1
+        fi
