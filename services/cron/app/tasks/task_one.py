@@ -14,15 +14,13 @@ class TaskOne(TaskBase):
     async def do(self):
         logger.info("Starting TaskOne execution")
 
-        print("STR15", type(self.db))
-
         async with self.db.connection() as conn:
             users = await conn.fetch("SELECT * FROM users")
             logger.info(f"Total tasks in database: {len(users)}")
 
         await event_sender.create_event(
             event_type=EventType.EVENT_1,
-            payload={"users": users[0]},
+            payload={"users": users[0] if users else []},
             config=self.config,
         )
 

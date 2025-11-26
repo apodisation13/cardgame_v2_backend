@@ -2,16 +2,17 @@ import json
 
 from aiokafka import AIOKafkaProducer
 
+from lib.utils.config.base import BaseConfig
 from lib.utils.db.pool import Database
 from lib.utils.events.event_types import EventType, EventProcessingState
 from lib.utils.schemas.events import EventMessage
-from services.events.app.config import Config
+
 
 
 class EventSender:
     def __init__(
         self,
-        config: Config,
+        config: BaseConfig,
         db: Database,
     ):
         self.config = config
@@ -80,7 +81,7 @@ _event_sender: EventSender | None = None
 
 
 async def get_event_sender(
-    config: Config,
+    config: BaseConfig,
 ) -> EventSender:
     global _event_sender
     if _event_sender is None:
@@ -96,7 +97,7 @@ async def get_event_sender(
 async def create_event(
     event_type: EventType,
     payload: dict,
-    config: Config,
+    config: BaseConfig,
 ) -> None:
     sender: EventSender = await get_event_sender(config)
     await sender.send_event(event_type=event_type, payload=payload)

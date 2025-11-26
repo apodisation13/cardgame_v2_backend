@@ -9,7 +9,7 @@ import asyncpg
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import create_async_engine
-from lib.utils.config.base import BaseConfig, get_config
+from lib.utils.config.base import BaseConfig, get_config, BaseTestLocalConfig
 from lib.utils.config.env_types import EnvType
 from lib.utils.db.pool import Database
 from lib.utils.models import Base
@@ -60,9 +60,9 @@ async def check_db_connection(
 
 
 async def apply_migrations(
-    config: BaseConfig,
+    config: BaseTestLocalConfig,
 ) -> None:
-    engine = create_async_engine(config.DB_URL, echo=False)
+    engine = create_async_engine(config.DB_URL_SQL_ALCHEMY, echo=False)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
@@ -71,7 +71,7 @@ async def apply_migrations(
 
 
 async def teardown_db(
-    config: BaseConfig,
+    config: BaseTestLocalConfig,
 ) -> None:
     global _db_setup_done
 
@@ -80,7 +80,7 @@ async def teardown_db(
         if _db_setup_done:
             print()
             logger.info("🧹 Cleaning up database...")
-            engine = create_async_engine(config.DB_URL, echo=False)
+            engine = create_async_engine(config.DB_URL_SQL_ALCHEMY, echo=False)
             async with engine.begin() as conn:
                 await conn.run_sync(Base.metadata.drop_all)
                 logger.info("✅ Tables dropped")
@@ -93,7 +93,7 @@ async def create_pool(
 ) -> asyncpg.pool.Pool:
     logger.info("🔌 Creating NEW connection pool...")
     db_pool = await asyncpg.create_pool(
-        dsn=config.DB_URL.replace("postgresql+asyncpg://", "postgresql://"),
+        dsn=config.DB_URL,
         min_size=1,
         max_size=10,
         command_timeout=60
@@ -161,6 +161,7 @@ async def db_connection(
 
 @pytest_asyncio.fixture
 async def db():
+    print("STR164!!!!!!!!!!!!!!!!!!!!")
     db_ = Database()
     yield db_
 

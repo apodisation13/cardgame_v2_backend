@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 import asyncpg
 import logging
 
-from lib.utils.config.base import config
+from lib.utils.config.base import get_config
 
 
 logger = logging.getLogger(__name__)
@@ -12,11 +12,12 @@ logger = logging.getLogger(__name__)
 class Database:
     def __init__(self):
         self.pool = None
+        self.config = get_config()
 
     async def connect(self) -> asyncpg.Pool:
         if not self.pool:
             self.pool = await asyncpg.create_pool(
-                dsn=config.DB_URL,
+                dsn=self.config.DB_URL,
                 min_size=1,
                 max_size=10,
                 command_timeout=60,
@@ -43,7 +44,3 @@ class Database:
         async with self.connection() as conn:
             async with conn.transaction():
                 yield conn
-
-
-# Глобальный инстанс БД
-db = Database()

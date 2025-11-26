@@ -93,7 +93,7 @@ class BaseTestLocalConfig(BaseConfig):
     DB_HOST: str = get_secret("TEST_DB_HOST", default="localhost")
     DB_PORT: int = int(get_secret("TEST_DB_PORT", default=5432))
     DB_NAME: str = get_secret("TEST_DB_NAME", default="test_db")
-    DB_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    DB_URL_SQL_ALCHEMY = f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
     DEBUG: bool = True
     TESTING: bool = True
@@ -117,7 +117,3 @@ def get_config() -> BaseConfig:
     config_class = CONFIG_MAP[env_type]
 
     return config_class()
-
-
-# Глобальный инстанс настроек
-config: BaseConfig = get_config()

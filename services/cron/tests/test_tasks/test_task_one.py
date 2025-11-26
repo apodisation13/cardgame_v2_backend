@@ -19,7 +19,3 @@ async def test_task_one_execution(
     print(call_args)
     call_args = event_sender_mock.call_args
     print(call_args)
-
-
-
-
