@@ -15,3 +15,5 @@ python services/cron/app/main.py
 
 # Запуск всех тестов
 pytest -s -v >output.log
+
+#
