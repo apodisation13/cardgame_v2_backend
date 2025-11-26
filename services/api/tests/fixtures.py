@@ -16,7 +16,7 @@ async def app(db_pool) -> FastAPI:
     fastapi_app.state.config = get_app_settings()
 
     # Создаем Database обертку используя существующий пул из фикстуры
-    db = Database()
+    db = Database(fastapi_app.state.config)
     # Переопределяем метод connect чтобы использовать существующий пул
     db.pool = db_pool
     fastapi_app.state.db = db

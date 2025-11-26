@@ -22,7 +22,7 @@ from tasks import TASKS
 class Application:
     def __init__(self):
         self.config = get_config()
-        self.db = Database()
+        self.db = Database(self.config)
         self.scheduler = TaskScheduler(config=self.config, db=self.db)
         self.running = False
         logger = logging.getLogger(__name__)

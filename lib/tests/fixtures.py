@@ -89,7 +89,7 @@ async def teardown_db(
 
 
 async def create_pool(
-    config: BaseConfig,
+    config: BaseTestLocalConfig,
 ) -> asyncpg.pool.Pool:
     logger.info("🔌 Creating NEW connection pool...")
     db_pool = await asyncpg.create_pool(
@@ -160,9 +160,10 @@ async def db_connection(
 
 
 @pytest_asyncio.fixture
-async def db():
-    print("STR164!!!!!!!!!!!!!!!!!!!!")
-    db_ = Database()
+async def db(
+    config: BaseTestLocalConfig,
+):
+    db_ = Database(config)
     yield db_
 
 

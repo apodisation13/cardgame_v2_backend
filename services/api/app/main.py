@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
 
     logger.info("Starting API")
 
-    db = Database()
+    db = Database(app.state.config)
     await db.connect()
     app.state.db = db
 

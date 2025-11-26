@@ -20,7 +20,7 @@ class TaskOne(TaskBase):
 
         await event_sender.create_event(
             event_type=EventType.EVENT_1,
-            payload={"users": users[0] if users else []},
+            payload={"users": dict(users[0]) if users else []},
             config=self.config,
         )
 

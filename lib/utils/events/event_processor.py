@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 from uuid import UUID
 
 from lib.utils.config.base import BaseConfig
@@ -7,6 +8,9 @@ from lib.utils.db.pool import Database
 from lib.utils.events.actions import ACTION_REGISTRY
 from lib.utils.events.event_types import EventType, EventProcessingState
 from lib.utils.schemas.events import EventMessage, ActionConfigData
+
+
+logger = logging.getLogger(__name__)
 
 
 class EventProcessor:

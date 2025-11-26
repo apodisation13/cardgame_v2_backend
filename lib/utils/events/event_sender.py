@@ -85,7 +85,7 @@ async def get_event_sender(
 ) -> EventSender:
     global _event_sender
     if _event_sender is None:
-        db = Database()
+        db = Database(config)
         await db.connect()
         _event_sender = EventSender(
             config=config,

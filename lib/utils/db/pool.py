@@ -3,16 +3,16 @@ from contextlib import asynccontextmanager
 import asyncpg
 import logging
 
-from lib.utils.config.base import get_config
+from lib.utils.config.base import BaseConfig
 
 
 logger = logging.getLogger(__name__)
 
 
 class Database:
-    def __init__(self):
+    def __init__(self, config: BaseConfig):
         self.pool = None
-        self.config = get_config()
+        self.config = config
 
     async def connect(self) -> asyncpg.Pool:
         if not self.pool:

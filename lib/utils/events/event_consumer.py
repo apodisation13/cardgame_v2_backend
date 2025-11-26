@@ -24,7 +24,7 @@ class EventConsumer:
 
     async def start_consuming(self) -> None:
         """Запуск потребителя событий"""
-        db = Database()
+        db = Database(self.config)
         await db.connect()
         self.db = db
 

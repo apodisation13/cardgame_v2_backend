@@ -31,8 +31,6 @@ class SendSmsAction(ActionBase):
     ) -> None:
         print("STR19", type(payload), payload)
 
-        raise RuntimeError
-
         receiver_template = self.action_config.receiver
         print("STR35", receiver_template)
         receiver = render_template(receiver_template, payload)

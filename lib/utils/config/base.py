@@ -88,11 +88,15 @@ class BaseTestLocalConfig(BaseConfig):
 
     ENV_TYPE: EnvType = EnvType.TEST_LOCAL
 
+    # Test Database for local tests only
     DB_USER: str = get_secret("TEST_DB_USER", default="postgres")
     DB_PASSWORD: str = get_secret("TEST_DB_PASSWORD")
     DB_HOST: str = get_secret("TEST_DB_HOST", default="localhost")
     DB_PORT: int = int(get_secret("TEST_DB_PORT", default=5432))
     DB_NAME: str = get_secret("TEST_DB_NAME", default="test_db")
+    DB_URL: str = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+
+    # Url for SqlAlchemy to migrate tables into local test db
     DB_URL_SQL_ALCHEMY = f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
     DEBUG: bool = True
