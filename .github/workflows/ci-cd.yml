@@ -2,13 +2,27 @@ name: CI/CD Pipeline
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [ main, testing ]
   push:
-    branches: [ main ]
+    branches: [ main, testing ]
 
 jobs:
+  validate-pr-to-main:
+    if: github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR to main is from testing
+        run: |
+          if [ "${{ github.head_ref }}" != "testing" ]; then
+            echo "❌ PR to main can only be from testing branch"
+            echo "Current source: ${{ github.head_ref }}"
+            exit 1
+          fi
+          echo "✅ Valid PR: main ← testing"
+
   pr-validation:
-    if: github.event_name == 'pull_request'
+    needs: validate-pr-to-main
+    if: always() && (needs.validate-pr-to-main.result == 'skipped' || needs.validate-pr-to-main.result == 'success') && github.event_name == 'pull_request'
     runs-on: ubuntu-latest
 
     services:
