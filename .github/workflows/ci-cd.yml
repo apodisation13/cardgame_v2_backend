@@ -7,6 +7,17 @@ on:
     branches: [ main ]
 
 jobs:
+  validate-source-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if PR is from testing branch
+        run: |
+          if [ "${{ github.head_ref }}" != "testing" ]; then
+            echo "❌ PR to main can only be created from testing branch"
+            exit 1
+          fi
+          echo "✅ Valid PR source branch"
+
   pr-validation:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
