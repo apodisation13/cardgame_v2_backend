@@ -51,4 +51,4 @@ app.add_middleware(
 
 
 app.include_router(swagger_router, prefix="", tags=["swagger"])
-app.include_router(users_router, prefix="/users", tags=["auth"])
+app.include_router(users_router, prefix="/users", tags=["accounts"])

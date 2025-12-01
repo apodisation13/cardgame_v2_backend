@@ -26,6 +26,9 @@ run_cron:
 # run events
 run_events:
 	$(PYTHON) services/events/app/main.py
+# run rest
+run_rest:
+	$(PYTHON) services/rest/app/manage.py runserver 8001
 
 # ----------------------------LINTERS----------------------------
 # ruff check

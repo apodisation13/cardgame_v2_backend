@@ -29,7 +29,7 @@ class AuthService:
         async with self.db_pool.connection() as conn:
             result = await conn.fetch("""select id, username, email from users""")
 
-        # auth = [UsersList(id=row['id'], username=row['username'], email="s") for row in result]
+        # accounts = [UsersList(id=row['id'], username=row['username'], email="s") for row in result]
         # return [UsersList(**dict(row)) for row in result]
 
         await event_sender.create_event(
