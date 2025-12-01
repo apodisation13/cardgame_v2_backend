@@ -1,6 +1,3 @@
-# Инициализация Alembic  - выполняется 1 раз!
-alembic init migrations
-
 # Создание миграции
 alembic revision --autogenerate -m "Create users table"
 
@@ -15,3 +12,11 @@ python services/cron/app/main.py
 
 # Запуск всех тестов
 pytest -s -v >output.log
+
+
+# Локально в любой своей ветке:
+git fetch origin  
+git rebase origin/main
+
+# Локально если в ветке main
+git pull

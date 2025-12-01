@@ -4,7 +4,7 @@ from httpx import AsyncClient
 
 
 class TestUsersAPI:
-    """Асинхронные тесты для эндпоинта /auth"""
+    """Асинхронные тесты для эндпоинта /accounts"""
 
     @pytest.mark.asyncio
     async def test_get_users_empty(
