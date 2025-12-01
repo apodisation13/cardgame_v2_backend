@@ -2,6 +2,8 @@ from contextlib import asynccontextmanager
 import logging.config
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from lib.utils.db.pool import Database
 from services.api.app.apps.api_docs.routes import router as swagger_router
 from services.api.app.apps.auth.routes import router as users_router
@@ -39,6 +41,14 @@ app = FastAPI(
 )
 
 add_exceptions(app)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Разрешить все домены (только для разработки!)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 app.include_router(swagger_router, prefix="", tags=["swagger"])
