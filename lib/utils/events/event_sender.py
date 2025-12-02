@@ -19,13 +19,12 @@ class EventSender:
         self._producer = None
         self._initialized = False
 
-
     async def _ensure_initialized(self) -> None:
         """Инициализирует producer если еще не инициализирован"""
         if not self._initialized:
             self._producer = AIOKafkaProducer(
                 bootstrap_servers=self.config.KAFKA_BOOTSTRAP_SERVERS,
-                value_serializer=lambda v: json.dumps(v).encode('utf-8')
+                value_serializer=lambda v: json.dumps(v).encode("utf-8"),
             )
             await self._producer.start()
             self._initialized = True

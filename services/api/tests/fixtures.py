@@ -23,6 +23,7 @@ async def app(db_pool) -> FastAPI:
 
     # Устанавливаем глобальное приложение
     from services.api.app.dependencies import set_global_app
+
     set_global_app(fastapi_app)
 
     yield fastapi_app
@@ -31,11 +32,7 @@ async def app(db_pool) -> FastAPI:
 @pytest_asyncio.fixture
 async def client(app: FastAPI) -> AsyncClient:
     """Асинхронный клиент для тестирования API"""
-    async with AsyncClient(
-        app=app,
-        base_url="http://test",
-        headers={"Content-Type": "application/json"}
-    ) as ac:
+    async with AsyncClient(app=app, base_url="http://test", headers={"Content-Type": "application/json"}) as ac:
         yield ac
 
 

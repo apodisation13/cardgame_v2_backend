@@ -34,8 +34,8 @@ class EventConsumer:
             self.config.KAFKA_TOPIC,
             bootstrap_servers=self.config.KAFKA_BOOTSTRAP_SERVERS,
             group_id="event-processor",
-            value_deserializer=lambda m: json.loads(m.decode('utf-8')),
-            auto_offset_reset='earliest'
+            value_deserializer=lambda m: json.loads(m.decode("utf-8")),
+            auto_offset_reset="earliest",
         )
 
         await self.consumer.start()
@@ -50,9 +50,9 @@ class EventConsumer:
                     message_value: dict = message.value
                     print("STR51", type(message_value), message_value)
                     event_message = EventMessage(
-                        id=message_value['id'],
-                        event_type=message_value['event_type'],
-                        payload=message_value['payload'],
+                        id=message_value["id"],
+                        event_type=message_value["event_type"],
+                        payload=message_value["payload"],
                     )
                     await self.process_message(event_message)
                     logger.info("Processed event: %s", event_message.event_type)

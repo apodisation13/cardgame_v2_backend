@@ -33,10 +33,10 @@ class EmailClient(BaseClient):
         try:
             # Создание сообщения
             msg = MIMEMultipart()
-            msg['From'] = self.config.EMAIL_USER
-            msg['To'] = to
-            msg['Subject'] = subject or "Уведомление"
-            msg.attach(MIMEText(message, 'plain'))
+            msg["From"] = self.config.EMAIL_USER
+            msg["To"] = to
+            msg["Subject"] = subject or "Уведомление"
+            msg.attach(MIMEText(message, "plain"))
 
             with smtplib.SMTP_SSL(self.config.SMTP_SERVER, self.config.SMTP_PORT) as server:
                 server.login(self.config.EMAIL_USER, self.config.EMAIL_PASSWORD)
@@ -68,12 +68,12 @@ class SmsClient(BaseClient):
 
             # Создаем сообщение
             msg = MIMEMultipart()
-            msg['From'] = self.config.EMAIL_USER
-            msg['To'] = sms_email
-            msg['Subject'] = "SMS"  # Тема не важна для SMS
+            msg["From"] = self.config.EMAIL_USER
+            msg["To"] = sms_email
+            msg["Subject"] = "SMS"  # Тема не важна для SMS
 
             # Текст сообщения - это и будет SMS
-            msg.attach(MIMEText(message, 'plain'))
+            msg.attach(MIMEText(message, "plain"))
 
             with smtplib.SMTP_SSL(self.config.SMTP_SERVER, self.config.SMTP_PORT) as server:
                 server.login(self.config.EMAIL_USER, self.config.EMAIL_PASSWORD)
@@ -101,20 +101,20 @@ class TelegramClient(BaseClient):
 
             # Параметры запроса
             payload = {
-                'chat_id': to,  # ID чата или пользователя
-                'text': message,
-                'parse_mode': 'HTML'
+                "chat_id": to,  # ID чата или пользователя
+                "text": message,
+                "parse_mode": "HTML",
             }
 
             # Отправка запроса
             response = requests.post(url, data=payload, timeout=30)
             result = response.json()
 
-            if result.get('ok'):
+            if result.get("ok"):
                 logger.info("Сообщение отправлено в Telegram chat_id: %s", to)
                 return True
             else:
-                logger.error("Ошибка Telegram API: %s", result.get('description'))
+                logger.error("Ошибка Telegram API: %s", result.get("description"))
                 return False
 
         except Exception as e:

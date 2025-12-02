@@ -45,7 +45,8 @@ class EventProcessor:
                     type=item["type"],
                     conditions=item["conditions"],
                     receiver=item["receiver"],
-                ) for item in json.loads(event_config['processing'])
+                )
+                for item in json.loads(event_config["processing"])
             ]
 
         if not event_config:

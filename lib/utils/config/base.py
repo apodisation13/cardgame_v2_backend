@@ -54,21 +54,21 @@ class BaseConfig:
     }
 
     # Kafka
-    KAFKA_BOOTSTRAP_SERVERS: str = get_secret('KAFKA_BOOTSTRAP_SERVERS', default='localhost:9092')
-    KAFKA_TOPIC: str = get_secret('KAFKA_TOPIC', default='events')
+    KAFKA_BOOTSTRAP_SERVERS: str = get_secret("KAFKA_BOOTSTRAP_SERVERS", default="localhost:9092")
+    KAFKA_TOPIC: str = get_secret("KAFKA_TOPIC", default="events")
 
     # Email
-    SMTP_SERVER: str = get_secret('SMTP_SERVER', default='smtp.gmail.com')
-    SMTP_PORT: int = int(get_secret('SMTP_PORT', default=465))
-    EMAIL_USER: str = get_secret('EMAIL_USER', default='apodisation13@gmail.com')
-    EMAIL_PASSWORD: str = get_secret('EMAIL_PASSWORD')
+    SMTP_SERVER: str = get_secret("SMTP_SERVER", default="smtp.gmail.com")
+    SMTP_PORT: int = int(get_secret("SMTP_PORT", default=465))
+    EMAIL_USER: str = get_secret("EMAIL_USER", default="apodisation13@gmail.com")
+    EMAIL_PASSWORD: str = get_secret("EMAIL_PASSWORD")
 
     # TG
-    TG_TOKEN: str = get_secret('TG_TOKEN')
-    TG_CHAT_ID: str = get_secret('TG_CHAT_ID')
+    TG_TOKEN: str = get_secret("TG_TOKEN")
+    TG_CHAT_ID: str = get_secret("TG_CHAT_ID")
 
     # SMS
-    SMS_TOKEN: str = get_secret('SMS_TOKEN')
+    SMS_TOKEN: str = get_secret("SMS_TOKEN")
 
 
 class BaseTestingConfig(BaseConfig):

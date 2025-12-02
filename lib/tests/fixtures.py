@@ -51,7 +51,7 @@ async def check_db_connection(
             port=config.DB_PORT,
             user=config.DB_USER,
             password=config.DB_PASSWORD,
-            database=config.DB_NAME
+            database=config.DB_NAME,
         )
         await conn.close()
         logger.info("✅ Connected to test database  %s", config.DB_NAME)
@@ -92,12 +92,7 @@ async def create_pool(
     config: BaseTestLocalConfig,
 ) -> asyncpg.pool.Pool:
     logger.info("🔌 Creating NEW connection pool...")
-    db_pool = await asyncpg.create_pool(
-        dsn=config.DB_URL,
-        min_size=1,
-        max_size=10,
-        command_timeout=60
-    )
+    db_pool = await asyncpg.create_pool(dsn=config.DB_URL, min_size=1, max_size=10, command_timeout=60)
     logger.info("✅ Connection pool created")
     return db_pool
 
@@ -112,10 +107,10 @@ async def clean_data(pool: asyncpg.pool.Pool) -> None:
             """
         )
         if tables:
-            await conn.execute('SET session_replication_role = replica;')
+            await conn.execute("SET session_replication_role = replica;")
             for table in tables:
                 await conn.execute(f'TRUNCATE TABLE "{table["tablename"]}" CASCADE')
-            await conn.execute('SET session_replication_role = DEFAULT;')
+            await conn.execute("SET session_replication_role = DEFAULT;")
             logger.info("✅ Data cleaned")
 
 
@@ -169,6 +164,6 @@ async def db(
 
 @pytest.fixture
 def event_sender_mock():
-    with patch('lib.utils.events.event_sender.create_event', new_callable=AsyncMock) as mock:
+    with patch("lib.utils.events.event_sender.create_event", new_callable=AsyncMock) as mock:
         mock.return_value = True
         yield mock

@@ -6,8 +6,7 @@ from lib.utils.events.uuu import render_template
 
 class SendEmailAction(ActionBase):
     async def execute(self, context: dict[str, Any]) -> bool:
-
-        receiver_template = self.config['receiver']
+        receiver_template = self.config["receiver"]
         receiver = render_template(receiver_template, context)
 
         # Логика отправки email

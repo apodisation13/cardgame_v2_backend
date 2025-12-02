@@ -9,7 +9,7 @@ def pytest_runtest_setup(item):
 
 
 def pytest_report_teststatus(report, config) -> tuple:
-    if report.when == 'call':
+    if report.when == "call":
         if report.passed:
             return "passed", "P", "✅ PASSED\n"
         elif report.failed:

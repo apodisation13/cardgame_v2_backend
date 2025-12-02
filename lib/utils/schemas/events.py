@@ -13,9 +13,9 @@ class EventMessage(Base):
     @model_serializer
     def serialize_model(self) -> dict:
         return {
-            'id': str(self.id),
-            'event_type': self.event_type.value,
-            'payload': self.payload,
+            "id": str(self.id),
+            "event_type": self.event_type.value,
+            "payload": self.payload,
         }
 
 

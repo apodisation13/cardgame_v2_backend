@@ -49,19 +49,19 @@ class TaskScheduler:
 
         # Настройка APScheduler
         jobstores = {
-            'default': MemoryJobStore()  # или SQLAlchemyJobStore для персистентности
+            "default": MemoryJobStore()  # или SQLAlchemyJobStore для персистентности
         }
 
         job_defaults = {
-            'coalesce': True,  # объединять пропущенные выполнения
-            'max_instances': 1,  # только один экземпляр задачи одновременно
-            'misfire_grace_time': 60  # 60 секунд на выполнение пропущенной задачи
+            "coalesce": True,  # объединять пропущенные выполнения
+            "max_instances": 1,  # только один экземпляр задачи одновременно
+            "misfire_grace_time": 60,  # 60 секунд на выполнение пропущенной задачи
         }
 
         self.scheduler = AsyncIOScheduler(
             jobstores=jobstores,
             job_defaults=job_defaults,
-            timezone='UTC',
+            timezone="UTC",
         )
 
         # # Подписка на события
@@ -98,9 +98,9 @@ class TaskScheduler:
         active_tasks = await self._get_active_tasks()
 
         for task_record in active_tasks:
-            task_name = task_record['name']
-            task_id = task_record['id']
-            schedule = task_record['schedule']
+            task_name = task_record["name"]
+            task_id = task_record["id"]
+            schedule = task_record["schedule"]
             print(98, task_name, task_id, schedule)
 
             if task_name in self.tasks:
@@ -146,12 +146,7 @@ class TaskScheduler:
     def get_scheduled_jobs(self) -> list:
         """Возвращает информацию о запланированных задачах"""
         return [
-            {
-                'id': job.id,
-                'name': job.name,
-                'next_run': job.next_run_time,
-                'trigger': str(job.trigger)
-            }
+            {"id": job.id, "name": job.name, "next_run": job.next_run_time, "trigger": str(job.trigger)}
             for job in self.scheduler.get_jobs()
         ]
 
@@ -178,16 +173,16 @@ class TaskScheduler:
 
             # Удаляем задачи, которых нет в БД или которые неактивны
             for job in self.scheduler.get_jobs():
-                if job.id.startswith('task_'):
+                if job.id.startswith("task_"):
                     if job.id not in db_task_ids:
                         job.remove()
                         logger.info("Removed task: %s, (id %s)", job.name, job.id)
 
             # Добавляем/обновляем задачи из БД
             for task_record in db_tasks:
-                task_name = task_record['name']
-                task_id = task_record['id']
-                schedule = task_record['schedule']
+                task_name = task_record["name"]
+                task_id = task_record["id"]
+                schedule = task_record["schedule"]
 
                 if task_name in self.tasks:
                     await self._schedule_task(task_id, task_name, schedule)
@@ -228,7 +223,7 @@ class TaskScheduler:
                     args=[task_class, task_id, task_name],
                     id=job_id,
                     name=task_name,
-                    replace_existing=True
+                    replace_existing=True,
                 )
 
         except Exception as e:

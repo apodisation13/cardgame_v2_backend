@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 
 from dotenv import load_dotenv
 
@@ -7,44 +7,41 @@ from dotenv import load_dotenv
 # Добавляем apps в путь Python
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
 
 from lib.utils.config.base import (
     BaseConfig,
-    BaseTestingConfig,
-    BaseProductionConfig,
     BaseDevelopmentLocalConfig,
-    BaseTestLocalConfig
+    BaseProductionConfig,
+    BaseTestLocalConfig,
+    BaseTestingConfig,
 )
 from lib.utils.config.env_types import EnvType, get_secret
 
-# Импортируем все настройки из settings
-from settings import *
+# импортируем все настройки тут
+from settings import *  # noqa 403
+
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(BASE_DIR, "apps"))
 
 
 if "CONFIG" not in os.environ:
     load_dotenv()
 
 
-class Config(BaseConfig):
-    ...
+class Config(BaseConfig): ...
 
 
-class TestingConfig(BaseTestingConfig, Config):
-    ...
+class TestingConfig(BaseTestingConfig, Config): ...
 
 
-class ProductionConfig(BaseProductionConfig, Config):
-    ...
+class ProductionConfig(BaseProductionConfig, Config): ...
 
 
-class DevelopmentLocalConfig(BaseDevelopmentLocalConfig, Config):
-    ...
+class DevelopmentLocalConfig(BaseDevelopmentLocalConfig, Config): ...
 
 
-class TestLocalConfig(BaseTestLocalConfig, Config):
-    ...
+class TestLocalConfig(BaseTestLocalConfig, Config): ...
 
 
 CONFIG_MAP = {

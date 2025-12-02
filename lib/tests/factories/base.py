@@ -41,16 +41,16 @@ class BaseModelFactory(AsyncFactory):
         placeholders = []
 
         for key, value in obj.__dict__.items():
-            if not key.startswith('_'):
+            if not key.startswith("_"):
                 columns.append(key)
                 values.append(value)
                 placeholders.append(f"${len(placeholders) + 1}")
 
         query = f"""
-            INSERT INTO {table_name} ({', '.join(columns)})
-            VALUES ({', '.join(placeholders)})
+            INSERT INTO {table_name} ({", ".join(columns)})
+            VALUES ({", ".join(placeholders)})
             RETURNING *
-        """   # noqa: S608
+        """  # noqa: S608
 
         result = await conn.fetchrow(query, *values)
         return dict(result)

@@ -1,4 +1,3 @@
-
 from lib.utils.clients.base import EmailClient, SmsClient, TelegramClient
 from lib.utils.config.base import BaseConfig
 from lib.utils.events.actions.base import ActionBase
@@ -22,7 +21,6 @@ class SendSmsAction(ActionBase):
         self.email_client = EmailClient(config)
         self.sms_client = SmsClient(config)
         self.tg_client = TelegramClient(config)
-
 
     async def execute(
         self,
