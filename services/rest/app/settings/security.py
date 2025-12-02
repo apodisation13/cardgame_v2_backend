@@ -1,8 +1,9 @@
 from pathlib import Path
 
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-your-secret-key-change-this!'  # В продакшене используйте переменные окружения!
+SECRET_KEY = "django-insecure-your-secret-key-change-this!"  # В продакшене используйте переменные окружения!
 
 DEBUG = True
 
@@ -11,7 +12,7 @@ ALLOWED_HOSTS = []
 # Security settings
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-X_FRAME_OPTIONS = 'DENY'
+X_FRAME_OPTIONS = "DENY"
 
 # Для продакшена
 # SECURE_SSL_REDIRECT = True
@@ -33,4 +34,4 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MODEL = 'accounts.DjangoAuthUser'
+AUTH_USER_MODEL = "accounts.DjangoAuthUser"
