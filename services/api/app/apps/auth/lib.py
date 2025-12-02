@@ -16,9 +16,9 @@ def get_password_hash(
 ) -> str:
     salt = secrets.token_hex(16)
     hash_obj = hashlib.pbkdf2_hmac(
-        'sha256',
-        password.encode('utf-8'),
-        salt.encode('utf-8'),
+        "sha256",
+        password.encode("utf-8"),
+        salt.encode("utf-8"),
         100000,
     )
     return f"{salt}${hash_obj.hex()}"
@@ -28,11 +28,11 @@ def verify_password(
     plain_password: str,
     hashed_password: str,
 ) -> None:
-    salt, stored_hash = hashed_password.split('$')
+    salt, stored_hash = hashed_password.split("$")
     hash_obj = hashlib.pbkdf2_hmac(
-        'sha256',
-        plain_password.encode('utf-8'),
-        salt.encode('utf-8'),
+        "sha256",
+        plain_password.encode("utf-8"),
+        salt.encode("utf-8"),
         100000,
     )
     computed_hash = hash_obj.hex()

@@ -15,7 +15,7 @@ async def global_exception_handler(
                 "message": exc.__class__.__name__,
                 "details": exc.__repr__(),
             }
-        }
+        },
     )
 
 
@@ -38,7 +38,7 @@ async def user_already_exists_exception_handler(
                 "message": message,
                 "details": exc.__repr__(),
             }
-        }
+        },
     )
 
 
