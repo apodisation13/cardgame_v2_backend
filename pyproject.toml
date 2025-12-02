@@ -15,13 +15,6 @@ include = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-# TODO: это бы поправить
-"lib/utils/langly/*py" = [
-    "ANN401",
-    "UP007",
-]
-
-
 # на это можно забить
 "test**.py" = ["ANN001",]
 "**/tests/**" = ["ANN001", "ARG", "N806", ]
@@ -54,6 +47,7 @@ select = [
     "PT001",
     "PIE",   #flake8-pie
     "A",
+    "COM",
     # TODO: круто было бы все проверки включить - запуск линтера и исправление ошибок
 #    "ARG", # flake8-arguments
 #    "PTH", # flake8-use-pathlib - обсудить, нужно ли

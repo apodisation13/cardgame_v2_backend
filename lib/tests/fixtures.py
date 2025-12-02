@@ -104,7 +104,7 @@ async def clean_data(pool: asyncpg.pool.Pool) -> None:
             SELECT tablename
             FROM pg_tables
             WHERE schemaname = 'public'
-            """
+            """,
         )
         if tables:
             await conn.execute("SET session_replication_role = replica;")

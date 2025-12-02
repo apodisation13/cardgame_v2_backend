@@ -49,7 +49,7 @@ class TaskScheduler:
 
         # Настройка APScheduler
         jobstores = {
-            "default": MemoryJobStore()  # или SQLAlchemyJobStore для персистентности
+            "default": MemoryJobStore(),  # или SQLAlchemyJobStore для персистентности
         }
 
         job_defaults = {

@@ -71,7 +71,18 @@ jobs:
 
     - name: Run ruff check
       run: |
-        echo "🔍 Checking code formatting with ruff format..."
+        echo "🔍 Checking code with ruff..."
+
+        echo "📋 Running ruff check..."
+        ruff check .
+        if [ $? -ne 0 ]; then
+          echo "❌ Linting issues found!"
+          echo "Please run 'ruff check --fix .' locally and commit the changes"
+          exit 1
+        fi
+        echo "✅ Linting passed"
+
+        echo "📋 Running ruff format check..."
         ruff format --check .
         if [ $? -ne 0 ]; then
           echo "❌ Code formatting issues found!"
@@ -79,3 +90,5 @@ jobs:
           exit 1
         fi
         echo "✅ Code formatting is correct"
+
+        echo "🎉 All checks passed!"

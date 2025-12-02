@@ -14,7 +14,7 @@ async def global_exception_handler(
                 "code": "INTERNAL_SERVER_ERROR",
                 "message": exc.__class__.__name__,
                 "details": exc.__repr__(),
-            }
+            },
         },
     )
 
@@ -37,7 +37,7 @@ async def user_already_exists_exception_handler(
                 "code": "BAD_REQUEST",
                 "message": message,
                 "details": exc.__repr__(),
-            }
+            },
         },
     )
 
