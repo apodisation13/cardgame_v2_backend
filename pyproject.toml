@@ -109,6 +109,7 @@ default-section = "first-party"
 force-sort-within-sections = true
 force-to-top = ["langly"]
 lines-after-imports = 2
+split-on-trailing-comma = true
 
 [tool.ruff.lint.mccabe]
 # Максимальная цикломатическая сложность
@@ -123,7 +124,6 @@ allow-star-arg-any = true
 quote-style = "double"
 docstring-code-format = true
 docstring-code-line-length = 10
-
 
 [tool.mypy]
 python_version = "3.12"
