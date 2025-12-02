@@ -1,0 +1,3 @@
+-r ../../lib/requirements.txt
+
+apscheduler>=3.10.0

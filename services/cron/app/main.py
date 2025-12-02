@@ -80,14 +80,14 @@ class Application:
             jobs = self.scheduler.get_scheduled_jobs()
             self.logger.info("Scheduled jobs:")
             for job in jobs:
-                self.logger.info("  - %s: next run at %s}", job['name'], job['next_run'])
+                self.logger.info("  - %s: next run at %s}", job["name"], job["next_run"])
 
             # Основной цикл ожидания
             while self.running:
                 await asyncio.sleep(2)
 
         except Exception as e:
-            self.logger.error("Application error: %s" ,e)
+            self.logger.error("Application error: %s", e)
         finally:
             if self.running:
                 await self.shutdown()

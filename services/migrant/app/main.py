@@ -22,7 +22,7 @@ def run_migrations() -> bool:
 
         # Путь к alembic.ini
         app_dir = Path(__file__).parent
-        alembic_ini_path = app_dir / 'alembic.ini'
+        alembic_ini_path = app_dir / "alembic.ini"
 
         if not alembic_ini_path.exists():
             logger.error("Файл alembic.ini не найден: %s", alembic_ini_path)
@@ -32,10 +32,10 @@ def run_migrations() -> bool:
 
         # Используем subprocess для большего контроля
         result = subprocess.run(  # noqa: S603
-            [sys.executable, '-m', 'alembic', '-c', str(alembic_ini_path), 'upgrade', 'head'],
+            [sys.executable, "-m", "alembic", "-c", str(alembic_ini_path), "upgrade", "head"],
             capture_output=True,
             text=True,
-            cwd=str(app_dir)
+            cwd=str(app_dir),
         )
 
         # Выводим результаты
