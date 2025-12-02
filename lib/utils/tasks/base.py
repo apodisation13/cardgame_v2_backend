@@ -220,7 +220,7 @@ class TaskScheduler:
                 self.scheduler.add_job(
                     self._execute_task,
                     trigger=CronTrigger.from_crontab(schedule),
-                    args=[task_class, task_id, task_name],
+                    args=[task_class, task_name],
                     id=job_id,
                     name=task_name,
                     replace_existing=True,
