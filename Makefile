@@ -8,44 +8,51 @@ UVICORN = $(VENV_PATH)/bin/uvicorn
 ALEMBIC_INI = services/migrant/app/alembic.ini
 
 # ----------------------------TESTS----------------------------
-# run all tests with output in terminal
 test:
 	$(PYTEST) -s -v
-# run all tests with output in file output.log
-test_output:
+test-output:
 	$(PYTEST) -s -v >output.log
 
+# ----------------------------LINTERS----------------------------
+ruff-check:
+	$(RUFF) check
+ruff-fix:
+	$(RUFF) check --fix
+ruff-format:
+	$(RUFF) format
+ruff-format-check:
+	$(RUFF) format --check
 
 # ----------------------------RUN APPS----------------------------
-# run API
-run_api:
+run-api:
 	$(UVICORN) services.api.app.main:app --reload --host 0.0.0.0 --port 8001
-# run cron
-run_cron:
+run-cron:
 	$(PYTHON) services/cron/app/main.py
-# run events
-run_events:
+run-events:
 	$(PYTHON) services/events/app/main.py
-# run rest
-run_rest:
+run-rest:
 	$(PYTHON) services/rest/app/manage.py runserver 8001
-
-# ----------------------------LINTERS----------------------------
-# ruff check
-ruff_check:
-	$(RUFF) check
 
 # ----------------------------MIGRATIONS----------------------------
 # create migration with message
-make_migrations:
+make-migrations:
 	@echo "Enter migration message:"
 	@read -p "Message: " msg; \
 	$(ALEMBIC) -c $(ALEMBIC_INI) revision --autogenerate -m "$$msg"
 
 # alternative migration through the service
-migrate_service:
+migrate-service:
 	$(PYTHON) services/migrant/app/main.py
 
 # migrate using alembic - directly
-migrate:
+migrate-alembic:
 	$(ALEMBIC) -c $(ALEMBIC_INI) upgrade head
+
+# ----------------------------INSTALL REQUIREMENTS----------------------------
+install-all:
+	$(PIP) install -r lib/requirements-dev.txt
+	$(PIP) install -r services/api/requirements.txt
+	$(PIP) install -r services/cron/requirements.txt
+	$(PIP) install -r services/events/requirements.txt
+	$(PIP) install -r services/migrant/requirements.txt
+	$(PIP) install -r services/rest/requirements.txt

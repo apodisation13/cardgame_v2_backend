@@ -4,12 +4,7 @@ from fastapi import HTTPException, status
 from lib.utils.db.pool import Database
 from lib.utils.events import event_sender
 from lib.utils.events.event_types import EventType
-from services.api.app.apps.auth.lib import (
-    create_access_token,
-    decode_token,
-    get_password_hash,
-    verify_password,
-)
+from services.api.app.apps.auth.lib import create_access_token, decode_token, get_password_hash, verify_password
 from services.api.app.apps.auth.schemas import Token, User, UserLogin, UserRegister
 from services.api.app.config import Config
 from services.api.app.exceptions import UserAlreadyExistsError, UserNotFoundError

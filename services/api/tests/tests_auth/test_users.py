@@ -16,7 +16,6 @@ class TestUsersAPI:
         a = await db_connection.fetch("SELECT * FROM users")
         print("STR20", a)
 
-
         response = await client.get("/users/list-users")
 
         assert response.status_code == 200
