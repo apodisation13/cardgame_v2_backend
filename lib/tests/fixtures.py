@@ -92,7 +92,12 @@ async def create_pool(
     config: BaseTestLocalConfig,
 ) -> asyncpg.pool.Pool:
     logger.info("🔌 Creating NEW connection pool...")
-    db_pool = await asyncpg.create_pool(dsn=config.DB_URL, min_size=1, max_size=10, command_timeout=60)
+    db_pool = await asyncpg.create_pool(
+        dsn=config.DB_URL,
+        min_size=1,
+        max_size=10,
+        command_timeout=60,
+    )
     logger.info("✅ Connection pool created")
     return db_pool
 
