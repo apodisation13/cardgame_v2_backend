@@ -1,8 +1,6 @@
 import os
 import sys
 
-from dotenv import load_dotenv
-
 
 # Добавляем apps в путь Python
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
@@ -15,7 +13,7 @@ from lib.utils.config.base import (
     BaseTestLocalConfig,
     BaseTestingConfig,
 )
-from lib.utils.config.env_types import EnvType, get_secret
+from lib.utils.config.env_types import EnvType, get_secret, load_env
 
 # импортируем все настройки тут
 from settings import *  # noqa 403
@@ -25,8 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(BASE_DIR, "apps"))
 
 
-if "CONFIG" not in os.environ:
-    load_dotenv()
+load_env()
 
 
 class Config(BaseConfig): ...
@@ -58,7 +55,7 @@ def get_config() -> Config:
     if config_name not in CONFIG_MAP:
         raise ValueError(f"Unknown config: {config_name}")
 
-    env_type: EnvType = EnvType(config_name)
+    env_type = EnvType(config_name)
     config_class = CONFIG_MAP[env_type]
 
     return config_class()

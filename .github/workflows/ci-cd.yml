@@ -20,9 +20,6 @@ jobs:
           fi
           echo "✅ Valid PR: main ← testing"
 
-
-
-
   pr-validation:
     needs: validate-pr-to-main
     if: always() && (needs.validate-pr-to-main.result == 'skipped' || needs.validate-pr-to-main.result == 'success') && github.event_name == 'pull_request'
@@ -55,7 +52,12 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        pip install -r lib/requirements-dev.txt
+        pip install -r services/api/requirements.txt
+        pip install -r services/cron/requirements.txt
+        pip install -r services/events/requirements.txt
+        pip install -r services/migrant/requirements.txt
+        pip install -r services/rest/requirements.txt
 
     - name: Create test environment file
       run: |

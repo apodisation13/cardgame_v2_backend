@@ -15,6 +15,7 @@ class Database:
         self.config = config
 
     async def connect(self) -> asyncpg.Pool:
+        print("STR18", self.config.DB_URL)
         if not self.pool:
             self.pool = await asyncpg.create_pool(
                 dsn=self.config.DB_URL,

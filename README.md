@@ -20,3 +20,6 @@ git rebase origin/main
 
 # Локально если в ветке main
 git pull
+
+# Запуск докера локально с кастомным файл
+docker-compose --env-file .env.docker up --build

@@ -1,9 +1,48 @@
+# ПРОБЛЕМА:
+#    ${VARIABLE} подстановка происходит ДО запуска контейнера - Docker Compose читает эти переменные из:
+#        Файла .env в корне проекта (по умолчанию)
+#        Системных переменных окружения
+#    env_file загружает переменные ВНУТРЬ контейнера, но НЕ для подстановки в docker-compose.yml
+
+
+# Общие настройки для всех сервисов
+x-common: &common
+  networks:
+    - app-network
+  env_file:
+    - ./.env.docker
+
 services:
+  # ============ БАЗОВЫЕ СЕРВИСЫ ============
+  postgres:
+    <<: *common
+    image: postgres:15-alpine
+    container_name: gridways-postgres
+    environment:
+      # вот это будет считываться по умолчанию из файла .env, или из того, который передать ПРИ СТАРТЕ
+      # docker-compose --env-file .env.docker up --build
+      # проверка что в контейнере с постгресом: docker-compose exec postgres env | grep POSTGRES
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - docker_postgres_data:/var/lib/postgresql/data
+    # вот это порт, который будет торчать наружу
+    ports:
+      - "${DB_PORT_OUTSIDE}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   kafka:
+    <<: *common
     image: confluentinc/cp-kafka:latest
     ports:
       - "9092:9092"
       - "9093:9093"
+    container_name: gridways-kafka
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
@@ -18,3 +57,93 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+
+  # ============ МИКРОСЕРВИСЫ ============
+  migrant:
+    <<: *common
+    container_name: gridways-migrant
+    build:
+      context: .
+      dockerfile: services/migrant/docker/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    <<: *common
+    container_name: gridways-api
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: services/api/docker/Dockerfile
+    expose:
+      - "8000"
+    depends_on:
+      - migrant
+
+  rest:
+    <<: *common
+    container_name: gridways-rest
+    build:
+      context: .
+      dockerfile: services/rest/docker/Dockerfile
+    volumes:
+      - static_volume:/app/services/rest/app/staticfiles
+      - media_volume:/app/services/rest/app/media
+    depends_on:
+      - migrant
+    command: >
+      sh -c "cd services/rest/app &&
+             python manage.py collectstatic --noinput &&
+             python manage.py migrate &&
+             gunicorn settings.wsgi:application --bind 0.0.0.0:8000 --workers 2"
+    expose:
+      - "8000"
+
+  nginx:
+    <<: *common
+    image: nginx:1.25-alpine
+    container_name: gridways-nginx
+    ports:
+      - "8001:80"  # Хост:8001 → Контейнер:80
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - static_volume:/app/static:ro  # Монтируем из контейнера реста!
+      - media_volume:/app/media:ro
+    depends_on:
+      - rest
+      - api
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  cron:
+    <<: *common
+    container_name: gridways-cron
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: services/cron/docker/Dockerfile
+    depends_on:
+      - migrant
+
+  events:
+    <<: *common
+    container_name: gridways-events
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: services/events/docker/Dockerfile
+    depends_on:
+      - migrant
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  docker_postgres_data:
+  static_volume:
+  media_volume:
