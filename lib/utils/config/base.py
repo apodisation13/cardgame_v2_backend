@@ -1,16 +1,13 @@
-import os
 import sys
 
-from dotenv import load_dotenv
-from lib.utils.config.env_types import EnvType, get_secret
+from lib.utils.config.env_types import EnvType, get_secret, load_env
 
 
-if "CONFIG" not in os.environ:
-    load_dotenv()
+load_env()
 
 
 class BaseConfig:
-    ENV_TYPE: EnvType = EnvType.DEVELOPMENT_LOCAL
+    ENV_TYPE = EnvType.DEVELOPMENT_LOCAL
 
     DEBUG: bool = get_secret("DEBUG", default=False)
     TESTING: bool = get_secret("DEBUG", default=False)
@@ -72,21 +69,21 @@ class BaseConfig:
 
 
 class BaseTestingConfig(BaseConfig):
-    ENV_TYPE: EnvType = EnvType.TESTING
+    ENV_TYPE = EnvType.TESTING
 
 
 class BaseProductionConfig(BaseConfig):
-    ENV_TYPE: EnvType = EnvType.PRODUCTION
+    ENV_TYPE = EnvType.PRODUCTION
 
 
 class BaseDevelopmentLocalConfig(BaseConfig):
-    ENV_TYPE: EnvType = EnvType.DEVELOPMENT_LOCAL
+    ENV_TYPE = EnvType.DEVELOPMENT_LOCAL
 
 
 class BaseTestLocalConfig(BaseConfig):
-    load_dotenv()
+    load_env()
 
-    ENV_TYPE: EnvType = EnvType.TEST_LOCAL
+    ENV_TYPE = EnvType.TEST_LOCAL
 
     # Test Database for local tests only
     DB_USER: str = get_secret("TEST_DB_USER", default="postgres")
@@ -117,7 +114,7 @@ def get_config() -> BaseConfig:
     if config_name not in CONFIG_MAP:
         raise ValueError(f"Unknown config: {config_name}")
 
-    env_type: EnvType = EnvType(config_name)
+    env_type = EnvType(config_name)
     config_class = CONFIG_MAP[env_type]
 
     return config_class()

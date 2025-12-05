@@ -4,8 +4,8 @@ import os
 from dotenv import load_dotenv
 
 
-if "CONFIG" not in os.environ:
-    load_dotenv()
+# if "CONFIG" not in os.environ:
+#     load_dotenv()
 
 
 class EnvType(StrEnum):
@@ -20,3 +20,9 @@ def get_secret(
     default: str | float | bool = None,
 ) -> str:
     return os.getenv(secret_name, default)
+
+
+def load_env():
+    if "CONFIG" in os.environ:
+        return
+    load_dotenv()

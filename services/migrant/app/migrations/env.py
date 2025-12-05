@@ -8,7 +8,6 @@ import sys
 import asyncpg
 
 from alembic import context
-from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 from sqlalchemy.ext.asyncio import AsyncEngine
 
@@ -21,11 +20,12 @@ sys.path.insert(0, app_dir)
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../'))
 sys.path.insert(0, project_root)
 
+from lib.utils.config.env_types import load_env
 from lib.utils.models import *  # noqa: F403
 from services.migrant.app.config import get_config
 
 
-load_dotenv()
+load_env()
 
 config = context.config
 
