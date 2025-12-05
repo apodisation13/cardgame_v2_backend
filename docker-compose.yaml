@@ -27,9 +27,8 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - docker_postgres_data:/var/lib/postgresql/data
-    # вот это порт, который будет торчать наружу
     ports:
-      - "${DB_PORT_OUTSIDE}:5432"
+      - "${DB_PORT_OUTSIDE}:5432"  # вот это порт, который будет торчать наружу
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
       interval: 10s
@@ -44,19 +43,52 @@ services:
       - "9093:9093"
     container_name: gridways-kafka
     environment:
+      # параметры KRaft
       KAFKA_NODE_ID: 1
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092'
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_PROCESS_ROLES: 'broker,controller'
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
-      KAFKA_LISTENERS: 'PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092'
-      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
-      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+
+      # listeners
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+
+      # Для single-node (можно убрать, но лучше оставить)
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+
+      # вот это отключает дефолтные логи от кафки, только ошибки
+      KAFKA_LOG4J_ROOT_LOGLEVEL: "ERROR"
+      KAFKA_LOG4J_LOGGERS: "org.apache.kafka=ERROR,kafka=ERROR,kafka.controller=ERROR,kafka.log=ERROR,kafka.server=ERROR,kafka.zookeeper=ERROR,kafka.network=ERROR,kafka.zk=ERROR,kafka.coordinator=ERROR,kafka.common=ERROR,kafka.utils=ERROR,state.change.logger=ERROR"
+      KAFKA_JMX_OPTS: "-Dcom.sun.management.jmxremote=false"
+      KAFKA_TOOLS_LOG4J_LOGLEVEL: "ERROR"
+      LOG4J_ROOT_LOGLEVEL: "ERROR"
+
+      # Эти можно удалить (используются значения по умолчанию):
+      # KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0  # по умолчанию 3000
+      # KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'  # и так по умолчанию
+
+  nginx:
+    <<: *common
+    image: nginx:1.25-alpine
+    container_name: gridways-nginx
+    ports:
+      - "${APP_PORT_OUTSIDE}:80"  # локально будет виден этот порт -> а в контейнере этот
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro  # так мы подгружаем туда свой nginx.conf файл!
+      - static_volume:/app/static:ro  # Монтируем volume - из контейнера реста!
+      - media_volume:/app/media:ro  # Монтируем volume - из контейнера реста!
+    depends_on:
+      - rest
+      - api
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:80/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # ============ МИКРОСЕРВИСЫ ============
   migrant:
@@ -100,25 +132,6 @@ services:
     expose:
       - "8000"
 
-  nginx:
-    <<: *common
-    image: nginx:1.25-alpine
-    container_name: gridways-nginx
-    ports:
-      - "8001:80"  # Хост:8001 → Контейнер:80
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - static_volume:/app/static:ro  # Монтируем из контейнера реста!
-      - media_volume:/app/media:ro
-    depends_on:
-      - rest
-      - api
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
   cron:
     <<: *common
     container_name: gridways-cron
@@ -138,6 +151,7 @@ services:
       dockerfile: services/events/docker/Dockerfile
     depends_on:
       - migrant
+      - kafka
 
 networks:
   app-network:

@@ -16,6 +16,7 @@ async def main():
 
     logger = logging.getLogger(__name__)
     logging.config.dictConfig(config.LOGGING)
+    logging.getLogger('aiokafka').setLevel(logging.ERROR)
 
     logger.info("Starting Event Processor...")
 
