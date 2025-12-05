@@ -1,6 +1,3 @@
-import os
-
-from dotenv import load_dotenv
 from lib.utils.config.base import (
     BaseConfig,
     BaseDevelopmentLocalConfig,
@@ -8,11 +5,10 @@ from lib.utils.config.base import (
     BaseTestLocalConfig,
     BaseTestingConfig,
 )
-from lib.utils.config.env_types import EnvType, get_secret
+from lib.utils.config.env_types import EnvType, get_secret, load_env
 
 
-if "CONFIG" not in os.environ:
-    load_dotenv()
+load_env()
 
 
 class Config(BaseConfig): ...
@@ -44,7 +40,7 @@ def get_config() -> Config:
     if config_name not in CONFIG_MAP:
         raise ValueError(f"Unknown config: {config_name}")
 
-    env_type: EnvType = EnvType(config_name)
+    env_type = EnvType(config_name)
     config_class = CONFIG_MAP[env_type]
 
     return config_class()
