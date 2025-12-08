@@ -43,6 +43,9 @@ services:
       - "9093:9093"
     container_name: gridways-kafka
     environment:
+      KAFKA_HEAP_OPTS: "-Xmx1g -Xms1g"  # 1GB heap для Kafka
+      KAFKA_JVM_PERFORMANCE_OPTS: "-server -XX:+UseG1GC -XX:MaxGCPauseMillis=20 -XX:InitiatingHeapOccupancyPercent=35 -XX:+ExplicitGCInvokesConcurrent -Djava.awt.headless=true"
+
       # параметры KRaft
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: 'broker,controller'
@@ -90,6 +93,71 @@ services:
       timeout: 10s
       retries: 3
 
+  elasticsearch:
+    <<: *common
+    image: elasticsearch:8.11.0
+    container_name: gridways-elk
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      # Отключаем логи Elasticsearch
+      - logger.level=ERROR  # Изменили с WARN на ERROR
+      - logger.org.elasticsearch=ERROR
+      - logger.discovery=ERROR
+      - logger.action=ERROR
+      - logger.org.elasticsearch.cluster.service=ERROR
+      - logger.org.elasticsearch.indices=ERROR
+#    environment:
+#      - discovery.type=single-node
+#      - xpack.security.enabled=false
+#      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+#      - logger.level=WARN
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck: # ⬅️ ДОБАВЬТЕ HEALTHCHECK!
+      test: [ "CMD", "curl", "-f", "http://localhost:9200" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  kibana:
+    <<: *common
+    image: kibana:8.11.0
+    container_name: gridways-kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - SERVER_HOST=0.0.0.0
+      - NODE_OPTIONS="--max-old-space-size=512"
+      # Отключаем логи Kibana
+      - LOGGING_QUIET=true  # Тихий режим
+      - LOGGING_VERBOSE=false
+      - LOGGING_ROOT_LEVEL=error  # Только ошибки
+      # Отключаем конкретные логгеры Kibana
+      - logging.loggers[0].name=elasticsearch
+      - logging.loggers[0].level=error
+      - logging.loggers[1].name=plugins
+      - logging.loggers[1].level=error
+      - logging.loggers[2].name=plugins.alerting
+      - logging.loggers[2].level=error
+      - logging.loggers[3].name=plugins.ruleRegistry
+      - logging.loggers[3].level=error
+      - logging.loggers[4].name=plugins.observability
+      - logging.loggers[4].level=error
+#    environment:
+#      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+#      - SERVER_HOST=0.0.0.0
+#      - NODE_OPTIONS="--max-old-space-size=512"
+#      - logging.verbose=false
+    depends_on:
+      elasticsearch:
+        condition: service_healthy  # ⬅️ ЖДЕМ ЗДОРОВЬЯ ES
+
   # ============ МИКРОСЕРВИСЫ ============
   migrant:
     <<: *common
@@ -112,6 +180,8 @@ services:
       - "8000"
     depends_on:
       - migrant
+      - elasticsearch
+      - kibana
 
   rest:
     <<: *common
@@ -132,15 +202,17 @@ services:
     expose:
       - "8000"
 
-  cron:
-    <<: *common
-    container_name: gridways-cron
-    restart: unless-stopped
-    build:
-      context: .
-      dockerfile: services/cron/docker/Dockerfile
-    depends_on:
-      - migrant
+#  cron:
+#    <<: *common
+#    container_name: gridways-cron
+#    restart: unless-stopped
+#    build:
+#      context: .
+#      dockerfile: services/cron/docker/Dockerfile
+#    depends_on:
+#      - migrant
+#      - elasticsearch
+#      - kibana
 
   events:
     <<: *common
@@ -152,6 +224,7 @@ services:
     depends_on:
       - migrant
       - kafka
+      - kibana
 
 networks:
   app-network:
@@ -161,3 +234,4 @@ volumes:
   docker_postgres_data:
   static_volume:
   media_volume:
+  elasticsearch_data:

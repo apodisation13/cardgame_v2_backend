@@ -4,6 +4,7 @@ import logging.config
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from lib.utils.db.pool import Database
+from lib.utils.elastic_logger import ElasticLoggerManager
 from services.api.app.apps.api_docs.routes import router as swagger_router
 from services.api.app.apps.auth.routes import router as users_router
 from services.api.app.config import get_config as get_app_settings
@@ -15,8 +16,21 @@ from services.api.app.exceptions.handlers import add_exceptions
 async def lifespan(app: FastAPI):
     app.state.config = get_app_settings()
 
-    logger = logging.getLogger(__name__)
+    # logger = logging.getLogger(__name__)
+    # logging.config.dictConfig(app.state.config.LOGGING)
+    #
+    # logger = setup_elastic_logging(
+    #     logger=logger,
+    #     service_name="fast-api",
+    # )
+
     logging.config.dictConfig(app.state.config.LOGGING)
+    elastic_logger_manager = ElasticLoggerManager()
+    elastic_logger_manager.initialize(
+        service_name="fast-api",
+        delay_seconds=5,
+    )
+    logger = logging.getLogger(__name__)
 
     logger.info("Starting API")
 

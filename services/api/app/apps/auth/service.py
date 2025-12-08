@@ -1,3 +1,5 @@
+import logging
+
 from asyncpg import UniqueViolationError
 
 from fastapi import HTTPException, status
@@ -9,6 +11,7 @@ from services.api.app.apps.auth.schemas import Token, User, UserLogin, UserRegis
 from services.api.app.config import Config
 from services.api.app.exceptions import UserAlreadyExistsError, UserNotFoundError
 
+logger = logging.getLogger(__name__)
 
 class AuthService:
     def __init__(
@@ -26,6 +29,8 @@ class AuthService:
 
         # accounts = [UsersList(id=row['id'], username=row['username'], email="s") for row in result]
         # return [UsersList(**dict(row)) for row in result]
+
+        logger.info("RESULT!!!!!!!!!!!!!!!!!!!!! %s", result)
 
         await event_sender.create_event(
             event_type=EventType.EVENT_1,
