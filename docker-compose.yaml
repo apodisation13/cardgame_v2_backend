@@ -4,6 +4,8 @@
 #        Системных переменных окружения
 #    env_file загружает переменные ВНУТРЬ контейнера, но НЕ для подстановки в docker-compose.yml
 
+# image, container_name, depends, restarts, build, volumes, ports, env, health, command
+
 
 # Общие настройки для всех сервисов
 x-common: &common
@@ -18,6 +20,10 @@ services:
     <<: *common
     image: postgres:15-alpine
     container_name: gridways-postgres
+    volumes:
+      - docker_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT_OUTSIDE}:5432"  # вот это порт, который будет торчать наружу
     environment:
       # вот это будет считываться по умолчанию из файла .env, или из того, который передать ПРИ СТАРТЕ
       # docker-compose --env-file .env.docker up --build
@@ -25,10 +31,6 @@ services:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - docker_postgres_data:/var/lib/postgresql/data
-    ports:
-      - "${DB_PORT_OUTSIDE}:5432"  # вот это порт, который будет торчать наружу
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
       interval: 10s
@@ -38,10 +40,10 @@ services:
   kafka:
     <<: *common
     image: confluentinc/cp-kafka:latest
+    container_name: gridways-kafka
     ports:
       - "9092:9092"
       - "9093:9093"
-    container_name: gridways-kafka
     environment:
       KAFKA_HEAP_OPTS: "-Xmx1g -Xms1g"  # 1GB heap для Kafka
       KAFKA_JVM_PERFORMANCE_OPTS: "-server -XX:+UseG1GC -XX:MaxGCPauseMillis=20 -XX:InitiatingHeapOccupancyPercent=35 -XX:+ExplicitGCInvokesConcurrent -Djava.awt.headless=true"
@@ -74,75 +76,108 @@ services:
       # KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0  # по умолчанию 3000
       # KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'  # и так по умолчанию
 
-  nginx:
-    <<: *common
-    image: nginx:1.25-alpine
-    container_name: gridways-nginx
-    ports:
-      - "${APP_PORT_OUTSIDE}:80"  # локально будет виден этот порт -> а в контейнере этот
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro  # так мы подгружаем туда свой nginx.conf файл!
-      - static_volume:/app/static:ro  # Монтируем volume - из контейнера реста!
-      - media_volume:/app/media:ro  # Монтируем volume - из контейнера реста!
-    depends_on:
-      - rest
-      - api
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:80/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
   elasticsearch:
     <<: *common
     image: elasticsearch:8.11.0
     container_name: gridways-elk
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
     environment:
-      - discovery.type=single-node
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-
-#      - xpack.security.enabled=false
+      # основное - нужна ли аутентификация
       - xpack.security.enabled=true
       - xpack.security.authc.api_key.enabled=true
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
 
-      # Отключаем логи Elasticsearch
-      - logger.level=ERROR  # Изменили с WARN на ERROR
+      # настройки сервера
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+
+      # отключаем логи Elasticsearch
+      - logger.level=ERROR
       - logger.org.elasticsearch=ERROR
       - logger.discovery=ERROR
       - logger.action=ERROR
       - logger.org.elasticsearch.cluster.service=ERROR
       - logger.org.elasticsearch.indices=ERROR
-    ports:
-      - "9200:9200"
-    volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
-    healthcheck: # ⬅️ ДОБАВЬТЕ HEALTHCHECK!
-#      test: [ "CMD", "curl", "-f", "http://localhost:9200" ]
+    healthcheck:
       test: ["CMD-SHELL", "curl -f -u elastic:${ELASTIC_PASSWORD} http://localhost:9200 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
 
+  elasticsearch-setup:
+    <<: *common
+    image: curlimages/curl:latest
+    container_name: gridways-elk-setup
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    restart: "no"
+    environment:
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - KIBANA_SYSTEM_PASSWORD=${KIBANA_SYSTEM_PASSWORD}
+    command:
+      - sh
+      - -c
+      - |
+        echo "Setting up Kibana system user password..."
+        curl -X POST -u "elastic:$${ELASTIC_PASSWORD}" \
+          -H "Content-Type: application/json" \
+          "http://elasticsearch:9200/_security/user/kibana_system/_password" \
+          -d '{"password": "'"$${KIBANA_SYSTEM_PASSWORD}"'"}'
+        echo ""
+        echo "Setup complete!"
+
   kibana:
     <<: *common
     image: kibana:8.11.0
     container_name: gridways-kibana
-    ports:
-      - "5601:5601"
+    depends_on:
+      elasticsearch-setup:
+        condition: service_completed_successfully
+    expose:
+      - "5601"
     environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - SERVER_HOST=0.0.0.0
-      - NODE_OPTIONS="--max-old-space-size=512"
+      # аутентификация
+      - XPACK_SECURITY_ENABLED=true
 
+      # данные подключения
       - ELASTICSEARCH_USERNAME=kibana_system
-      - ELASTICSEARCH_PASSWORD=KibanaPassword123!
+      - ELASTICSEARCH_PASSWORD=${KIBANA_SYSTEM_PASSWORD}
+
+      # ключевые настройки для работы через прокси
+      - SERVER_BASEPATH=/elk
+      - SERVER_REWRITEBASEPATH=true
+      - SERVER_PUBLICBASEURL=http://localhost:${APP_PORT_OUTSIDE}/elk
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - NODE_OPTIONS="--max-old-space-size=512"
+      - SERVER_HOST=0.0.0.0
+      - SERVER_NAME=kibana
+      - SERVER_PORT=5601
+
+      # отключаем ненужное
+      - XPACK_FLEET_ENABLED=false
+      - XPACK_APM_ENABLED=false
+      - TELEMETRY_ENABLED=false
+
+      # разрешить куки без HTTPS
+      - xpack.security.secureCookies=false
+      - xpack.security.sameSiteCookies=Lax
+      - xpack.security.session.idleTimeout="1h"
+      - xpack.security.session.lifespan="24h"
+
+      # ключ для шифрования сессий (минимум 32 символа)
+      - xpack.security.encryptionKey="something-at-least-32-characters-long-here"
+      - xpack.encryptedSavedObjects.encryptionKey="something-at-least-32-characters-long-here"
+      - xpack.reporting.encryptionKey="something-at-least-32-characters-long-here"
 
       # Отключаем логи Kibana
-      - LOGGING_QUIET=true  # Тихий режим
+      - LOGGING_QUIET=true
       - LOGGING_VERBOSE=false
-      - LOGGING_ROOT_LEVEL=error  # Только ошибки
+      - LOGGING_ROOT_LEVEL=error
 
       # Отключаем конкретные логгеры Kibana
       - logging.loggers[0].name=elasticsearch
@@ -156,77 +191,93 @@ services:
       - logging.loggers[4].name=plugins.observability
       - logging.loggers[4].level=error
 
+  nginx:
+    <<: *common
+    image: nginx:1.25-alpine
+    container_name: gridways-nginx
     depends_on:
-      elasticsearch:
-        condition: service_healthy  # ⬅️ ЖДЕМ ЗДОРОВЬЯ ES
+      - rest
+      - api
+      - kibana
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro  # так мы подгружаем туда свой nginx.conf файл!
+      - static_volume:/app/static:ro  # Монтируем volume - из контейнера реста!
+      - media_volume:/app/media:ro  # Монтируем volume - из контейнера реста!
+    ports:
+      - "${APP_PORT_OUTSIDE}:80"  # локально будет виден этот порт -> а в контейнере этот
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:80/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # ============ МИКРОСЕРВИСЫ ============
   migrant:
     <<: *common
     container_name: gridways-migrant
-    build:
-      context: .
-      dockerfile: services/migrant/docker/Dockerfile
     depends_on:
       postgres:
         condition: service_healthy
+    build:
+      context: .
+      dockerfile: services/migrant/docker/Dockerfile
 
   api:
     <<: *common
     container_name: gridways-api
+    depends_on:
+      - migrant
+      - elasticsearch
+      - kibana
     restart: unless-stopped
     build:
       context: .
       dockerfile: services/api/docker/Dockerfile
     expose:
       - "8000"
-    depends_on:
-      - migrant
-      - elasticsearch
-      - kibana
 
   rest:
     <<: *common
     container_name: gridways-rest
+    depends_on:
+      - migrant
     build:
       context: .
       dockerfile: services/rest/docker/Dockerfile
     volumes:
       - static_volume:/app/services/rest/app/staticfiles
       - media_volume:/app/services/rest/app/media
-    depends_on:
-      - migrant
+    expose:
+      - "8000"
     command: >
       sh -c "cd services/rest/app &&
              python manage.py collectstatic --noinput &&
              python manage.py migrate &&
              gunicorn settings.wsgi:application --bind 0.0.0.0:8000 --workers 2"
-    expose:
-      - "8000"
 
-#  cron:
-#    <<: *common
-#    container_name: gridways-cron
-#    restart: unless-stopped
-#    build:
-#      context: .
-#      dockerfile: services/cron/docker/Dockerfile
-#    depends_on:
-#      - migrant
-#      - elasticsearch
-#      - kibana
+  cron:
+    <<: *common
+    container_name: gridways-cron
+    depends_on:
+      - migrant
+      - elasticsearch
+      - kibana
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: services/cron/docker/Dockerfile
 
   events:
     <<: *common
     container_name: gridways-events
-    restart: unless-stopped
-    build:
-      context: .
-      dockerfile: services/events/docker/Dockerfile
     depends_on:
       - migrant
       - kafka
       - kibana
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: services/events/docker/Dockerfile
 
 networks:
   app-network:
