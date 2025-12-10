@@ -254,7 +254,7 @@ services:
         echo "Installing APM integration..."
         sleep 30
         
-        curl -v -X POST \
+        curl -v POST \
           -u "elastic:$${ELASTIC_PASSWORD}" \
           -H "Content-Type: application/json" \
           -H "kbn-xsrf: true" \
@@ -263,26 +263,6 @@ services:
 
         echo ""
         echo "APM integration setup complete!"
-
-  nginx:
-    <<: *common
-    image: nginx:1.25-alpine
-    container_name: gridways-nginx
-    depends_on:
-      - rest
-      - api
-      - kibana
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro  # так мы подгружаем туда свой nginx.conf файл!
-      - static_volume:/app/static:ro  # Монтируем volume - из контейнера реста!
-      - media_volume:/app/media:ro  # Монтируем volume - из контейнера реста!
-    ports:
-      - "${APP_PORT_OUTSIDE}:80"  # локально будет виден этот порт -> а в контейнере этот
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:80/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
   # ============ МИКРОСЕРВИСЫ ============
   migrant:
@@ -303,6 +283,7 @@ services:
       - elasticsearch
       - kibana
       - apm-server
+      - kafka
     restart: unless-stopped
     build:
       context: .
@@ -326,6 +307,7 @@ services:
     container_name: gridways-rest
     depends_on:
       - migrant
+      - kibana
     build:
       context: .
       dockerfile: services/rest/docker/Dockerfile
@@ -345,7 +327,6 @@ services:
     container_name: gridways-cron
     depends_on:
       - migrant
-      - elasticsearch
       - kibana
     restart: unless-stopped
     build:
@@ -363,6 +344,27 @@ services:
     build:
       context: .
       dockerfile: services/events/docker/Dockerfile
+
+  # ============ ОСНОВНОЙ СЕРВЕР ============
+  nginx:
+    <<: *common
+    image: nginx:1.25-alpine
+    container_name: gridways-nginx
+    depends_on:
+      - rest
+      - api
+      - kibana
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro  # так мы подгружаем туда свой nginx.conf файл!
+      - static_volume:/app/static:ro  # Монтируем volume - из контейнера реста!
+      - media_volume:/app/media:ro  # Монтируем volume - из контейнера реста!
+    ports:
+      - "${APP_PORT_OUTSIDE}:80"  # локально будет виден этот порт -> а в контейнере этот
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:80/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 networks:
   app-network:
