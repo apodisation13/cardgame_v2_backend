@@ -3,6 +3,7 @@ import os
 from elasticapm import Client, get_client
 from elasticapm.contrib.starlette import make_apm_client
 from lib.utils.config.base import BaseConfig
+from lib.utils.config.env_types import EnvType
 
 
 class ElasticTracerManager:
@@ -20,26 +21,21 @@ class ElasticTracerManager:
         config: BaseConfig,
         service_name: str,
         environment: str = "development",
-    ) -> bool:
+    ) -> None:
+        if config.ENV_TYPE not in EnvType.need_elastic():
+            return None
+
         # Проверяем, есть ли уже глобальный клиент (избегаем дублирования)
         existing_client = get_client()
         if existing_client is not None:
             print("APM: reusing existing client")
             self._apm_client = existing_client
             self._initialized = True
-            return False
+            return
 
         if self._initialized:
             print("APM: already initialized by this manager")
-            return False
-
-        # # Читаем из стандартных переменных elastic-apm
-        # apm_enabled = os.getenv("ELASTIC_APM_ENABLED", "true").lower() == "true"
-        #
-        # if not apm_enabled:
-        #     print("APM disabled")
-        #     self._initialized = True
-        #     return True
+            return
 
         # Получаем настройки из переменных окружения
         apm_server_url = config.ELASTIC_APM_SERVER_URL
@@ -66,10 +62,8 @@ class ElasticTracerManager:
             self._apm_client = make_apm_client(config)
             self._initialized = True
             print(f"APM initialized: {service_name} -> {apm_server_url}")
-            return True
         except Exception as e:
             print(f"Failed to initialize APM: {e}")
-            return False
 
     @property
     def client(self) -> Client:

@@ -5,6 +5,7 @@ import threading
 import time
 
 from lib.utils.config.base import BaseConfig
+from lib.utils.config.env_types import EnvType
 
 
 # КРИТИЧНО: Отключаем логи ДО импорта Elasticsearch!
@@ -203,7 +204,6 @@ def setup_elastic_logging_global(
     return root_logger
 
 
-# Синглтон для управления единственным экземпляром
 class ElasticLoggerManager:
     _instance = None
     _initialized = False
@@ -219,6 +219,9 @@ class ElasticLoggerManager:
         service_name: str,
         delay_seconds: int = 5,
     ) -> None:
+        if config.ENV_TYPE not in EnvType.need_elastic():
+            return None
+
         if not self._initialized:
             setup_elastic_logging_global(
                 config=config,
