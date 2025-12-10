@@ -4,7 +4,6 @@ import logging.config
 from elasticapm.contrib.starlette import ElasticAPM
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
 from lib.utils.config.env_types import EnvType
 from lib.utils.db.pool import Database
 from lib.utils.elk.elastic_logger import ElasticLoggerManager

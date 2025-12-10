@@ -1,7 +1,7 @@
-from elasticapm import get_client
 import os
-from elasticapm.contrib.starlette import make_apm_client
 
+from elasticapm import Client, get_client
+from elasticapm.contrib.starlette import make_apm_client
 from lib.utils.config.base import BaseConfig
 
 
@@ -10,7 +10,7 @@ class ElasticTracerManager:
     _initialized = False
     _apm_client = None
 
-    def __new__(cls):
+    def __new__(cls) -> "ElasticTracerManager":
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
@@ -48,20 +48,16 @@ class ElasticTracerManager:
             "SERVICE_NAME": service_name,
             "SERVER_URL": apm_server_url,
             "ENVIRONMENT": environment,
-
             # Аутентификация
             "SECRET_TOKEN": config.ELASTIC_APM_SECRET_TOKEN,
-
             # Настройки трейсинга
             "CAPTURE_BODY": "all",  # off, errors, transactions, all
             "CAPTURE_HEADERS": True,
             "TRANSACTION_SAMPLE_RATE": 1.0,  # 1.0 = 100% транзакций
-
             # Производительность
             "SPAN_COMPRESSION_ENABLED": True,
             "SPAN_COMPRESSION_EXACT_MATCH_MAX_DURATION": "50ms",
             "SPAN_COMPRESSION_SAME_KIND_MAX_DURATION": "5ms",
-
             # Логирование самого APM
             "DEBUG": os.getenv("APM_DEBUG", "false").lower() == "true",
         }
@@ -76,7 +72,7 @@ class ElasticTracerManager:
             return False
 
     @property
-    def client(self):
+    def client(self) -> Client:
         return self._apm_client
 
     @property

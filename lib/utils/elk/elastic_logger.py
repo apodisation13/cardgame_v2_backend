@@ -1,10 +1,11 @@
-import logging
-import time
 from datetime import datetime
+import logging
 import os
 import threading
+import time
 
 from lib.utils.config.base import BaseConfig
+
 
 # КРИТИЧНО: Отключаем логи ДО импорта Elasticsearch!
 logging.getLogger("elastic_transport").setLevel(logging.WARNING)
@@ -14,7 +15,7 @@ logging.getLogger("urllib3").setLevel(logging.WARNING)
 logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
 
 # Теперь импортируем
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch  # noqa: E402
 
 
 class ElasticsearchHandler(logging.Handler):
@@ -22,14 +23,14 @@ class ElasticsearchHandler(logging.Handler):
 
     # Список логгеров, которые нужно игнорировать
     IGNORED_LOGGERS = {
-        'elasticsearch',
-        'elastic_transport',
-        'elastic_transport.transport',
-        'urllib3',
-        'urllib3.connectionpool',
-        'urllib3.util',
-        'urllib3.util.retry',
-        'es_handler_'
+        "elasticsearch",
+        "elastic_transport",
+        "elastic_transport.transport",
+        "urllib3",
+        "urllib3.connectionpool",
+        "urllib3.util",
+        "urllib3.util.retry",
+        "es_handler_",
     }
 
     def __init__(
@@ -59,20 +60,23 @@ class ElasticsearchHandler(logging.Handler):
             )
 
             info = self.es.info()
-            version = info['version']['number']
+            version = info["version"]["number"]
             print(f"✅ Подключение к Elasticsearch {version} установлено")
 
         except Exception as e:
             print(f"❌ Ошибка подключения к Elasticsearch: {e}")
             self.es = None
 
-    def emit(self, record):
+    def emit(
+        self,
+        record: logging.LogRecord,
+    ) -> None:
         # КРИТИЧНО: Игнорируем логи от ES библиотек
         if any(record.name.startswith(ignored) for ignored in self.IGNORED_LOGGERS):
             return
 
         # Предотвращаем рекурсию
-        if getattr(self._sending, 'in_progress', False):
+        if getattr(self._sending, "in_progress", False):
             return
 
         if not self.es:
@@ -98,22 +102,41 @@ class ElasticsearchHandler(logging.Handler):
 
             # Добавляем extra поля
             for key, value in record.__dict__.items():
-                if key not in {'name', 'msg', 'args', 'created', 'filename', 'funcName',
-                               'levelname', 'levelno', 'lineno', 'module', 'msecs',
-                               'pathname', 'process', 'processName', 'relativeCreated',
-                               'thread', 'threadName', 'exc_info', 'exc_text', 'stack_info',
-                               'getMessage', 'taskName'} and not key.startswith('_'):
+                if key not in {
+                    "name",
+                    "msg",
+                    "args",
+                    "created",
+                    "filename",
+                    "funcName",
+                    "levelname",
+                    "levelno",
+                    "lineno",
+                    "module",
+                    "msecs",
+                    "pathname",
+                    "process",
+                    "processName",
+                    "relativeCreated",
+                    "thread",
+                    "threadName",
+                    "exc_info",
+                    "exc_text",
+                    "stack_info",
+                    "getMessage",
+                    "taskName",
+                } and not key.startswith("_"):
                     try:
                         str(value)  # Проверка сериализации
                         log_data[key] = value
-                    except:
+                    except Exception:
                         pass
 
             # Отправляем в Elasticsearch БЕЗ логирования
             self.es.index(
                 index=f"logs-{self.service_name}-{datetime.now().strftime('%Y.%m.%d')}",
                 document=log_data,
-                refresh=False
+                refresh=False,
             )
 
         except Exception:
@@ -126,19 +149,19 @@ def setup_elastic_logging_global(
     config: BaseConfig,
     service_name: str,
     delay_seconds: int = 5,
-):
+) -> logging.Logger:
     # ВАЖНО: Отключаем логи ДО всего остального
     for logger_name in [
-        'elasticsearch',
-        'elasticsearch.trace',
-        'elastic_transport',
-        'elastic_transport.transport',
-        'elastic_transport.node',
-        'elastic_transport.node_pool',
-        'urllib3',
-        'urllib3.connectionpool',
-        'urllib3.util',
-        'urllib3.util.retry'
+        "elasticsearch",
+        "elasticsearch.trace",
+        "elastic_transport",
+        "elastic_transport.transport",
+        "elastic_transport.node",
+        "elastic_transport.node_pool",
+        "urllib3",
+        "urllib3.connectionpool",
+        "urllib3.util",
+        "urllib3.util.retry",
     ]:
         logging.getLogger(logger_name).setLevel(logging.WARNING)
         logging.getLogger(logger_name).propagate = False
@@ -152,7 +175,7 @@ def setup_elastic_logging_global(
     # Проверяем, не добавлен ли уже
     for handler in root_logger.handlers:
         if isinstance(handler, ElasticsearchHandler):
-            print(f"⚠️ Elasticsearch handler уже добавлен")
+            print("⚠️ Elasticsearch handler уже добавлен")
             return root_logger
 
     # Создаем хендлер
@@ -167,7 +190,7 @@ def setup_elastic_logging_global(
         def filter(
             self,
             record: logging.LogRecord,
-        ):
+        ) -> bool:
             # Исключаем системные логгеры
             return not any(record.name.startswith(ignored) for ignored in ElasticsearchHandler.IGNORED_LOGGERS)
 
@@ -185,7 +208,7 @@ class ElasticLoggerManager:
     _instance = None
     _initialized = False
 
-    def __new__(cls):
+    def __new__(cls) -> "ElasticLoggerManager":
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
@@ -195,7 +218,7 @@ class ElasticLoggerManager:
         config: BaseConfig,
         service_name: str,
         delay_seconds: int = 5,
-    ):
+    ) -> None:
         if not self._initialized:
             setup_elastic_logging_global(
                 config=config,
@@ -203,5 +226,3 @@ class ElasticLoggerManager:
                 delay_seconds=delay_seconds,
             )
             self._initialized = True
-            return True
-        return False

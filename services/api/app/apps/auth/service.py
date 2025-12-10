@@ -11,7 +11,9 @@ from services.api.app.apps.auth.schemas import Token, User, UserLogin, UserRegis
 from services.api.app.config import Config
 from services.api.app.exceptions import UserAlreadyExistsError, UserNotFoundError
 
+
 logger = logging.getLogger(__name__)
+
 
 class AuthService:
     def __init__(

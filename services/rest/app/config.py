@@ -9,9 +9,10 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(
 from lib.utils.config.base import (
     BaseConfig,
     BaseDevelopmentLocalConfig,
+    BaseDockerLocalConfig,
     BaseProductionConfig,
     BaseTestLocalConfig,
-    BaseTestingConfig, BaseDockerLocalConfig,
+    BaseTestingConfig,
 )
 from lib.utils.config.env_types import EnvType, get_secret, load_env
 
