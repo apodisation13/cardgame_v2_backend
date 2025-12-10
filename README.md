@@ -27,3 +27,6 @@ docker-compose --env-file .env.docker up --build
 
 # start docker
 colima start --cpu 4 --memory 6 --disk 20
+
+# старт только Кафки, нужна для ивентов
+docker-compose up kafka -d

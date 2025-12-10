@@ -67,6 +67,13 @@ class BaseConfig:
     # SMS
     SMS_TOKEN: str = get_secret("SMS_TOKEN")
 
+    # Elastic
+    ELASTIC_HOST: str = get_secret("ELASTIC_HOST", default="http://elasticsearch:9200")
+    ELASTIC_USERNAME: str = get_secret("ELASTIC_USERNAME")
+    ELASTIC_PASSWORD: str = get_secret("ELASTIC_PASSWORD")
+    ELASTIC_APM_SERVER_URL = get_secret("ELASTIC_APM_SERVER_URL", default="http://apm-server:8200")
+    ELASTIC_APM_SECRET_TOKEN = get_secret("ELASTIC_APM_SECRET_TOKEN")
+
 
 class BaseTestingConfig(BaseConfig):
     ENV_TYPE = EnvType.TESTING
@@ -100,11 +107,18 @@ class BaseTestLocalConfig(BaseConfig):
     TESTING: bool = True
 
 
+class BaseDockerLocalConfig(BaseConfig):
+    ENV_TYPE = EnvType.DOCKER_LOCAL
+
+    KAFKA_BOOTSTRAP_SERVERS: str = get_secret("KAFKA_BOOTSTRAP_SERVERS", default="kafka:29092")
+
+
 CONFIG_MAP = {
     EnvType.TEST_LOCAL: BaseTestLocalConfig,
     EnvType.DEVELOPMENT_LOCAL: BaseDevelopmentLocalConfig,
     EnvType.TESTING: BaseTestingConfig,
     EnvType.PRODUCTION: BaseProductionConfig,
+    EnvType.DOCKER_LOCAL: BaseDockerLocalConfig,
 }
 
 
