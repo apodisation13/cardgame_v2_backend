@@ -191,6 +191,79 @@ services:
       - logging.loggers[4].name=plugins.observability
       - logging.loggers[4].level=error
 
+  apm-server:
+    <<: *common
+    image: elastic/apm-server:8.11.0
+    container_name: gridways-apm
+    depends_on:
+      - elasticsearch
+      - kibana
+    ports:
+      - "8200:8200"
+    environment:
+      - output.elasticsearch.hosts=["http://elasticsearch:9200"]
+      - output.elasticsearch.username=elastic
+      - output.elasticsearch.password=${ELASTIC_PASSWORD}
+      - apm-server.host=0.0.0.0:8200
+      - apm-server.auth.secret_token=${APM_SECRET_TOKEN}
+      - apm-server.kibana.enabled=true
+      - apm-server.kibana.host=http://kibana:5601
+      - apm-server.kibana.username=elastic
+      - apm-server.kibana.password=${ELASTIC_PASSWORD}
+      - apm-server.kibana.path=/elk
+      - apm-server.rum.enabled=true
+      - apm-server.rum.allow_origins=["*"]
+      - apm-server.max_event_size=307200
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8200/ || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    command: >
+      apm-server -e
+      -E logging.level=error
+      -E logging.metrics.enabled=false
+      -E apm-server.host=0.0.0.0:8200
+      -E apm-server.auth.secret_token=${APM_SECRET_TOKEN}
+      -E apm-server.rum.enabled=true
+      -E output.elasticsearch.hosts=["http://elasticsearch:9200"]
+      -E output.elasticsearch.username=elastic
+      -E output.elasticsearch.password=${ELASTIC_PASSWORD}
+      -E setup.kibana.host=http://kibana:5601
+      -E setup.kibana.username=elastic
+      -E setup.kibana.password=${ELASTIC_PASSWORD}
+      -E setup.template.enabled=true
+      -E setup.template.overwrite=true
+      -E apm-server.data_streams.wait_for_integration=false
+
+  apm-integration-setup:
+    <<: *common
+    image: curlimages/curl:latest
+    container_name: gridways-apm-setup
+    depends_on:
+      - kibana
+      - apm-server
+    restart: "no"
+    environment:
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+    command:
+      - sh
+      - -c
+      - |
+        echo "Installing APM integration..."
+        sleep 30
+        
+        curl -v -X POST \
+          -u "elastic:$${ELASTIC_PASSWORD}" \
+          -H "Content-Type: application/json" \
+          -H "kbn-xsrf: true" \
+          "http://kibana:5601/elk/api/fleet/epm/packages/apm/8.11.0" \
+          -d "{\"force\": true}"
+
+        echo ""
+        echo "APM integration setup complete!"
+
   nginx:
     <<: *common
     image: nginx:1.25-alpine
@@ -229,12 +302,24 @@ services:
       - migrant
       - elasticsearch
       - kibana
+      - apm-server
     restart: unless-stopped
     build:
       context: .
       dockerfile: services/api/docker/Dockerfile
     expose:
       - "8000"
+    environment:
+      - APM_SERVER_URL=http://apm-server:8200
+      - APM_SECRET_TOKEN=${APM_SECRET_TOKEN}
+      - APM_ENABLED=true
+      - APM_DEBUG=false
+
+      - ELASTIC_APM_SERVICE_NAME=fast-api
+      - ELASTIC_APM_SERVER_URL=http://apm-server:8200
+      - ELASTIC_APM_SECRET_TOKEN=${APM_SECRET_TOKEN}
+      - ELASTIC_APM_ENVIRONMENT=development
+      - ELASTIC_APM_ENABLED=true
 
   rest:
     <<: *common

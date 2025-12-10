@@ -4,6 +4,7 @@ import sys
 from datetime import datetime
 import os
 import threading
+from typing import Optional
 
 # КРИТИЧНО: Отключаем логи ДО импорта Elasticsearch!
 logging.getLogger("elastic_transport").setLevel(logging.WARNING)
@@ -192,3 +193,185 @@ class ElasticLoggerManager:
     def get_logger(self, name):
         """Получить логгер (будет автоматически писать в ES если инициализирован)"""
         return logging.getLogger(name)
+
+
+# from elasticapm.contrib.starlette import make_apm_client
+
+logger = logging.getLogger(__name__)
+from elasticapm import Client, get_client
+
+# class ElasticAPMManager:
+#     """
+#     Синглтон для управления Elastic APM (аналогично ElasticLoggerManager)
+#     Инициализируется ОДИН раз при старте приложения
+#     """
+#     _instance = None
+#     _initialized: bool = False
+#     _apm_client = None
+#
+#     def __new__(cls):
+#         if cls._instance is None:
+#             cls._instance = super().__new__(cls)
+#         return cls._instance
+#
+#     def initialize(
+#         self,
+#         service_name: str,
+#         server_url: str = "http://apm-server:8200",
+#         environment: str = "development",
+#         secret_token: str = "",
+#         capture_body: str = "all",
+#         transaction_sample_rate: float = 1.0,
+#         debug: bool = False
+#     ) -> bool:
+#         if self._initialized:
+#             logger.warning("APM уже инициализирован ранее. Пропускаем повторную инициализацию.")
+#             return False
+#
+#         try:
+#             apm_config = {
+#                 'SERVER_URL': server_url,
+#                 'SERVICE_NAME': service_name,
+#                 'ENVIRONMENT': environment,
+#
+#                 # Настройки трассировки
+#                 'COLLECT_LOCAL_VARIABLES': 'all',
+#                 'CAPTURE_BODY': capture_body,
+#                 'TRANSACTION_SAMPLE_RATE': transaction_sample_rate,
+#
+#                 # Для отладки
+#                 'DEBUG': debug,
+#
+#                 # Асинхронный режим (для FastAPI)
+#                 'ASYNC_MODE': True,
+#             }
+#
+#             # Добавляем секретный токен, если задан
+#             if secret_token:
+#                 apm_config['SECRET_TOKEN'] = secret_token
+#                 logger.debug(f"APM использует секретный токен: {secret_token[:5]}...")
+#
+#             # Создаем APM клиент
+#             self._apm_client = Client(apm_config)
+#
+#             self._initialized = True
+#
+#             logger.info(
+#                 f"✅ Elastic APM инициализирован\n"
+#                 f"   Сервис: {service_name}\n"
+#                 f"   Окружение: {environment}\n"
+#                 f"   APM Server: {server_url}\n"
+#                 f"   Семплирование: {transaction_sample_rate * 100}%"
+#             )
+#             return True
+#
+#         except Exception as e:
+#             logger.error(f"❌ Ошибка инициализации Elastic APM: {e}")
+#             self._apm_client = None
+#             self._initialized = False
+#             return False
+#
+#     def close(self):
+#         """Закрыть APM клиент (вызывать при завершении приложения)"""
+#         if self._initialized and self._apm_client:
+#             try:
+#                 self._apm_client.close()
+#                 logger.info("APM клиент закрыт")
+#             except Exception as e:
+#                 logger.error(f"Ошибка при закрытии APM клиента: {e}")
+#
+#             self._apm_client = None
+#             self._initialized = False
+#
+#     @property
+#     def client(self):
+#         if not self._initialized:
+#             logger.warning("APM клиент запрошен до инициализации. Сначала вызовите initialize()")
+#         return self._apm_client
+
+
+# app/core/apm.py
+
+import os
+from elasticapm.contrib.starlette import make_apm_client
+
+
+
+class APMManager:
+    _instance = None
+    _initialized = False
+    _apm_client = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def initialize(
+        self,
+        service_name: str = "fast-api",
+        environment: str = "development",
+    ) -> bool:
+        # Проверяем, есть ли уже глобальный клиент (избегаем дублирования)
+        existing_client = get_client()
+        if existing_client is not None:
+            print("APM: reusing existing client")
+            self._apm_client = existing_client
+            self._initialized = True
+            return False
+
+        if self._initialized:
+            print("APM: already initialized by this manager")
+            return False
+
+        # Читаем из стандартных переменных elastic-apm
+        apm_enabled = os.getenv("ELASTIC_APM_ENABLED", "true").lower() == "true"
+
+        if not apm_enabled:
+            print("APM disabled")
+            self._initialized = True
+            return True
+
+        # Получаем настройки из переменных окружения
+        apm_server_url = os.getenv("ELASTIC_APM_SERVER_URL", "http://apm-server:8200")
+        apm_secret_token = os.getenv("ELASTIC_APM_SECRET_TOKEN", "some-secret-key")
+
+        config = {
+            "SERVICE_NAME": service_name,
+            "SERVER_URL": apm_server_url,
+            "ENVIRONMENT": environment,
+
+            # Аутентификация
+            "SECRET_TOKEN": apm_secret_token,
+
+            # Настройки трейсинга
+            "CAPTURE_BODY": "all",  # off, errors, transactions, all
+            "CAPTURE_HEADERS": True,
+            "TRANSACTION_SAMPLE_RATE": 1.0,  # 1.0 = 100% транзакций
+
+            # Производительность
+            "SPAN_COMPRESSION_ENABLED": True,
+            "SPAN_COMPRESSION_EXACT_MATCH_MAX_DURATION": "50ms",
+            "SPAN_COMPRESSION_SAME_KIND_MAX_DURATION": "5ms",
+
+            # Логирование самого APM
+            "DEBUG": os.getenv("APM_DEBUG", "false").lower() == "true",
+        }
+
+        try:
+            self._apm_client = make_apm_client(config)
+            self._initialized = True
+            print(f"APM initialized: {service_name} -> {apm_server_url}")
+            return True
+        except Exception as e:
+            print(f"Failed to initialize APM: {e}")
+            return False
+
+    @property
+    def client(self):
+        """Получить APM клиент"""
+        return self._apm_client
+
+    @property
+    def is_initialized(self) -> bool:
+        return self._initialized
