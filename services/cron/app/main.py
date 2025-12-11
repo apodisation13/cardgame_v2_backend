@@ -6,6 +6,7 @@ import signal
 import sys
 from types import FrameType
 
+from lib.utils.elk.elastic_logger import ElasticLoggerManager
 
 # Добавляем корневую директорию проекта в Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
@@ -23,10 +24,20 @@ class Application:
     def __init__(self):
         self.config = get_config()
         self.db = Database(self.config)
+
         self.scheduler = TaskScheduler(config=self.config, db=self.db)
         self.running = False
-        logger = logging.getLogger(__name__)
+
         logging.config.dictConfig(self.config.LOGGING)
+
+        elastic_logger_manager = ElasticLoggerManager()
+        elastic_logger_manager.initialize(
+            config=self.config,
+            service_name="cron",
+            delay_seconds=5,
+        )
+
+        logger = logging.getLogger(__name__)
         self.logger = logger
 
     async def startup(self):
