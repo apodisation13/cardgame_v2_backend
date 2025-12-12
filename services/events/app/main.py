@@ -3,6 +3,8 @@ import logging.config
 import os
 import sys
 
+from lib.utils.elk.elastic_logger import ElasticLoggerManager
+
 
 # Добавляем корневую директорию проекта в Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
@@ -14,8 +16,18 @@ from services.events.app.config import get_config
 async def main():
     config = get_config()
 
-    logger = logging.getLogger(__name__)
+    logging.getLogger("aiokafka").setLevel(logging.CRITICAL)
+
     logging.config.dictConfig(config.LOGGING)
+
+    elastic_logger_manager = ElasticLoggerManager()
+    elastic_logger_manager.initialize(
+        config=config,
+        service_name="events",
+        delay_seconds=5,
+    )
+
+    logger = logging.getLogger(__name__)
 
     logger.info("Starting Event Processor...")
 
