@@ -18,10 +18,10 @@ services:
   # ============ БАЗОВЫЕ СЕРВИСЫ ============
   postgres:
     <<: *common
-    image: postgres:15-alpine
+    image: postgres:18
     container_name: gridways-postgres
     volumes:
-      - docker_postgres_data:/var/lib/postgresql/data
+      - docker_postgres_data:/var/lib/postgresql
     ports:
       - "${DB_PORT_OUTSIDE}:5432"  # вот это порт, который будет торчать наружу
     environment:
@@ -78,7 +78,7 @@ services:
 
   elasticsearch:
     <<: *common
-    image: elasticsearch:8.11.0
+    image: elasticsearch:8.19.8
     container_name: gridways-elk
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
@@ -133,7 +133,7 @@ services:
 
   kibana:
     <<: *common
-    image: kibana:8.11.0
+    image: kibana:8.19.8
     container_name: gridways-kibana
     depends_on:
       elasticsearch-setup:
@@ -193,7 +193,7 @@ services:
 
   apm-server:
     <<: *common
-    image: elastic/apm-server:8.11.0
+    image: elastic/apm-server:8.19.8
     container_name: gridways-apm
     depends_on:
       - elasticsearch
@@ -236,33 +236,6 @@ services:
       -E setup.template.enabled=true
       -E setup.template.overwrite=true
       -E apm-server.data_streams.wait_for_integration=false
-
-  apm-integration-setup:
-    <<: *common
-    image: curlimages/curl:latest
-    container_name: gridways-apm-setup
-    depends_on:
-      - kibana
-      - apm-server
-    restart: "no"
-    environment:
-      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
-    command:
-      - sh
-      - -c
-      - |
-        echo "Installing APM integration..."
-        sleep 30
-        
-        curl -v POST \
-          -u "elastic:$${ELASTIC_PASSWORD}" \
-          -H "Content-Type: application/json" \
-          -H "kbn-xsrf: true" \
-          "http://kibana:5601/elk/api/fleet/epm/packages/apm/8.11.0" \
-          -d "{\"force\": true}"
-
-        echo ""
-        echo "APM integration setup complete!"
 
   # ============ МИКРОСЕРВИСЫ ============
   migrant:
