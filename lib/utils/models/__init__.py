@@ -1,4 +1,4 @@
-from .base import Base, BaseModel
+from .base import Base, BaseModel, TimestampMixin
 from .events import Event, EventLog
 from .tasks import CronTask
 from .users import User
@@ -10,5 +10,6 @@ __all__ = [
     "CronTask",
     "Event",
     "EventLog",
+    "TimestampMixin",
     "User",
 ]
