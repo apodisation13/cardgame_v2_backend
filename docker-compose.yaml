@@ -288,8 +288,6 @@ services:
       dockerfile: services/rest/docker/Dockerfile
     volumes:
       - shared_static:/shared_static
-#      - static_volume:/app/services/rest/app/staticfiles
-#      - media_volume:/app/services/rest/app/media
     expose:
       - "8000"
     environment:
@@ -331,8 +329,6 @@ services:
       - kibana
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro  # так мы подгружаем туда свой nginx.conf файл!
-#      - static_volume:/app/static:ro  # Монтируем volume - из контейнера реста!
-#      - media_volume:/app/media:ro  # Монтируем volume - из контейнера реста!
       - shared_static:/shared_static
     ports:
       - "${APP_PORT_OUTSIDE}:80"  # локально будет виден этот порт -> а в контейнере этот
@@ -348,7 +344,5 @@ networks:
 
 volumes:
   docker_postgres_data:
-#  static_volume:
-#  media_volume:
   shared_static:
   elasticsearch_data:
