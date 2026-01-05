@@ -13,6 +13,7 @@ SERVICE_APPS = [
 
 APPS = [
     "apps.accounts.apps.AccountsConfig",
+    "apps.cards.apps.CardsConfig",
     "apps.core.apps.CoreConfig",
     "apps.cron.apps.CronConfig",
     "apps.events.apps.EventsConfig",
