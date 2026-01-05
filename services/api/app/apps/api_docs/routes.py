@@ -19,10 +19,12 @@ async def check_developer_credentials(
     await auth_service.get_developer_user(email=credentials.username)
 
 
-@router.get("/docs", include_in_schema=False)
-async def get_documentation(
-    current_developer: AuthService = Depends(check_developer_credentials),
-) -> HTMLResponse:
+@router.get(
+    path="/docs",
+    include_in_schema=False,
+    dependencies=[Depends(check_developer_credentials)],
+)
+async def get_documentation() -> HTMLResponse:
     return get_swagger_ui_html(
         openapi_url="/openapi.json",
         title="Docs",
@@ -30,10 +32,13 @@ async def get_documentation(
     )
 
 
-@router.get("/openapi.json", include_in_schema=False)
+@router.get(
+    path="/openapi.json",
+    include_in_schema=False,
+    dependencies=[Depends(check_developer_credentials)],
+)
 async def openapi(
     request: Request,
-    current_developer: AuthService = Depends(check_developer_credentials),
 ) -> dict:
     return get_openapi(
         title=request.app.title,
