@@ -3,12 +3,15 @@ from typing import Any
 from sqlalchemy.dialects.postgresql import JSONB
 
 from lib.utils.models import BaseModel
-from sqlalchemy import Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import Integer, String, UniqueConstraint
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
 class Faction(BaseModel):
     __tablename__ = "factions"
+    __table_args__ = (
+        UniqueConstraint('name', name='uq_faction_name'),
+    )
 
     id: Mapped[int] = mapped_column(
         Integer,
@@ -20,19 +23,39 @@ class Faction(BaseModel):
         nullable=False,
     )
 
+    leaders: Mapped[list["Leader"]] = relationship(
+        "Leader",
+        back_populates="faction",
+    )
+    cards: Mapped[list["Card"]] = relationship(
+        "Card",
+        back_populates="faction",
+    )
+
     def __repr__(self) -> str:
         return f"<Faction(id={self.id}, name='{self.name}')>"
 
 
 class Color(BaseModel):
     __tablename__ = "colors"
+    __table_args__ = (
+        UniqueConstraint('name', name='uq_color_name'),
+    )
 
     id: Mapped[int] = mapped_column(
         Integer,
         primary_key=True,
         autoincrement=True,
     )
-    name: Mapped[str] = mapped_column(String(32), nullable=False)
+    name: Mapped[str] = mapped_column(
+        String(32),
+        nullable=False,
+    )
+
+    cards: Mapped[list["Card"]] = relationship(
+        "Card",
+        back_populates="color",
+    )
 
     def __repr__(self) -> str:
         return f"<Color(id={self.id}, name='{self.name}')>"
