@@ -19,7 +19,7 @@ class Type(models.Model):
         unique=True,
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.pk} - {self.name}'
 
 
@@ -44,7 +44,7 @@ class Ability(models.Model):
         null=False,
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.pk} - {self.name}'
 
 
@@ -69,7 +69,7 @@ class PassiveAbility(models.Model):
         null=False,
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.pk} - {self.name}'
 
 
@@ -166,7 +166,7 @@ class Leader(models.Model):
         default=False,
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.name}, ability {self.ability}, damage {self.damage} charges {self.charges}'
 
 
@@ -297,7 +297,7 @@ class Card(models.Model):
         default=False,
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.pk} {self.name}, hp {self.hp}, ' \
                f'ability {self.ability}, damage {self.damage}, heal {self.heal} '
 

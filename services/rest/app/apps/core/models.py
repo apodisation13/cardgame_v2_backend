@@ -17,7 +17,7 @@ class Faction(models.Model):
         unique=True,
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.pk} - {self.name}'
 
 
@@ -37,7 +37,7 @@ class Color(models.Model):
         unique=True,
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.pk} - {self.name}'
 
 
@@ -54,5 +54,5 @@ class GameConstants(models.Model):
         default=dict
     )
 
-    def __str__(self):
-        return f'{self.data.keys()}'
+    def __str__(self) -> str:
+        return str(self.pk)

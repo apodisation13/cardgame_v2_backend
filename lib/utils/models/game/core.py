@@ -19,7 +19,7 @@ class Faction(BaseModel):
         autoincrement=True,
     )
     name: Mapped[str] = mapped_column(
-        String(32),
+        String(128),
         nullable=False,
     )
 
@@ -56,7 +56,7 @@ class Color(BaseModel):
         autoincrement=True,
     )
     name: Mapped[str] = mapped_column(
-        String(32),
+        String(128),
         nullable=False,
     )
 

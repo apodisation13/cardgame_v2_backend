@@ -17,7 +17,7 @@ class Type(BaseModel):
         autoincrement=True,
     )
     name: Mapped[str] = mapped_column(
-        String(32),
+        String(128),
         nullable=False,
     )
 
@@ -42,7 +42,7 @@ class Ability(BaseModel):
         autoincrement=True,
     )
     name: Mapped[str] = mapped_column(
-        String(32),
+        String(128),
         nullable=False,
     )
     description: Mapped[str] = mapped_column(
@@ -75,7 +75,7 @@ class PassiveAbility(BaseModel):
         autoincrement=True,
     )
     name: Mapped[str] = mapped_column(
-        String(32),
+        String(128),
         nullable=False,
     )
     description: Mapped[str] = mapped_column(
@@ -109,7 +109,7 @@ class Leader(BaseModel):
         autoincrement=True,
     )
     name: Mapped[str] = mapped_column(
-        String(32),
+        String(128),
         nullable=False,
     )
     image: Mapped[str] = mapped_column(
@@ -207,7 +207,7 @@ class Card(BaseModel):
         autoincrement=True,
     )
     name: Mapped[str] = mapped_column(
-        String(32),
+        String(128),
         nullable=False,
         unique=True,
     )

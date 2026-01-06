@@ -19,11 +19,9 @@ class GameConstantsAdmin(admin.ModelAdmin):
     form = GameConstantsForm
     list_display = (
         "id",
-        "data",
     )
     list_display_links = (
         "id",
-        "data",
     )
     fields = (
         "id",

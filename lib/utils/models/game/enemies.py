@@ -15,7 +15,7 @@ class Move(BaseModel):
         autoincrement=True,
     )
     name: Mapped[str] = mapped_column(
-        String(32),
+        String(128),
         nullable=False,
         unique=True,
     )
@@ -39,7 +39,7 @@ class EnemyPassiveAbility(BaseModel):
         autoincrement=True,
     )
     name: Mapped[str] = mapped_column(
-        String(32),
+        String(128),
         nullable=False,
         unique=True,
     )
@@ -67,7 +67,7 @@ class EnemyLeaderAbility(BaseModel):
         autoincrement=True,
     )
     name: Mapped[str] = mapped_column(
-        String(32),
+        String(128),
         nullable=False,
         unique=True,
     )
@@ -91,7 +91,7 @@ class Deathwish(BaseModel):
         autoincrement=True,
     )
     name: Mapped[str] = mapped_column(
-        String(32),
+        String(128),
         nullable=False,
         unique=True,
     )
@@ -115,7 +115,7 @@ class Enemy(BaseModel):
         autoincrement=True,
     )
     name: Mapped[str] = mapped_column(
-        String(64),
+        String(128),
         nullable=False,
         unique=True,
     )
@@ -262,7 +262,7 @@ class EnemyLeader(BaseModel):
         autoincrement=True,
     )
     name: Mapped[str] = mapped_column(
-        String(64),
+        String(128),
         nullable=False,
         unique=True,
     )

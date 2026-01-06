@@ -23,7 +23,7 @@ class Move(models.Model):
         null=False,
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.pk} - {self.name}'
 
 
@@ -47,7 +47,7 @@ class EnemyPassiveAbility(models.Model):
         null=False,
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.pk} - {self.name}'
 
 
@@ -95,7 +95,7 @@ class Deathwish(models.Model):
         null=False,
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.pk} - {self.name}'
 
 
@@ -226,7 +226,7 @@ class Enemy(models.Model):
         null=False,
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.pk}:{self.name}, {self.faction}, {self.color}, ' \
                f'damage {self.damage}, hp {self.hp}, move {self.move.name}, shield {self.shield}'
 
@@ -315,6 +315,6 @@ class EnemyLeader(models.Model):
         default=False,
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.pk} - {self.name}, hp {self.hp}, passive {self.has_passive}, ' \
                f'абилка - {self.ability}, пассивка - {self.passive_ability}'
