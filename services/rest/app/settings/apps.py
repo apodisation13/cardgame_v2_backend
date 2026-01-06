@@ -16,6 +16,7 @@ APPS = [
     "apps.cards.apps.CardsConfig",
     "apps.core.apps.CoreConfig",
     "apps.cron.apps.CronConfig",
+    "apps.enemies.apps.EnemiesConfig",
     "apps.events.apps.EventsConfig",
     "apps.news.apps.NewsConfig",
 ]
