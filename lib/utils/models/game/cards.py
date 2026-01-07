@@ -112,7 +112,15 @@ class Leader(BaseModel):
         String(128),
         nullable=False,
     )
-    image: Mapped[str] = mapped_column(
+    image_original: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+    image_tablet: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+    image_phone: Mapped[str] = mapped_column(
         String(255),
         nullable=False,
     )
@@ -211,7 +219,15 @@ class Card(BaseModel):
         nullable=False,
         unique=True,
     )
-    image: Mapped[str] = mapped_column(
+    image_original: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+    image_tablet: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+    image_phone: Mapped[str] = mapped_column(
         String(255),
         nullable=False,
     )

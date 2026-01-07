@@ -31,4 +31,5 @@ db.json
 
 # essential project files
 *.jpg
+*.webp
 *.ods

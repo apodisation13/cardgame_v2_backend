@@ -119,7 +119,15 @@ class Enemy(BaseModel):
         nullable=False,
         unique=True,
     )
-    image: Mapped[str] = mapped_column(
+    image_original: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+    image_tablet: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+    image_phone: Mapped[str] = mapped_column(
         String(255),
         nullable=False,
     )
@@ -266,7 +274,15 @@ class EnemyLeader(BaseModel):
         nullable=False,
         unique=True,
     )
-    image: Mapped[str] = mapped_column(
+    image_original: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+    image_tablet: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+    image_phone: Mapped[str] = mapped_column(
         String(255),
         nullable=False,
     )
