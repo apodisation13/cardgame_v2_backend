@@ -10,7 +10,7 @@ class UserResource(models.Model):
         verbose_name = "Ресурсы пользователя"
         verbose_name_plural = "Ресурсы пользователей"
 
-    id = models.ForeignKey(User, primary_key=True, on_delete=models.PROTECT)
+    id = models.OneToOneField(User, primary_key=True, on_delete=models.PROTECT, db_column="id", editable=True)
     scraps = models.IntegerField(default=1000, blank=False, null=False)
     wood = models.IntegerField(default=1000, blank=False, null=False)
     kegs = models.IntegerField(default=3, blank=False, null=False)
