@@ -2,7 +2,7 @@ from typing import Optional
 
 from lib.utils.models import BaseModel
 from sqlalchemy import Integer, String, Text, Boolean, ForeignKey, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
 
 class Type(BaseModel):
@@ -19,11 +19,6 @@ class Type(BaseModel):
     name: Mapped[str] = mapped_column(
         String(128),
         nullable=False,
-    )
-
-    cards: Mapped[list["Card"]] = relationship(
-        "Card",
-        back_populates="type",
     )
 
     def __repr__(self) -> str:
@@ -50,15 +45,6 @@ class Ability(BaseModel):
         nullable=False,
     )
 
-    leaders: Mapped[list["Leader"]] = relationship(
-        "Leader",
-        back_populates="ability",
-    )
-    cards: Mapped[list["Card"]] = relationship(
-        "Card",
-        back_populates="ability",
-    )
-
     def __repr__(self) -> str:
         return f"<Ability(id={self.id}, name='{self.name}')>"
 
@@ -82,16 +68,6 @@ class PassiveAbility(BaseModel):
         Text,
         nullable=False,
     )
-
-    leaders: Mapped[list["Leader"]] = relationship(
-        "Leader",
-        back_populates="passive_ability",
-    )
-    cards: Mapped[list["Card"]] = relationship(
-        "Card",
-        back_populates="passive_ability",
-    )
-
 
     def __repr__(self) -> str:
         return f"<Passive ability(id={self.id}, name='{self.name}')>"
@@ -185,25 +161,11 @@ class Leader(BaseModel):
         server_default="false",
     )
 
-    # Relationships
-    faction: Mapped["Faction"] = relationship(
-        "Faction",
-        back_populates="leaders",
-    )
-    ability: Mapped[Ability] = relationship(
-        Ability,
-        back_populates="leaders",
-    )
-    passive_ability: Mapped[Optional[PassiveAbility]] = relationship(
-        PassiveAbility,
-        back_populates="leaders",
-    )
-
     def __repr__(self) -> str:
         return f"<Leader(id={self.id}, name='{self.name}', damage={self.damage}, charges={self.charges})>"
 
     def __str__(self) -> str:
-        return f'{self.name}, ability {self.ability}, damage {self.damage} charges {self.charges}'
+        return f'{self.name}, ability {self.ability_id}, damage {self.damage} charges {self.charges}'
 
 
 class Card(BaseModel):
@@ -327,29 +289,47 @@ class Card(BaseModel):
         server_default="false",
     )
 
-    faction: Mapped["Faction"] = relationship(
-        "Faction",
-        back_populates="cards",
-    )
-    color: Mapped["Color"] = relationship(
-        "Color",
-        back_populates="cards",
-    )
-    type: Mapped["Type"] = relationship(
-        "Type",
-        back_populates="cards",
-    )
-    ability: Mapped["Ability"] = relationship(
-        "Ability",
-        back_populates="cards",
-    )
-    passive_ability: Mapped[Optional["PassiveAbility"]] = relationship(
-        "PassiveAbility",
-        back_populates="cards",
-    )
-
     def __repr__(self) -> str:
         return f"<Card(id={self.id}, name='{self.name}', hp={self.hp}, damage={self.damage})>"
 
     def __str__(self) -> str:
-        return f'{self.id} {self.name}, hp {self.hp}, ability {self.ability}, damage {self.damage}, heal {self.heal}'
+        return f'{self.id} {self.name}, hp {self.hp}, ability {self.ability_id}, damage {self.damage}, heal {self.heal}'
+
+
+class Deck(BaseModel):
+    __tablename__ = "decks"
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        autoincrement=True,
+    )
+    name: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+    leader_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("leaders.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+
+
+class CardDeck(BaseModel):
+    __tablename__ = "card_decks"
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        autoincrement=True,
+    )
+    deck_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("decks.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    card_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("cards.id", ondelete="RESTRICT"),
+        nullable=False,
+    )

@@ -4,7 +4,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 
 from lib.utils.models import BaseModel
 from sqlalchemy import Integer, String, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
 
 class Faction(BaseModel):
@@ -21,23 +21,6 @@ class Faction(BaseModel):
     name: Mapped[str] = mapped_column(
         String(128),
         nullable=False,
-    )
-
-    leaders: Mapped[list["Leader"]] = relationship(
-        "Leader",
-        back_populates="faction",
-    )
-    cards: Mapped[list["Card"]] = relationship(
-        "Card",
-        back_populates="faction",
-    )
-    enemies: Mapped[list["Enemy"]] = relationship(
-        "Enemy",
-        back_populates="faction",
-    )
-    enemy_leaders: Mapped[list["EnemyLeader"]] = relationship(
-        "EnemyLeader",
-        back_populates="faction",
     )
 
     def __repr__(self) -> str:
@@ -58,15 +41,6 @@ class Color(BaseModel):
     name: Mapped[str] = mapped_column(
         String(128),
         nullable=False,
-    )
-
-    cards: Mapped[list["Card"]] = relationship(
-        "Card",
-        back_populates="color",
-    )
-    enemies: Mapped[list["Enemy"]] = relationship(
-        "Enemy",
-        back_populates="color",
     )
 
     def __repr__(self) -> str:
