@@ -1,7 +1,7 @@
 from typing import Optional
 
 from sqlalchemy import Integer, String, Text, ForeignKey, Boolean
-from sqlalchemy.orm import mapped_column, Mapped, relationship
+from sqlalchemy.orm import mapped_column, Mapped
 
 from lib.utils.models import BaseModel
 
@@ -24,11 +24,6 @@ class Move(BaseModel):
         nullable=False,
     )
 
-    enemies: Mapped[list["Enemy"]] = relationship(
-        "Enemy",
-        back_populates="move",
-    )
-
 
 class EnemyPassiveAbility(BaseModel):
     __tablename__ = "enemy_passive_abilities"
@@ -46,15 +41,6 @@ class EnemyPassiveAbility(BaseModel):
     description: Mapped[str] = mapped_column(
         Text,
         nullable=False,
-    )
-
-    enemies: Mapped[list["Enemy"]] = relationship(
-        "Enemy",
-        back_populates="passive_ability",
-    )
-    enemy_leaders: Mapped[list["EnemyLeader"]] = relationship(
-        "EnemyLeader",
-        back_populates="passive_ability",
     )
 
 
@@ -76,11 +62,6 @@ class EnemyLeaderAbility(BaseModel):
         nullable=False,
     )
 
-    enemy_leaders: Mapped[list["EnemyLeader"]] = relationship(
-        "EnemyLeader",
-        back_populates="ability",
-    )
-
 
 class Deathwish(BaseModel):
     __tablename__ = "deathwishes"
@@ -98,11 +79,6 @@ class Deathwish(BaseModel):
     description: Mapped[str] = mapped_column(
         Text,
         nullable=False,
-    )
-
-    enemies: Mapped[list["Enemy"]] = relationship(
-        "Enemy",
-        back_populates="deathwish",
     )
 
 
@@ -232,34 +208,6 @@ class Enemy(BaseModel):
         server_default="0",
     )
 
-    # Relationships
-    faction: Mapped["Faction"] = relationship(
-        "Faction",
-        back_populates="enemies",
-    )
-    color: Mapped["Color"] = relationship(
-        "Color",
-        back_populates="enemies",
-    )
-    move: Mapped["Move"] = relationship(
-        "Move",
-        back_populates="enemies",
-    )
-    passive_ability: Mapped[Optional["EnemyPassiveAbility"]] = relationship(
-        "EnemyPassiveAbility",
-        back_populates="enemies",
-    )
-    deathwish: Mapped[Optional["Deathwish"]] = relationship(
-        "Deathwish",
-        back_populates="enemies",
-    )
-
-    def __repr__(self) -> str:
-        return f"<Enemy(id={self.id}, name='{self.name}', damage={self.damage}, hp={self.hp})>"
-
-    def __str__(self) -> str:
-        return f'{self.id}:{self.name}, {self.faction}, {self.color}, damage {self.damage}, hp {self.hp}, move {self.move.name}, shield {self.shield}'
-
 
 class EnemyLeader(BaseModel):
     __tablename__ = "enemy_leaders"
@@ -341,23 +289,3 @@ class EnemyLeader(BaseModel):
         nullable=False,
         server_default='false',
     )
-
-    # Relationships
-    faction: Mapped["Faction"] = relationship(
-        "Faction",
-        back_populates="enemy_leaders",
-    )
-    ability: Mapped[Optional["EnemyLeaderAbility"]] = relationship(
-        "EnemyLeaderAbility",
-        back_populates="enemy_leaders",
-    )
-    passive_ability: Mapped[Optional["EnemyPassiveAbility"]] = relationship(
-        "EnemyPassiveAbility",
-        back_populates="enemy_leaders",
-    )
-
-    def __repr__(self) -> str:
-        return f"<EnemyLeader(id={self.id}, name='{self.name}', hp={self.hp})>"
-
-    def __str__(self) -> str:
-        return f'{self.id} - {self.name}, hp {self.hp}, passive {self.has_passive}, ability - {self.ability}, passive - {self.passive_ability}'

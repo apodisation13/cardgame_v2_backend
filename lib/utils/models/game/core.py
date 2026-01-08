@@ -23,9 +23,6 @@ class Faction(BaseModel):
         nullable=False,
     )
 
-    def __repr__(self) -> str:
-        return f"<Faction(id={self.id}, name='{self.name}')>"
-
 
 class Color(BaseModel):
     __tablename__ = "colors"
@@ -43,9 +40,6 @@ class Color(BaseModel):
         nullable=False,
     )
 
-    def __repr__(self) -> str:
-        return f"<Color(id={self.id}, name='{self.name}')>"
-
 
 class GameConstants(BaseModel):
     __tablename__ = "game_constants"
@@ -60,6 +54,3 @@ class GameConstants(BaseModel):
         server_default="{}",
         nullable=False,
     )
-
-    def __repr__(self) -> str:
-        return f"<GameConstant(id={self.id})>"

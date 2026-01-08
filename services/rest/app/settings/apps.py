@@ -19,6 +19,7 @@ APPS = [
     "apps.enemies.apps.EnemiesConfig",
     "apps.events.apps.EventsConfig",
     "apps.news.apps.NewsConfig",
+    "apps.seasons.apps.SeasonsConfig",
 ]
 
 

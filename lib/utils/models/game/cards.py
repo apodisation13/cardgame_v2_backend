@@ -21,9 +21,6 @@ class Type(BaseModel):
         nullable=False,
     )
 
-    def __repr__(self) -> str:
-        return f"<Type(id={self.id}, name='{self.name}')>"
-
 
 class Ability(BaseModel):
     __tablename__ = "abilities"
@@ -45,9 +42,6 @@ class Ability(BaseModel):
         nullable=False,
     )
 
-    def __repr__(self) -> str:
-        return f"<Ability(id={self.id}, name='{self.name}')>"
-
 
 class PassiveAbility(BaseModel):
     __tablename__ = "passive_abilities"
@@ -68,9 +62,6 @@ class PassiveAbility(BaseModel):
         Text,
         nullable=False,
     )
-
-    def __repr__(self) -> str:
-        return f"<Passive ability(id={self.id}, name='{self.name}')>"
 
 
 class Leader(BaseModel):
@@ -160,12 +151,6 @@ class Leader(BaseModel):
         nullable=False,
         server_default="false",
     )
-
-    def __repr__(self) -> str:
-        return f"<Leader(id={self.id}, name='{self.name}', damage={self.damage}, charges={self.charges})>"
-
-    def __str__(self) -> str:
-        return f'{self.name}, ability {self.ability_id}, damage {self.damage} charges {self.charges}'
 
 
 class Card(BaseModel):
@@ -288,12 +273,6 @@ class Card(BaseModel):
         nullable=False,
         server_default="false",
     )
-
-    def __repr__(self) -> str:
-        return f"<Card(id={self.id}, name='{self.name}', hp={self.hp}, damage={self.damage})>"
-
-    def __str__(self) -> str:
-        return f'{self.id} {self.name}, hp {self.hp}, ability {self.ability_id}, damage {self.damage}, heal {self.heal}'
 
 
 class Deck(BaseModel):
