@@ -92,7 +92,17 @@ class Leader(models.Model):
         unique=True,
     )
     # TODO: работа с картинками!!!
-    image = models.ImageField(
+    image_original = models.ImageField(
+        upload_to='leaders/',
+        blank=False,
+        null=False,
+    )
+    image_tablet = models.ImageField(
+        upload_to='leaders/',
+        blank=False,
+        null=False,
+    )
+    image_phone = models.ImageField(
         upload_to='leaders/',
         blank=False,
         null=False,
@@ -191,8 +201,18 @@ class Card(models.Model):
         unique=True,
     )
     # TODO: работа с картинками!!!
-    image = models.ImageField(
-        upload_to='cards/',
+    image_original = models.ImageField(
+        upload_to='leaders/',
+        blank=False,
+        null=False,
+    )
+    image_tablet = models.ImageField(
+        upload_to='leaders/',
+        blank=False,
+        null=False,
+    )
+    image_phone = models.ImageField(
+        upload_to='leaders/',
         blank=False,
         null=False,
     )
@@ -313,3 +333,55 @@ class Card(models.Model):
     #     if not self._state.adding and (self.hp - self._loaded_values['hp']):
     #         change_decks_health(card_id=self.id, diff=self.hp - self._loaded_values['hp'])
     #     super().save(*args, **kwargs)
+
+
+class Deck(models.Model):
+    class Meta:
+        managed = False
+        db_table = "decks"
+        verbose_name = "Колода"
+        verbose_name_plural = "Колоды"
+
+    name = models.CharField(
+        max_length=255,
+        blank=False,
+        null=False,
+    )
+    cards = models.ManyToManyField(
+        Card,
+        related_name="cards",
+        through="CardDeck",
+    )
+    leader = models.ForeignKey(
+        "Leader",
+        related_name="decks",
+        on_delete=models.CASCADE,
+        blank=False,
+        null=False,
+    )
+
+    def __str__(self):
+        return f'{self.pk}, name {self.name}, {self.leader}'
+
+
+class CardDeck(models.Model):
+    class Meta:
+        managed = False
+        db_table = "card_decks"
+        verbose_name = "Карта в колоде"
+        verbose_name_plural = "Карты в колоде"
+
+    card = models.ForeignKey(
+        "Card",
+        related_name="d",
+        on_delete=models.CASCADE,
+        null=False,
+        blank=False,
+    )
+    deck = models.ForeignKey(
+        "Deck",
+        related_name="d",
+        on_delete=models.CASCADE,
+        null=False,
+        blank=False,
+    )

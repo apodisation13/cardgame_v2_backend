@@ -1,7 +1,6 @@
 from django.contrib import admin
 
-from apps.cards.models import Type, Ability, PassiveAbility, Leader, Card
-
+from apps.cards.models import Type, Ability, PassiveAbility, Leader, Card, CardDeck, Deck
 
 admin.site.register(Type)
 admin.site.register(Ability)
@@ -36,6 +35,27 @@ class CardAdmin(admin.ModelAdmin):
     )
     list_display = [field.name for field in Card._meta.fields]
     list_display_links = [field.name for field in Card._meta.fields]
+    search_fields = (
+        'name',
+    )
+
+
+class CardDeckInLine(admin.TabularInline):
+    model = CardDeck
+    extra = 0
+    autocomplete_fields = ['card']
+
+
+@admin.register(Deck)
+class DeckAdmin(admin.ModelAdmin):
+    inlines = (
+        CardDeckInLine,
+    )
+    list_filter = (
+        "leader_id",
+    )
+    list_display = [field.name for field in Deck._meta.fields]
+    list_display_links = [field.name for field in Deck._meta.fields]
     search_fields = (
         'name',
     )

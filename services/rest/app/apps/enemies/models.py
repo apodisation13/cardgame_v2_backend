@@ -114,8 +114,18 @@ class Enemy(models.Model):
         unique=True,
     )
     # TODO: работа с картинками!!!
-    image = models.ImageField(
-        upload_to='enemies/',
+    image_original = models.ImageField(
+        upload_to='leaders/',
+        blank=False,
+        null=False,
+    )
+    image_tablet = models.ImageField(
+        upload_to='leaders/',
+        blank=False,
+        null=False,
+    )
+    image_phone = models.ImageField(
+        upload_to='leaders/',
         blank=False,
         null=False,
     )
@@ -246,8 +256,18 @@ class EnemyLeader(models.Model):
         unique=True,
     )
     # TODO: работа с картинками!!!
-    image = models.ImageField(
-        upload_to='enemy_leaders/',
+    image_original = models.ImageField(
+        upload_to='leaders/',
+        blank=False,
+        null=False,
+    )
+    image_tablet = models.ImageField(
+        upload_to='leaders/',
+        blank=False,
+        null=False,
+    )
+    image_phone = models.ImageField(
+        upload_to='leaders/',
         blank=False,
         null=False,
     )
