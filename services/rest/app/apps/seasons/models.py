@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.enemies.models import EnemyLeader, Enemy
+from apps.enemies.models import Enemy, EnemyLeader
 from lib.utils.schemas.game import LevelDifficulty
 
 
@@ -36,7 +36,7 @@ class Season(models.Model):
         default=False,
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.name}, {self.description[:30]}"
 
 
@@ -109,15 +109,15 @@ class Level(models.Model):
         related_name="rel_levels",
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.pk}:{self.name}, появление: {self.starting_enemies_number}, ' \
                f'сложность {self.difficulty}, врагов {self.number_of_enemies()}, лидер {self.enemy_leader}'
 
-    def number_of_enemies(self):
+    def number_of_enemies(self) -> int:
         """для админки, чтобы показать это количество"""
         return len(self.l.all())
 
-    def get_related_levels(self):
+    def get_related_levels(self) -> list:
         """для админки, чтобы показать краткую информацию"""
         return [(level.id, level.name) for level in self.related_levels.all()]
 
@@ -161,9 +161,9 @@ class LevelRelatedLevels(models.Model):
         null=False,
     )
 
-    def save(self, *args, **kwargs):
-        self.connection = f"{self.level_id}-{self.related_level_id}"
-        return super(LevelRelatedLevels, self).save(*args, **kwargs)
+    def save(self, *args, **kwargs) -> None:
+        self.connection = f"{self.level.id}-{self.related_level.id}"
+        super().save(*args, **kwargs)
 
 
 class LevelEnemy(models.Model):

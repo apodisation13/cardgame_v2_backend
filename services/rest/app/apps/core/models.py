@@ -51,7 +51,7 @@ class GameConstants(models.Model):
 
     data = models.JSONField(
         verbose_name="Данные с игровыми константами",
-        default=dict
+        default=dict,
     )
 
     def __str__(self) -> str:

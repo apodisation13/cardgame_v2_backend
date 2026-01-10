@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.core.models import Faction, Color
+from apps.core.models import Color, Faction
 
 
 class Type(models.Model):
@@ -360,7 +360,7 @@ class Deck(models.Model):
         null=False,
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.pk}, name {self.name}, {self.leader}'
 
 

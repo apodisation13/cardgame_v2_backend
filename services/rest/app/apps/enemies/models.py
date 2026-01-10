@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.core.models import Faction, Color
+from apps.core.models import Color, Faction
 
 
 class Move(models.Model):
@@ -71,7 +71,7 @@ class EnemyLeaderAbility(models.Model):
         null=False,
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.pk} - {self.name}'
 
 
