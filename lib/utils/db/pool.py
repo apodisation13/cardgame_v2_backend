@@ -15,8 +15,10 @@ class Database:
         self.pool = None
         self.config = config
 
-    async def init_connection(self, conn):
-        # Регистрируем кодек для jsonb
+    async def init_connection(
+        self,
+        conn: asyncpg.Connection,
+    ):
         await conn.set_type_codec(
             'jsonb',
             encoder=lambda v: json.dumps(v),  # Python -> JSONB
