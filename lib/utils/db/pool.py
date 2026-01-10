@@ -1,5 +1,5 @@
-import json
 from contextlib import asynccontextmanager
+import json
 import logging
 
 import asyncpg
@@ -23,7 +23,7 @@ class Database:
             'jsonb',
             encoder=lambda v: json.dumps(v),  # Python -> JSONB
             decoder=lambda v: json.loads(v),  # JSONB -> Python
-            schema='pg_catalog'
+            schema='pg_catalog',
         )
 
     async def connect(self) -> asyncpg.Pool:
