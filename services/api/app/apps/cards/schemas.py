@@ -19,9 +19,9 @@ class Card(Base):
     name: str
     unlocked: bool
     image: str
-    faction: str  # TODO
-    color: str  # TODO
-    type: str # TODO
+    faction: str
+    color: str
+    type: str
     ability: Ability
     damage: int
     charges: int
