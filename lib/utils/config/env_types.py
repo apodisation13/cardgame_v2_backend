@@ -39,18 +39,18 @@ def get_secret(
         return default
 
     try:
-        if isinstance(cast, bool):
+        if cast is bool:
             if value.lower() == "true":
                 return True
             elif value.lower() == "false":
                 return False
             else:
                 raise ValueError(f"Cannot convert '{value}' to bool")
-        elif isinstance(cast, int):
+        elif cast is int:
             return int(value)
-        elif isinstance(cast, float):
+        elif cast is float:
             return float(value)
-        elif isinstance(cast, str):
+        elif cast is str:
             return value
         else:
             raise ValueError(f"Unsupported type: {cast}")
