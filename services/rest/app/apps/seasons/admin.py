@@ -9,10 +9,8 @@ admin.site.register(Season)
 class LevelEnemyInLine(admin.TabularInline):
     model = LevelEnemy
     extra = 0
-    verbose_name_plural = 'level enemies'
-    autocomplete_fields = (
-        'enemy',
-    )
+    verbose_name_plural = "level enemies"
+    autocomplete_fields = ("enemy",)
 
 
 class LevelInline(admin.TabularInline):
@@ -23,10 +21,8 @@ class LevelInline(admin.TabularInline):
         "related_level",
     )
     extra = 0
-    verbose_name_plural = 'level related levels'
-    autocomplete_fields = (
-        'related_level',
-    )
+    verbose_name_plural = "level related levels"
+    autocomplete_fields = ("related_level",)
 
 
 @admin.register(Level)
@@ -56,9 +52,7 @@ class LevelAdmin(admin.ModelAdmin):
         "id",
         "name",
     )
-    search_fields = (
-        'name',
-    )
+    search_fields = ("name",)
 
     @admin.display(description="enemy_leader")
     def enemy_leader_admin(

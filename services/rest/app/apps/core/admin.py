@@ -17,19 +17,13 @@ class GameConstantsForm(forms.ModelForm):
 @admin.register(GameConstants)
 class GameConstantsAdmin(admin.ModelAdmin):
     form = GameConstantsForm
-    list_display = (
-        "id",
-    )
-    list_display_links = (
-        "id",
-    )
+    list_display = ("id",)
+    list_display_links = ("id",)
     fields = (
         "id",
         "data",
     )
-    readonly_fields = (
-        "id",
-    )
+    readonly_fields = ("id",)
 
     def has_add_permission(
         self,

@@ -34,4 +34,4 @@ class EnemyAdmin(admin.ModelAdmin):
     )
     list_display = [field.name for field in Enemy._meta.fields]
     list_display_links = [field.name for field in Enemy._meta.fields]
-    search_fields = ['name']
+    search_fields = ["name"]

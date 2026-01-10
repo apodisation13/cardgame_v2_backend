@@ -22,16 +22,14 @@ class NewsAdmin(admin.ModelAdmin):
     )
     list_display_links = (
         "id",
-        'title',
+        "title",
     )
     readonly_fields = (
         "id",
         "created_at",
         "updated_at",
     )
-    list_filter = (
-        "is_active",
-    )
+    list_filter = ("is_active",)
     search_fields = (
         "title",
         "text",
