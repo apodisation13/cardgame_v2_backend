@@ -1,10 +1,6 @@
-from sqlalchemy import (
-    Integer,
-    ForeignKey, Boolean
-)
-from sqlalchemy.orm import Mapped, mapped_column
-
 from lib.utils.models import BaseModel
+from sqlalchemy import Boolean, ForeignKey, Integer
+from sqlalchemy.orm import Mapped, mapped_column
 
 
 class UserResource(BaseModel):

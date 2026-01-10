@@ -1,9 +1,19 @@
 import asyncpg
 
 from lib.utils.db.pool import Database
-from services.api.app.apps.cards.schemas import Card, Leader, Deck, Enemy, EnemyLeader, CardForDeck
-from services.api.app.apps.progress.schemas import UserProgressResponse, UserDatabase, UserCard, UserLeader, UserDeck, \
-    UserResources, Season, Level, UserLevel, LevelRelatedLevel
+from services.api.app.apps.cards.schemas import Card, CardForDeck, Deck, Enemy, EnemyLeader, Leader
+from services.api.app.apps.progress.schemas import (
+    Level,
+    LevelRelatedLevel,
+    Season,
+    UserCard,
+    UserDatabase,
+    UserDeck,
+    UserLeader,
+    UserLevel,
+    UserProgressResponse,
+    UserResources,
+)
 from services.api.app.config import Config
 
 
@@ -64,7 +74,7 @@ class UserProgressService:
         user_resources = await connection.fetchrow(
             """
                 SELECT scraps, kegs, big_kegs, chests, wood, keys
-                FROM user_resources 
+                FROM user_resources
                 WHERE id = $1
             """,
             user_id,
@@ -120,7 +130,7 @@ class UserProgressService:
         )
 
         # из него выбираем список уникальных id уровней
-        level_ids = set([row["level_id"] for row in seasons])
+        level_ids = {row["level_id"] for row in seasons}
         print("STR164", level_ids)
 
         level_related_levels: dict[int, list[LevelRelatedLevel]] = await self._get_level_related_levels(
@@ -173,7 +183,7 @@ class UserProgressService:
                     enemies.deathwish_value
                 FROM
                     enemies
-                JOIN 
+                JOIN
                     factions ON enemies.faction_id = factions.id
                 JOIN
                     colors ON enemies.color_id = colors.id
@@ -213,7 +223,7 @@ class UserProgressService:
                     enemy_leaders.each_tick
                 FROM
                     enemy_leaders
-                JOIN 
+                JOIN
                     factions ON enemy_leaders.faction_id = factions.id
                 LEFT JOIN
                     enemy_leader_abilities ON enemy_leaders.ability_id = enemy_leader_abilities.id
@@ -262,7 +272,7 @@ class UserProgressService:
         # возвращает словарь, где ключ это id уровня, значение - список его связей (даже если связей нет)
         all_related_levels = await connection.fetch(
             """
-                SELECT 
+                SELECT
                     levels.id,
                     level_related_levels.related_level_id,
                     level_related_levels.line,
@@ -367,11 +377,11 @@ class UserProgressService:
         # levels_dict_keys = list(levels_dict.keys())
         # print("STR203 levels_dict_keys", levels_dict_keys)
 
-        user_seasons_model = []
-        for season_id, user_season in user_seasons_dict.items():
-            user_seasons_model.append(user_season)
+        # user_seasons_model = [user_season for user_season in user_seasons_dict.values()]
+        # for user_season in user_seasons_dict.values():
+        #     user_seasons_model.append(user_season)
 
-        return user_seasons_model
+        return list(user_seasons_dict.values())
 
     async def _process_cards(
         self,
@@ -575,15 +585,15 @@ class UserProgressService:
                         leader=leader,
                         health=hp,
                         cards=[card_for_deck],
-                    )
+                    ),
                 )
             else:
                 user_deck: UserDeck = user_decs_dict[user_deck_id]
                 user_deck.deck.cards.append(card_for_deck)
                 user_deck.deck.health += hp
 
-        user_decks_model = []
-        for user_deck_id, user_deck in user_decs_dict.items():
-            user_decks_model.append(user_deck)
+        # user_decks_model = []
+        # for _, user_deck in user_decs_dict.items():
+        #     user_decks_model.append(user_deck)
 
-        return user_decks_model
+        return list(user_decs_dict.values())

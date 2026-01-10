@@ -1,4 +1,3 @@
-import asyncpg
 
 from lib.utils.schemas import Base
 from services.api.app.utils.images import build_image_url

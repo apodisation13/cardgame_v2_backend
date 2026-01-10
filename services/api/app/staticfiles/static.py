@@ -2,7 +2,6 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-
 from lib.utils.config.env_types import EnvType
 from services.api.app.config import Config
 

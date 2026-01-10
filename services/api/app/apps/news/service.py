@@ -17,11 +17,11 @@ class NewsService:
             news = await connection.fetch(
                 """
                     SELECT
-                        id, 
-                        title, 
+                        id,
+                        title,
                         text,
                         updated_at
-                    FROM 
+                    FROM
                         news
                     WHERE
                         is_active IS TRUE
@@ -38,7 +38,7 @@ class NewsService:
                     "title": row["title"],
                     "text": row["text"],
                     "updated_at": row["updated_at"],
-                }
+                },
             )
             for row in news
         ]

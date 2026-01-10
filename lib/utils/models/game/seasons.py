@@ -1,9 +1,8 @@
 from typing import Optional
 
-from sqlalchemy import Integer, String, Boolean, Text, ForeignKey, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column
-
 from lib.utils.models import BaseModel
+from sqlalchemy import Boolean, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy.orm import Mapped, mapped_column
 
 
 class Season(BaseModel):

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
-
 from services.api.app.apps.news.schemas import News
 from services.api.app.apps.news.service import NewsService
 from services.api.app.dependencies import get_news_service
+
 
 router = APIRouter()
 

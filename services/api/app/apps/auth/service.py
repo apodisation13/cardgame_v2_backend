@@ -4,12 +4,15 @@ from asyncpg import UniqueViolationError
 
 from fastapi import HTTPException, status
 from lib.utils.db.pool import Database
-from lib.utils.events import event_sender
-from lib.utils.events.event_types import EventType
 from lib.utils.schemas.users import UserRole
 from services.api.app.apps.auth.lib import create_access_token, decode_token, get_password_hash, verify_password
-from services.api.app.apps.auth.schemas import Token, User, UserLoginRequest, UserRegisterRequest, UserLoginResponse, \
-    UserRegisterResponse
+from services.api.app.apps.auth.schemas import (
+    Token,
+    UserLoginRequest,
+    UserLoginResponse,
+    UserRegisterRequest,
+    UserRegisterResponse,
+)
 from services.api.app.config import Config
 from services.api.app.exceptions import UserAlreadyExistsError, UserNotFoundError
 

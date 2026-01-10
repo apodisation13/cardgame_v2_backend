@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Path, Depends, Request
-
+from fastapi import APIRouter, Depends, Path, Request
 from services.api.app.apps.progress.schemas import UserProgressResponse
 from services.api.app.apps.progress.service import UserProgressService
 from services.api.app.dependencies import get_user_progress_service
+
 
 router = APIRouter()
 

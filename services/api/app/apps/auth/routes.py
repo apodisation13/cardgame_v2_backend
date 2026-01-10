@@ -2,13 +2,15 @@ import logging
 
 from fastapi import APIRouter, Depends
 from fastapi.params import Path
-
 from services.api.app.apps.auth import dependencies as auth_dependencies
-from services.api.app.apps.auth.schemas import Token, User, UserLoginRequest, UserRegisterRequest, UserLoginResponse, \
-    UserRegisterResponse
+from services.api.app.apps.auth.schemas import (
+    UserLoginRequest,
+    UserLoginResponse,
+    UserRegisterRequest,
+    UserRegisterResponse,
+)
 from services.api.app.apps.auth.service import AuthService
-from services.api.app.config import Config
-from services.api.app.dependencies import get_auth_service, get_config
+from services.api.app.dependencies import get_auth_service
 
 
 logger = logging.getLogger(__name__)

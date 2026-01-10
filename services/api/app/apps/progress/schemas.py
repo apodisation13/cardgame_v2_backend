@@ -1,6 +1,6 @@
 from lib.utils.schemas import Base
 from lib.utils.schemas.game import LevelDifficulty
-from services.api.app.apps.cards.schemas import Card, Leader, Deck, Enemy, EnemyLeader
+from services.api.app.apps.cards.schemas import Card, Deck, Enemy, EnemyLeader, Leader
 
 
 class UserResources(Base):
