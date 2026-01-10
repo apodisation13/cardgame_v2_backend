@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import json
 import logging
 
 import asyncpg
@@ -14,14 +15,25 @@ class Database:
         self.pool = None
         self.config = config
 
+    async def init_connection(
+        self,
+        conn: asyncpg.Connection,
+    ):
+        await conn.set_type_codec(
+            "jsonb",
+            encoder=lambda v: json.dumps(v),  # Python -> JSONB
+            decoder=lambda v: json.loads(v),  # JSONB -> Python
+            schema="pg_catalog",
+        )
+
     async def connect(self) -> asyncpg.Pool:
-        print("STR18", self.config.DB_URL)
         if not self.pool:
             self.pool = await asyncpg.create_pool(
                 dsn=self.config.DB_URL,
                 min_size=1,
                 max_size=10,
                 command_timeout=60,
+                init=self.init_connection,
             )
         logger.info("Connected to db")
         return self.pool

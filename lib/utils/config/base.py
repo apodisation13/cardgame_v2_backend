@@ -9,8 +9,8 @@ load_env()
 class BaseConfig:
     ENV_TYPE = EnvType.DEVELOPMENT_LOCAL
 
-    DEBUG: bool = get_secret("DEBUG", default=False)
-    TESTING: bool = get_secret("DEBUG", default=False)
+    DEBUG: bool = get_secret("DEBUG", default=False, cast=bool)
+    TESTING: bool = get_secret("DEBUG", default=False, cast=bool)
 
     # Environment
     CONFIG: str = get_secret("CONFIG")
@@ -19,7 +19,7 @@ class BaseConfig:
     DB_USER: str = get_secret("DB_USER")
     DB_PASSWORD: str = get_secret("DB_PASSWORD")
     DB_HOST: str = get_secret("DB_HOST", default="localhost")
-    DB_PORT: int = int(get_secret("DB_PORT", default=5432))
+    DB_PORT: int = get_secret("DB_PORT", default=5432, cast=int)
     DB_NAME: str = get_secret("DB_NAME")
     DB_URL: str = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
@@ -56,7 +56,7 @@ class BaseConfig:
 
     # Email
     SMTP_SERVER: str = get_secret("SMTP_SERVER", default="smtp.gmail.com")
-    SMTP_PORT: int = int(get_secret("SMTP_PORT", default=465))
+    SMTP_PORT: int = get_secret("SMTP_PORT", default=465, cast=int)
     EMAIL_USER: str = get_secret("EMAIL_USER", default="apodisation13@gmail.com")
     EMAIL_PASSWORD: str = get_secret("EMAIL_PASSWORD")
 
@@ -66,6 +66,13 @@ class BaseConfig:
 
     # SMS
     SMS_TOKEN: str = get_secret("SMS_TOKEN")
+
+    # Elastic
+    ELASTIC_HOST: str = get_secret("ELASTIC_HOST", default="http://elasticsearch:9200")
+    ELASTIC_USERNAME: str = get_secret("ELASTIC_USERNAME")
+    ELASTIC_PASSWORD: str = get_secret("ELASTIC_PASSWORD")
+    ELASTIC_APM_SERVER_URL: str = get_secret("ELASTIC_APM_SERVER_URL", default="http://apm-server:8200")
+    ELASTIC_APM_SECRET_TOKEN: str = get_secret("ELASTIC_APM_SECRET_TOKEN")
 
 
 class BaseTestingConfig(BaseConfig):
@@ -89,7 +96,7 @@ class BaseTestLocalConfig(BaseConfig):
     DB_USER: str = get_secret("TEST_DB_USER", default="postgres")
     DB_PASSWORD: str = get_secret("TEST_DB_PASSWORD")
     DB_HOST: str = get_secret("TEST_DB_HOST", default="localhost")
-    DB_PORT: int = int(get_secret("TEST_DB_PORT", default=5432))
+    DB_PORT: int = get_secret("TEST_DB_PORT", default=5432, cast=int)
     DB_NAME: str = get_secret("TEST_DB_NAME", default="test_db")
     DB_URL: str = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
@@ -100,11 +107,18 @@ class BaseTestLocalConfig(BaseConfig):
     TESTING: bool = True
 
 
+class BaseDockerLocalConfig(BaseConfig):
+    ENV_TYPE = EnvType.DOCKER_LOCAL
+
+    KAFKA_BOOTSTRAP_SERVERS: str = get_secret("KAFKA_BOOTSTRAP_SERVERS", default="kafka:29092")
+
+
 CONFIG_MAP = {
     EnvType.TEST_LOCAL: BaseTestLocalConfig,
     EnvType.DEVELOPMENT_LOCAL: BaseDevelopmentLocalConfig,
     EnvType.TESTING: BaseTestingConfig,
     EnvType.PRODUCTION: BaseProductionConfig,
+    EnvType.DOCKER_LOCAL: BaseDockerLocalConfig,
 }
 
 

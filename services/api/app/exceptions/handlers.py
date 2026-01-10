@@ -16,6 +16,10 @@ async def global_exception_handler(
                 "details": exc.__repr__(),
             },
         },
+        headers={
+            "Access-Control-Allow-Origin": request.headers.get("origin", "*"),
+            "Access-Control-Allow-Credentials": "true",
+        },
     )
 
 
@@ -38,6 +42,10 @@ async def user_already_exists_exception_handler(
                 "message": message,
                 "details": exc.__repr__(),
             },
+        },
+        headers={
+            "Access-Control-Allow-Origin": request.headers.get("origin", "*"),
+            "Access-Control-Allow-Credentials": "true",
         },
     )
 

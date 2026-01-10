@@ -9,6 +9,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(
 from lib.utils.config.base import (
     BaseConfig,
     BaseDevelopmentLocalConfig,
+    BaseDockerLocalConfig,
     BaseProductionConfig,
     BaseTestLocalConfig,
     BaseTestingConfig,
@@ -35,10 +36,15 @@ class TestingConfig(BaseTestingConfig, Config): ...
 class ProductionConfig(BaseProductionConfig, Config): ...
 
 
-class DevelopmentLocalConfig(BaseDevelopmentLocalConfig, Config): ...
+class DevelopmentLocalConfig(BaseDevelopmentLocalConfig, Config):
+    DEBUG = True
 
 
 class TestLocalConfig(BaseTestLocalConfig, Config): ...
+
+
+class DockerLocalConfig(BaseDockerLocalConfig, Config):
+    DEBUG = False
 
 
 CONFIG_MAP = {
@@ -46,6 +52,7 @@ CONFIG_MAP = {
     EnvType.DEVELOPMENT_LOCAL: DevelopmentLocalConfig,
     EnvType.TESTING: TestingConfig,
     EnvType.PRODUCTION: ProductionConfig,
+    EnvType.DOCKER_LOCAL: DockerLocalConfig,
 }
 
 

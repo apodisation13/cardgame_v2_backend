@@ -1,8 +1,7 @@
 from typing import Any
 from uuid import UUID
 
-from lib.utils.models import BaseModel
-from lib.utils.models.base import TimestampMixin
+from lib.utils.models import BaseModel, TimestampMixin
 from sqlalchemy import Integer, String, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID

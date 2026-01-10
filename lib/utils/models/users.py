@@ -1,9 +1,9 @@
-from lib.utils.models import BaseModel
+from lib.utils.models import BaseModel, TimestampMixin
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 
-class User(BaseModel):
+class User(BaseModel, TimestampMixin):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -11,6 +11,8 @@ class User(BaseModel):
     username: Mapped[str] = mapped_column(String(50), unique=True, index=True)
     password: Mapped[str] = mapped_column(String(255))
     is_active: Mapped[bool] = mapped_column(server_default="true")
+    role: Mapped[str] = mapped_column(String(64), server_default="player")
+    email_verified: Mapped[bool] = mapped_column(server_default="false")
 
     def __repr__(self) -> str:
         return f"<User(id={self.id}, username='{self.username}')>"

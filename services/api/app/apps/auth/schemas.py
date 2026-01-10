@@ -7,13 +7,19 @@ class User(Base):
     email: str
 
 
-class UserRegister(Base):
+class UserRegisterRequest(Base):
     username: str
     email: str
     password: str
 
 
-class UserLogin(Base):
+class UserRegisterResponse(Base):
+    id: int
+    username: str
+    email: str
+
+
+class UserLoginRequest(Base):
     email: str
     password: str
 
@@ -21,3 +27,10 @@ class UserLogin(Base):
 class Token(Base):
     access_token: str
     token_type: str
+
+
+class UserLoginResponse(Base):
+    id: int
+    username: str
+    email: str
+    token: Token
