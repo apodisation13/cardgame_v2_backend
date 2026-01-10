@@ -8,9 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 class Faction(BaseModel):
     __tablename__ = "factions"
-    __table_args__ = (
-        UniqueConstraint('name', name='uq_faction_name'),
-    )
+    __table_args__ = (UniqueConstraint("name", name="uq_faction_name"),)
 
     id: Mapped[int] = mapped_column(
         Integer,
@@ -25,9 +23,7 @@ class Faction(BaseModel):
 
 class Color(BaseModel):
     __tablename__ = "colors"
-    __table_args__ = (
-        UniqueConstraint('name', name='uq_color_name'),
-    )
+    __table_args__ = (UniqueConstraint("name", name="uq_color_name"),)
 
     id: Mapped[int] = mapped_column(
         Integer,

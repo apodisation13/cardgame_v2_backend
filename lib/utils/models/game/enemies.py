@@ -139,27 +139,27 @@ class Enemy(BaseModel):
     shield: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
-        server_default='false',
+        server_default="false",
     )
     has_passive: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
-        server_default='false',
+        server_default="false",
     )
     has_passive_in_field: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
-        server_default='false',
+        server_default="false",
     )
     has_passive_in_deck: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
-        server_default='false',
+        server_default="false",
     )
     has_passive_in_grave: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
-        server_default='false',
+        server_default="false",
     )
     passive_ability_id: Mapped[Optional[int]] = mapped_column(
         Integer,
@@ -184,17 +184,17 @@ class Enemy(BaseModel):
     reset_timer: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
-        server_default='false',
+        server_default="false",
     )
     each_tick: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
-        server_default='false',
+        server_default="false",
     )
     has_deathwish: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
-        server_default='false',
+        server_default="false",
     )
     deathwish_id: Mapped[Optional[int]] = mapped_column(
         Integer,
@@ -256,7 +256,7 @@ class EnemyLeader(BaseModel):
     has_passive: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
-        server_default='false',
+        server_default="false",
     )
     passive_ability_id: Mapped[Optional[int]] = mapped_column(
         Integer,
@@ -281,10 +281,10 @@ class EnemyLeader(BaseModel):
     reset_timer: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
-        server_default='false',
+        server_default="false",
     )
     each_tick: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
-        server_default='false',
+        server_default="false",
     )

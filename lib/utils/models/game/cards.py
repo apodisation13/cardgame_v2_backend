@@ -7,9 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 class Type(BaseModel):
     __tablename__ = "types"
-    __table_args__ = (
-        UniqueConstraint('name', name='uq_type_name'),
-    )
+    __table_args__ = (UniqueConstraint("name", name="uq_type_name"),)
 
     id: Mapped[int] = mapped_column(
         Integer,
@@ -24,9 +22,7 @@ class Type(BaseModel):
 
 class Ability(BaseModel):
     __tablename__ = "abilities"
-    __table_args__ = (
-        UniqueConstraint('name', name='uq_ability_name'),
-    )
+    __table_args__ = (UniqueConstraint("name", name="uq_ability_name"),)
 
     id: Mapped[int] = mapped_column(
         Integer,
@@ -45,9 +41,7 @@ class Ability(BaseModel):
 
 class PassiveAbility(BaseModel):
     __tablename__ = "passive_abilities"
-    __table_args__ = (
-        UniqueConstraint('name', name='uq_passive_ability_name'),
-    )
+    __table_args__ = (UniqueConstraint("name", name="uq_passive_ability_name"),)
 
     id: Mapped[int] = mapped_column(
         Integer,
@@ -66,9 +60,7 @@ class PassiveAbility(BaseModel):
 
 class Leader(BaseModel):
     __tablename__ = "leaders"
-    __table_args__ = (
-        UniqueConstraint('name', name='uq_leader_name'),
-    )
+    __table_args__ = (UniqueConstraint("name", name="uq_leader_name"),)
 
     id: Mapped[int] = mapped_column(
         Integer,
