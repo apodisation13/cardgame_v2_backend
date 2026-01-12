@@ -34,3 +34,8 @@ class UserLoginResponse(Base):
     username: str
     email: str
     token: Token
+
+
+class UserCheckTokenResponse(Base):
+    id: int
+    email: str
