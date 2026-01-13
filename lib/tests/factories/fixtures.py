@@ -1,4 +1,3 @@
-import pytest
 import pytest_asyncio
 
 from lib.tests.factories import UserFactory

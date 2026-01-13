@@ -75,3 +75,13 @@ class UserProgressResponse(Base):
     enemies: list[Enemy]
     enemy_leaders: list[EnemyLeader]
     game_const: dict
+
+
+class CreateDeckRequest(Base):
+    deck_name: str
+    leader_id: int
+    cards: list[int]
+
+
+class ListDecksResponse(Base):
+    decks: list[UserDeck]
