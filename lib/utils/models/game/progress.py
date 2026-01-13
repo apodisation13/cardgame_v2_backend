@@ -1,5 +1,5 @@
 from lib.utils.models import BaseModel
-from sqlalchemy import Boolean, ForeignKey, Integer
+from sqlalchemy import Boolean, ForeignKey, Integer, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 
@@ -45,6 +45,13 @@ class UserResource(BaseModel):
 
 class UserCard(BaseModel):
     __tablename__ = "user_cards"
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id",
+            "card_id",
+            name="uq_user_card",
+        ),
+    )
 
     id: Mapped[int] = mapped_column(
         Integer,
@@ -70,6 +77,13 @@ class UserCard(BaseModel):
 
 class UserLeader(BaseModel):
     __tablename__ = "user_leaders"
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id",
+            "leader_id",
+            name="uq_user_leader",
+        ),
+    )
 
     id: Mapped[int] = mapped_column(
         Integer,
@@ -95,6 +109,13 @@ class UserLeader(BaseModel):
 
 class UserDeck(BaseModel):
     __tablename__ = "user_decks"
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id",
+            "deck_id",
+            name="uq_user_deck",
+        ),
+    )
 
     id: Mapped[int] = mapped_column(
         Integer,
@@ -115,6 +136,13 @@ class UserDeck(BaseModel):
 
 class UserLevel(BaseModel):
     __tablename__ = "user_levels"
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id",
+            "level_id",
+            name="uq_user_level",
+        ),
+    )
 
     id: Mapped[int] = mapped_column(
         Integer,
