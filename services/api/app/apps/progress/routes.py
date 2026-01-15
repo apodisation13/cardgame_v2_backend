@@ -3,7 +3,8 @@ from fastapi import APIRouter, Depends, Path, Request
 from services.api.app.apps.auth import dependencies as auth_dependencies
 
 from services.api.app.apps.progress.schemas import UserProgressResponse, CreateDeckRequest, ListDecksResponse, \
-    ResourcesRequest, UserResources, CardCraftMillRequest, CardCraftMillResponse, Season, OpenRelatedLevelsResponse
+    ResourcesRequest, UserResources, CardCraftMillRequest, CardCraftMillResponse, Season, OpenRelatedLevelsResponse, \
+    CardCraftBonusRequest, CardCraftBonusResponse
 from services.api.app.apps.progress.service import UserProgressService
 from services.api.app.dependencies import get_user_progress_service
 
@@ -97,6 +98,21 @@ async def manage_craft_mill_card(
         user_id=user_id,
         card_id=card_id,
         subtype=card_request.subtype,
+        base_url=str(request.base_url),
+    )
+
+
+@router.post("/{user_id}/craft-bonus-cards")
+async def craft_bonus_cards(
+    request: Request,
+    craft_bonus_request: CardCraftBonusRequest,
+    _ = Depends(auth_dependencies.validate_user),
+    user_progress_service: UserProgressService = Depends(get_user_progress_service),
+    user_id: int = Path(..., gt=0),
+) -> CardCraftBonusResponse:
+    return await user_progress_service.craft_bonus_cards(
+        user_id=user_id,
+        cards_ids=craft_bonus_request.cards_ids,
         base_url=str(request.base_url),
     )
 

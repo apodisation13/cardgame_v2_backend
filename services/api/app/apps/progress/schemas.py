@@ -103,3 +103,11 @@ class CardCraftMillResponse(Base):
 
 class OpenRelatedLevelsResponse(Base):
     seasons: list[Season]
+
+
+class CardCraftBonusRequest(Base):
+    cards_ids: list[int]
+
+
+class CardCraftBonusResponse(Base):
+    cards: list[UserCard]

@@ -1,11 +1,11 @@
 from typing import Optional
 
-from lib.utils.models import BaseModel
+from lib.utils.models import BaseModel, TimestampMixin
 from sqlalchemy import Boolean, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 
-class Season(BaseModel):
+class Season(BaseModel, TimestampMixin):
     __tablename__ = "seasons"
 
     id: Mapped[int] = mapped_column(
@@ -28,7 +28,7 @@ class Season(BaseModel):
     )
 
 
-class Level(BaseModel):
+class Level(BaseModel, TimestampMixin):
     __tablename__ = "levels"
 
     id: Mapped[int] = mapped_column(
@@ -77,7 +77,7 @@ class Level(BaseModel):
     )
 
 
-class LevelRelatedLevels(BaseModel):
+class LevelRelatedLevels(BaseModel, TimestampMixin):
     __tablename__ = "level_related_levels"
     __table_args__ = (
         UniqueConstraint(
@@ -112,7 +112,7 @@ class LevelRelatedLevels(BaseModel):
     )
 
 
-class LevelEnemy(BaseModel):
+class LevelEnemy(BaseModel, TimestampMixin):
     __tablename__ = "level_enemies"
 
     id: Mapped[int] = mapped_column(

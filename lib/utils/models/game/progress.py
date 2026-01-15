@@ -1,9 +1,9 @@
-from lib.utils.models import BaseModel
+from lib.utils.models import BaseModel, TimestampMixin
 from sqlalchemy import Boolean, ForeignKey, Integer, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 
-class UserResource(BaseModel):
+class UserResource(BaseModel, TimestampMixin):
     __tablename__ = "user_resources"
 
     id: Mapped[int] = mapped_column(
@@ -43,7 +43,7 @@ class UserResource(BaseModel):
     )
 
 
-class UserCard(BaseModel):
+class UserCard(BaseModel, TimestampMixin):
     __tablename__ = "user_cards"
     __table_args__ = (
         UniqueConstraint(
@@ -75,7 +75,7 @@ class UserCard(BaseModel):
     )
 
 
-class UserLeader(BaseModel):
+class UserLeader(BaseModel, TimestampMixin):
     __tablename__ = "user_leaders"
     __table_args__ = (
         UniqueConstraint(
@@ -107,7 +107,7 @@ class UserLeader(BaseModel):
     )
 
 
-class UserDeck(BaseModel):
+class UserDeck(BaseModel, TimestampMixin):
     __tablename__ = "user_decks"
     __table_args__ = (
         UniqueConstraint(
@@ -134,7 +134,7 @@ class UserDeck(BaseModel):
     )
 
 
-class UserLevel(BaseModel):
+class UserLevel(BaseModel, TimestampMixin):
     __tablename__ = "user_levels"
     __table_args__ = (
         UniqueConstraint(

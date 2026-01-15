@@ -1,6 +1,6 @@
 from typing import Optional
 
-from lib.utils.models import BaseModel
+from lib.utils.models import BaseModel, TimestampMixin
 from sqlalchemy import Boolean, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -58,7 +58,7 @@ class PassiveAbility(BaseModel):
     )
 
 
-class Leader(BaseModel):
+class Leader(BaseModel, TimestampMixin):
     __tablename__ = "leaders"
     __table_args__ = (UniqueConstraint("name", name="uq_leader_name"),)
 
@@ -145,7 +145,7 @@ class Leader(BaseModel):
     )
 
 
-class Card(BaseModel):
+class Card(BaseModel, TimestampMixin):
     __tablename__ = "cards"
 
     id: Mapped[int] = mapped_column(
@@ -267,7 +267,7 @@ class Card(BaseModel):
     )
 
 
-class Deck(BaseModel):
+class Deck(BaseModel, TimestampMixin):
     __tablename__ = "decks"
 
     id: Mapped[int] = mapped_column(
@@ -286,7 +286,7 @@ class Deck(BaseModel):
     )
 
 
-class CardDeck(BaseModel):
+class CardDeck(BaseModel, TimestampMixin):
     __tablename__ = "card_decks"
 
     id: Mapped[int] = mapped_column(

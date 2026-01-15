@@ -1,6 +1,6 @@
 from typing import Optional
 
-from lib.utils.models import BaseModel
+from lib.utils.models import BaseModel, TimestampMixin
 from sqlalchemy import Boolean, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -81,7 +81,7 @@ class Deathwish(BaseModel):
     )
 
 
-class Enemy(BaseModel):
+class Enemy(BaseModel, TimestampMixin):
     __tablename__ = "enemies"
 
     id: Mapped[int] = mapped_column(
@@ -208,7 +208,7 @@ class Enemy(BaseModel):
     )
 
 
-class EnemyLeader(BaseModel):
+class EnemyLeader(BaseModel, TimestampMixin):
     __tablename__ = "enemy_leaders"
 
     id: Mapped[int] = mapped_column(

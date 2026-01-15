@@ -11,7 +11,7 @@ from services.api.app.apps.progress.schemas import (
     UserDatabase,
     UserProgressResponse,
     UserResources, CreateDeckRequest, ListDecksResponse, ResourcesRequest, UserCard, UserLeader,
-    CardCraftMillResponse, Season, OpenRelatedLevelsResponse,
+    CardCraftMillResponse, Season, OpenRelatedLevelsResponse, CardCraftBonusResponse,
 )
 from services.api.app.config import Config
 from services.api.app.exceptions.exceptions import CraftMillCardProcessError, ManageResourcesProcessError
@@ -391,7 +391,9 @@ class UserProgressService:
                             VALUES ($1, $2, 1)
                             ON CONFLICT (user_id, card_id)
                             DO UPDATE
-                            SET count = user_cards.count + 1
+                            SET 
+                                count = user_cards.count + 1,
+                                updated_at = NOW()
                         """,
                         user_id,
                         card_id,
@@ -442,7 +444,9 @@ class UserProgressService:
                             VALUES ($1, $2, 1)
                             ON CONFLICT (user_id, leader_id)
                             DO UPDATE
-                            SET count = user_leaders.count + 1
+                            SET 
+                                count = user_leaders.count + 1,
+                                updated_at = NOW()
                         """,
                         user_id,
                         card_id,
@@ -501,7 +505,9 @@ class UserProgressService:
                     card_count: int = await connection.fetchval(
                         """
                             UPDATE user_cards
-                            SET count = user_cards.count - 1
+                            SET 
+                                count = user_cards.count - 1,
+                                updated_at = NOW()
                             WHERE user_cards.id = $1
                             RETURNING user_cards.count
                         """,
@@ -601,7 +607,9 @@ class UserProgressService:
                     await connection.fetchrow(
                         """
                             UPDATE user_leaders
-                            SET count = user_leaders.count - 1
+                            SET 
+                                count = user_leaders.count - 1,
+                                updated_at = NOW()
                             WHERE user_leaders.id = $1
                         """,
                         user_leader["id"],
@@ -653,7 +661,9 @@ class UserProgressService:
             await connection.execute(
                 """
                     UPDATE user_levels
-                    SET finished = TRUE
+                    SET 
+                        finished = TRUE,
+                        updated_at = NOW()
                     FROM levels, level_related_levels
                     WHERE user_levels.level_id = levels.id
                       AND levels.id = level_related_levels.level_id
@@ -693,4 +703,45 @@ class UserProgressService:
 
         return OpenRelatedLevelsResponse(
             seasons=seasons,
+        )
+
+    async def craft_bonus_cards(
+        self,
+        user_id: int,
+        cards_ids: list[int],
+        base_url: str,
+    ) -> CardCraftBonusResponse:
+        logger.info("Crafting bonus cards %s for user %s",cards_ids, user_id)
+        async with self.db_pool.transaction() as connection:
+            r = await connection.fetch(
+                """
+                    WITH card_counts AS (
+                        SELECT card_id, COUNT(*) as occurrence_count
+                        FROM unnest($2::int[]) as card_id
+                        GROUP BY card_id
+                    )
+                    INSERT INTO user_cards 
+                    (user_id, card_id, count)
+                    SELECT $1, card_counts.card_id, card_counts.occurrence_count
+                    FROM card_counts
+                    ON CONFLICT (user_id, card_id)
+                    DO UPDATE
+                        SET 
+                            count = user_cards.count + EXCLUDED.count,
+                            updated_at = NOW()
+                    RETURNING user_cards.id;
+                """,
+                user_id,
+                cards_ids,
+            )
+            print("STR720", r)
+
+            user_cards = await logic.get_user_cards(
+                connection=connection,
+                user_id=user_id,
+                base_url=base_url,
+            )
+
+        return CardCraftBonusResponse(
+            cards=user_cards,
         )
