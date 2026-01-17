@@ -17,6 +17,8 @@ COPY services/api/requirements.txt /app/services/api/requirements.txt
 WORKDIR /app/services/api
 RUN pip install --no-cache-dir -r requirements.txt
 
+RUN mkdir -p /shared_static/media
+
 # Копируем код с сохранением структуры
 COPY lib/__init__.py /app/lib/__init__.py
 COPY lib/utils /app/lib/utils

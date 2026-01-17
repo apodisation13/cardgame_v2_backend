@@ -109,7 +109,7 @@ async def clean_data(pool: asyncpg.pool.Pool) -> None:
         if tables:
             await conn.execute("SET session_replication_role = replica;")
             for table in tables:
-                await conn.execute(f'TRUNCATE TABLE "{table["tablename"]}" CASCADE')
+                await conn.execute(f'TRUNCATE TABLE "{table["tablename"]}" RESTART IDENTITY CASCADE')
             await conn.execute("SET session_replication_role = DEFAULT;")
             logger.info("✅ Data cleaned")
 

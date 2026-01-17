@@ -5,6 +5,8 @@ from pathlib import Path
 import subprocess
 import sys
 
+from lib.utils.elk.elastic_logger import ElasticLoggerManager
+
 
 # Добавляем корневую директорию проекта в Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
@@ -12,8 +14,16 @@ from services.migrant.app.config import get_config
 
 
 config = get_config()
-logger = logging.getLogger(__name__)
 logging.config.dictConfig(config.LOGGING)
+
+elastic_logger_manager = ElasticLoggerManager()
+elastic_logger_manager.initialize(
+    config=config,
+    service_name="migrant",
+    delay_seconds=5,
+)
+
+logger = logging.getLogger(__name__)
 
 
 def run_migrations() -> bool:

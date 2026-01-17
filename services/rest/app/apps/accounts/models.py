@@ -1,6 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from lib.utils.schemas.users import UserRole
+
 
 class DjangoAuthUser(AbstractUser):
     class Meta:
@@ -26,6 +28,8 @@ class User(models.Model):
     username = models.CharField(max_length=50, blank=False, null=False, verbose_name="Ник пользователя")
     password = models.CharField(max_length=255, blank=False, null=False, verbose_name="Пароль")
     is_active = models.BooleanField(default=True, verbose_name="Активный")
+    email_verified = models.BooleanField(default=False, verbose_name="Почта подтверждена")
+    role = models.CharField(verbose_name="Роль", choices=UserRole.choices())
 
     def __str__(self) -> str:
         return f"Пользователь {self.pk}: {self.username} - {self.email}"

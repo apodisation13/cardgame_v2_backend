@@ -7,6 +7,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 config: Config = get_config()
 
+DEBUG = config.DEBUG
+
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",

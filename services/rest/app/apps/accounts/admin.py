@@ -15,11 +15,14 @@ class UserAdmin(admin.ModelAdmin):
         "username",
         "email",
         "is_active",
+        "role",
     )
     fields = (
         "username",
         "email",
         "is_active",
+        "role",
+        "email_verified",
     )
     readonly_fields = (
         "id",
@@ -27,7 +30,10 @@ class UserAdmin(admin.ModelAdmin):
         "email",
         "password",
     )
-    list_filter = ("is_active",)
+    list_filter = (
+        "is_active",
+        "role",
+    )
     search_fields = (
         "username",
         "email",

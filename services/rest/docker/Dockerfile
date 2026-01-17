@@ -26,10 +26,14 @@ COPY services/rest/app /app/services/rest/app
 COPY services/rest/__init__.py /app/services/rest/__init__.py
 COPY services/__init__.py /app/services/__init__.py
 
+# Копируем скрипт входа
+COPY services/rest/docker/docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Настраиваем окружение
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-#CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000"]
+ENTRYPOINT ["docker-entrypoint.sh"]
