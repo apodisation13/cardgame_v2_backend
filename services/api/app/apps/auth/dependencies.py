@@ -1,9 +1,9 @@
 import logging
 from typing import Optional
 
-from fastapi import Depends, Header, HTTPException, status, Request
+from fastapi import Depends, HTTPException, Header, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from services.api.app.apps.auth.schemas import UserRegisterRequest, UserCheckTokenResponse
+from services.api.app.apps.auth.schemas import UserCheckTokenResponse, UserRegisterRequest
 from services.api.app.apps.auth.service import AuthService
 from services.api.app.dependencies import get_auth_service
 
