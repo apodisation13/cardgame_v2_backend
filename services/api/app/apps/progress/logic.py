@@ -1,6 +1,7 @@
+import logging
+
 import asyncpg
 
-from lib.utils.schemas.game import ResourceType
 from services.api.app.apps.cards.schemas import Enemy, EnemyLeader, Card, CardForDeck, Leader, Deck
 from services.api.app.apps.progress.schemas import (
     Season,
@@ -11,6 +12,9 @@ from services.api.app.apps.progress.schemas import (
     UserLeader,
     UserCard, UserResources,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 async def process_enemies(
@@ -538,3 +542,86 @@ async def get_game_constants(
 ) -> dict:
     game_constants: dict = await connection.fetchval("""SELECT data::jsonb FROM game_constants""")
     return game_constants
+
+
+async def open_default_content(
+    connection: asyncpg.Connection,
+    user_id: int,
+):
+    logger.info("Opening default content for user: %s", user_id)
+
+    # 1. берем все открытые по умолчанию карты
+    cards = await connection.fetch("""SELECT cards.id FROM cards WHERE cards.unlocked IS TRUE""")
+    logger.info("Number of default cards to insert: %s", len(cards))
+
+    # 2. инзертим их юзеру
+    user_cards = await connection.fetch(
+        """
+            INSERT INTO user_cards (user_id, card_id, count)
+            SELECT $1, s.card_id, 1
+            FROM unnest($2::int[]) AS s(card_id)
+            RETURNING id
+        """,
+        user_id,
+        [card["id"] for card in cards],
+    )
+    logger.info("Number of user_cards inserted: %s", len(user_cards))
+
+    if len(user_cards) != len(cards):
+        raise Exception("Number of unlocked cards does not match number of inserted user_cards")
+
+    # 3. берем всех открытых по умолчанию лидеров
+    leaders = await connection.fetch("""SELECT leaders.id FROM leaders WHERE leaders.unlocked IS TRUE""")
+    logger.info("Number of default leaders to insert: %s", len(leaders))
+
+    # 4. инзертим их юзеру
+    user_leaders = await connection.fetch(
+        """
+            INSERT INTO user_leaders (user_id, leader_id, count)
+            SELECT $1, s.leader_id, 1
+            FROM unnest($2::int[]) AS s(leader_id)
+            RETURNING id
+        """,
+        user_id,
+        [card["id"] for card in leaders],
+    )
+    logger.info("Number of user_leaders inserted: %s", len(user_leaders))
+
+    if len(user_leaders) != len(leaders):
+        raise Exception("Number of unlocked leaders does not match number of inserted user_leaders")
+
+    # 5. инзертим юзеру base-desk
+    await connection.execute(
+        """
+            INSERT INTO user_decks 
+            (user_id, deck_id) 
+            VALUES ($1, 1)
+        """,
+        user_id,
+    )
+    logger.info("Inserted user_desk for base-deck")
+
+    # 6. берем все открытые по умолчанию уровни
+    levels = await connection.fetch("""SELECT levels.id FROM levels WHERE levels.unlocked IS TRUE""")
+    logger.info("Number of default levels to insert: %s", len(levels))
+
+    # 7. инзертим их юзеру
+    user_levels = await connection.fetch(
+        """
+            INSERT INTO user_levels (user_id, level_id)
+            SELECT $1, s.level_id
+            FROM unnest($2::int[]) AS s(level_id)
+            RETURNING id
+        """,
+        user_id,
+        [level["id"] for level in levels],
+    )
+    logger.info("Number of user_levels inserted: %s", len(user_levels))
+
+    if len(user_levels) != len(levels):
+        raise Exception("Number of unlocked levels does not match number of inserted user_levels")
+
+    # 8. создаем юзеру дефолтные ресурсы - они указаны напрямую в БД
+    await connection.execute("""INSERT INTO user_resources (id) VALUES ($1)""", user_id)
+
+    logger.info("Finished creating user database for user %s", user_id)
