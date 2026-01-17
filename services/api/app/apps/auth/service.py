@@ -11,8 +11,10 @@ from services.api.app.apps.auth.schemas import (
     UserLoginRequest,
     UserLoginResponse,
     UserRegisterRequest,
-    UserRegisterResponse, UserCheckTokenResponse,
+    UserRegisterResponse,
+    UserCheckTokenResponse,
 )
+from services.api.app.apps.progress import logic
 from services.api.app.config import Config
 from services.api.app.exceptions import UserAlreadyExistsError, UserNotFoundError
 
@@ -63,21 +65,26 @@ class AuthService:
         self,
         user_data: UserRegisterRequest,
     ) -> UserRegisterResponse:
-        async with self.db_pool.connection() as conn:
+        async with self.db_pool.transaction() as connection:
             try:
-                user_id = await conn.fetchval(
+                user_id = await connection.fetchval(
                     """
                     INSERT INTO users
-                    (username, email, password)
+                    (email, username, password)
                     VALUES ($1, $2, $3)
                     RETURNING id
                     """,
-                    user_data.username,
                     user_data.email,
+                    user_data.username,
                     get_password_hash(user_data.password),
                 )
             except UniqueViolationError as e:
                 raise UserAlreadyExistsError(e) from e
+
+            await logic.open_default_content(
+                connection=connection,
+                user_id=user_id,
+            )
 
         user_model = {
             "id": user_id,
@@ -86,18 +93,18 @@ class AuthService:
         }
         return UserRegisterResponse.model_validate(user_model)
 
-    async def login(
+    async def login_user(
         self,
         user_data: UserLoginRequest,
     ) -> UserLoginResponse:
         user: dict = await self._get_authenticated_user(
-            email=user_data.email,
+            email=str(user_data.email),
             password=user_data.password,
         )
 
         access_token = create_access_token(
             data={"sub": user_data.email},
-            # expires_delta_minutes=access_token_expires,
+            # expires_delta_minutes=1,
         )
 
         token = Token(access_token=access_token, token_type="bearer")
@@ -107,29 +114,6 @@ class AuthService:
             email=user["email"],
             token=token,
         )
-
-    # async def _get_user_from_db(
-    #     self,
-    #     email: str,
-    # ) -> UserRegister:
-    #     async with self.db_pool.connection() as conn:
-    #         user = await conn.fetchrow(
-    #             """
-    #             SELECT
-    #                 username,
-    #                 email,
-    #                 password
-    #             FROM
-    #                 users
-    #             WHERE
-    #                 email = $1
-    #             """,
-    #             email,
-    #         )
-    #     if not user:
-    #         raise UserNotFoundError()
-    #
-    #     return UserRegister.model_validate(dict(user))
 
     async def _get_user_by_email(
         self,
@@ -152,7 +136,7 @@ class AuthService:
                 """,
                 email,
             )
-        if not user:
+        if not user or not user["is_active"]:
             raise UserNotFoundError()
 
         return dict(user)
@@ -171,7 +155,6 @@ class AuthService:
         token: str,
     ) -> UserRegisterRequest:
         email = decode_token(token)
-        print("STR178", email)
 
         if email is None:
             raise HTTPException(
@@ -181,7 +164,7 @@ class AuthService:
             )
 
         user = await self._get_user_by_email(email=email)
-        print("STR188", user)
+
         return UserRegisterRequest(
             username=user["username"],
             email=user["email"],
@@ -216,7 +199,6 @@ class AuthService:
         token: str,
     ) -> UserCheckTokenResponse:
         email = decode_token(token)
-        print("STR219", email)
 
         if email is None:
             raise HTTPException(
@@ -226,7 +208,7 @@ class AuthService:
             )
 
         user = await self._get_user_by_email(email=email)
-        print("STR229", user)
+
         return UserCheckTokenResponse(
             id=user["id"],
             email=user["email"],
