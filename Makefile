@@ -9,9 +9,9 @@ ALEMBIC_INI = services/migrant/app/alembic.ini
 
 # ----------------------------TESTS----------------------------
 test:
-	$(PYTEST) -s -v
+	$(PYTEST) -s -vv
 test-output:
-	$(PYTEST) -s -v >output.log
+	$(PYTEST) -s -vv >output.log
 
 # ----------------------------LINTERS----------------------------
 ruff-check:

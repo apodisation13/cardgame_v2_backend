@@ -28,3 +28,8 @@ db.json
 .gitignore
 *.http
 *.log
+
+# essential project files
+*.jpg
+*.webp
+*.ods

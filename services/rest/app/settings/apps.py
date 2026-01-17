@@ -7,15 +7,21 @@ DJANGO_DEFAULT_APPS = [
     "django.contrib.staticfiles",
 ]
 
-APPS = [
-    "apps.accounts.apps.AccountsConfig",
-    "apps.cron.apps.CronConfig",
-    "apps.events.apps.EventsConfig",
-]
-
 SERVICE_APPS = [
     "django_json_widget",
 ]
 
+APPS = [
+    "apps.accounts.apps.AccountsConfig",
+    "apps.cards.apps.CardsConfig",
+    "apps.core.apps.CoreConfig",
+    "apps.cron.apps.CronConfig",
+    "apps.enemies.apps.EnemiesConfig",
+    "apps.events.apps.EventsConfig",
+    "apps.news.apps.NewsConfig",
+    "apps.seasons.apps.SeasonsConfig",
+    "apps.user_progress.apps.UserProgressConfig",
+]
 
-INSTALLED_APPS = APPS + DJANGO_DEFAULT_APPS + SERVICE_APPS
+
+INSTALLED_APPS = DJANGO_DEFAULT_APPS + SERVICE_APPS + APPS

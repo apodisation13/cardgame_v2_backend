@@ -19,38 +19,54 @@ class AsyncFactory(factory.Factory):
         return [await cls.create_async(**kwargs) for _ in range(size)]
 
 
-class BaseModelFactory(AsyncFactory):
-    """Базовая фабрика для всех моделей"""
-
+class TimeStampMixinFactory(AsyncFactory):
     class Meta:
         abstract = True
 
-    id = factory.Sequence(lambda n: n + 1)
-    # created_at = factory.Faker('date_time_this_year')
-    # updated_at = factory.Faker('date_time_this_month')
+
+class BaseModelFactory(AsyncFactory):
+    class Meta:
+        abstract = True
 
     @classmethod
-    async def create_in_db(cls, conn, **kwargs) -> dict:
-        """Создание объекта в БД"""
-        obj = cls.build(**kwargs)
+    def _get_model_columns(cls) -> list:
+        """Получаем список колонок модели"""
+        model_class = cls._meta.model
+        return [column.name for column in model_class.__table__.columns]
 
-        # Формируем SQL запрос
+    @classmethod
+    async def create_in_db(cls, conn, **kwargs) -> object:
+        # Получаем список колонок модели
+        columns = cls._get_model_columns()
+
+        # Собираем данные для вставки
+        data = {}
+
+        # 1. Базовые значения из фабрики
+        base_obj = cls.build()
+        for column in columns:
+            if hasattr(base_obj, column):
+                value = getattr(base_obj, column)
+                if value is not None:
+                    data[column] = value
+
+        # 2. Переопределяем переданными значениями
+        data.update({key: value for key, value in kwargs.items() if key in columns})
+
+        # Формируем запрос
         table_name = cls._meta.model.__tablename__
-        columns = []
-        values = []
-        placeholders = []
-
-        for key, value in obj.__dict__.items():
-            if not key.startswith("_"):
-                columns.append(key)
-                values.append(value)
-                placeholders.append(f"${len(placeholders) + 1}")
+        insert_columns = list(data.keys())
+        values = list(data.values())
+        placeholders = [f"${i + 1}" for i in range(len(values))]
 
         query = f"""
-            INSERT INTO {table_name} ({", ".join(columns)})
-            VALUES ({", ".join(placeholders)})
-            RETURNING *
-        """  # noqa: S608
+                INSERT INTO {table_name} ({", ".join(insert_columns)})
+                VALUES ({", ".join(placeholders)})
+                RETURNING *
+            """  # noqa: S608
 
         result = await conn.fetchrow(query, *values)
-        return dict(result)
+        result_dict = dict(result)
+
+        model_class = cls._meta.model
+        return model_class(**result_dict)

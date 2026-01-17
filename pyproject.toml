@@ -19,7 +19,7 @@ include = [
 "test**.py" = ["ANN001",]
 "**/tests/**" = ["ANN001", "ARG", "N806", ]
 "factories.py" = ["ANN001",]
-
+"**/fixtures.py" = ["ANN"]  # Игнорировать ANN правил во всех fixtures.py файлах
 
 [tool.ruff.lint]
 select = [

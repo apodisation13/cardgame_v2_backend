@@ -1,6 +1,7 @@
 from lib.utils.config.base import (
     BaseConfig,
     BaseDevelopmentLocalConfig,
+    BaseDockerLocalConfig,
     BaseProductionConfig,
     BaseTestLocalConfig,
     BaseTestingConfig,
@@ -28,11 +29,15 @@ class DevelopmentLocalConfig(BaseDevelopmentLocalConfig, Config): ...
 class TestLocalConfig(BaseTestLocalConfig, Config): ...
 
 
+class DockerLocalConfig(BaseDockerLocalConfig, Config): ...
+
+
 CONFIG_MAP = {
     EnvType.TEST_LOCAL: TestLocalConfig,
     EnvType.DEVELOPMENT_LOCAL: DevelopmentLocalConfig,
     EnvType.TESTING: TestingConfig,
     EnvType.PRODUCTION: ProductionConfig,
+    EnvType.DOCKER_LOCAL: DockerLocalConfig,
 }
 
 

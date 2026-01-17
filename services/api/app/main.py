@@ -1,26 +1,47 @@
 from contextlib import asynccontextmanager
 import logging.config
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import APIRouter, FastAPI
 from lib.utils.db.pool import Database
+from lib.utils.elk.elastic_logger import ElasticLoggerManager
+from lib.utils.elk.elastic_tracer import ElasticTracerManager
 from services.api.app.apps.api_docs.routes import router as swagger_router
 from services.api.app.apps.auth.routes import router as users_router
+from services.api.app.apps.news.routes import router as news_router
+from services.api.app.apps.progress.routes import router as progress_router
 from services.api.app.config import get_config as get_app_settings
 from services.api.app.dependencies import set_global_app
 from services.api.app.exceptions.handlers import add_exceptions
+from services.api.app.middlewares import set_middlewares
+from services.api.app.staticfiles import mount_static
+
+
+apm_manager = ElasticTracerManager()
+config = get_app_settings()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.config = get_app_settings()
+    app.state.config = config
+
+    logging.config.dictConfig(config.LOGGING)
+
+    elastic_logger_manager = ElasticLoggerManager()
+    elastic_logger_manager.initialize(
+        config=config,
+        service_name="fast-api",
+        delay_seconds=5,
+    )
+    apm_manager.initialize(
+        config=config,
+        service_name="fast-api",
+    )
 
     logger = logging.getLogger(__name__)
-    logging.config.dictConfig(app.state.config.LOGGING)
 
     logger.info("Starting API")
 
-    db = Database(app.state.config)
+    db = Database(config)
     await db.connect()
     app.state.db = db
 
@@ -31,24 +52,23 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Project API",
+    title="Gridways backend",
     lifespan=lifespan,
     version="1.0.0",
     docs_url=None,
     redoc_url=None,
-    openapi_url="/api/v1/openapi.json",
 )
 
 add_exceptions(app)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Разрешить все домены (только для разработки!)
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+set_middlewares(app, config, apm_manager)
+mount_static(app, config)
 
 
-app.include_router(swagger_router, prefix="", tags=["swagger"])
-app.include_router(users_router, prefix="/users", tags=["accounts"])
+api_v1_router = APIRouter(prefix="/api/v1")
+
+api_v1_router.include_router(swagger_router, prefix="", tags=["swagger"])
+api_v1_router.include_router(users_router, prefix="/users", tags=["accounts"])
+api_v1_router.include_router(news_router, prefix="/news", tags=["news"])
+api_v1_router.include_router(progress_router, prefix="/user-progress", tags=["progress"])
+
+app.include_router(api_v1_router)
