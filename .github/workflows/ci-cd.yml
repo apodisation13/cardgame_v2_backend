@@ -123,6 +123,8 @@ jobs:
       - name: Анализируем изменения
         id: detect
         run: |
+          ALL_SERVICES_LIST="migrant,api,rest,events,cron"
+          
           echo "🔍 Анализируем что изменилось в PR..."
           
           # Получаем измененные файлы
@@ -157,8 +159,8 @@ jobs:
           if [[ "$CI_FILES_CHANGED" == "true" ]]; then
             echo "⚙️  Изменены CI/CD файлы - билдим ВСЕ сервисы"
             echo "build_all=true" >> $GITHUB_OUTPUT
-            echo "services=migrant,api,rest,events,cron" >> $GITHUB_OUTPUT
-            SERVICES_JSON="[\"$(echo "$CHANGED_SERVICES" | sed 's/,/","/g')\"]"
+            echo "services=$ALL_SERVICES_LIST" >> $GITHUB_OUTPUT
+            SERVICES_JSON="[\"$(echo "$ALL_SERVICES_LIST" | sed 's/,/\",\"/g')\"]"
             echo "✅ Преобразовано в JSON: $SERVICES_JSON"
             echo "services_json=$SERVICES_JSON" >> $GITHUB_OUTPUT
             exit 0
