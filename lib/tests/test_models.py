@@ -4,6 +4,7 @@ import pytest
 @pytest.mark.asyncio
 async def test_create_user(db_connection, db_pool):
     print(type(db_connection), type(db_pool))
+    print(1)
 
     await db_connection.execute(
         """
