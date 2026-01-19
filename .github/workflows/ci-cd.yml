@@ -192,20 +192,28 @@ jobs:
             done
           done
           
-          # ПРАВИЛО 5: Если только модели изменились
-          if [[ -z "$CHANGED_SERVICES" ]]; then
-            ONLY_MODELS=true
-            for file in $CHANGED_FILES; do
-              if [[ $file =~ ^lib/utils/models/ ]]; then
-                echo "🗃️  Изменены модели - билдим migrant и api"
-                CHANGED_SERVICES="migrant,api,"
-                break
-              fi
-            done
-          fi
-          
           # Убираем последнюю запятую
           CHANGED_SERVICES=${CHANGED_SERVICES%,}
+          
+          # ПРАВИЛО 5: Проверяем nginx.conf
+          NGINX_CHANGED=false
+          for file in $CHANGED_FILES; do
+            if [[ $file =~ nginx\.conf$ ]]; then
+              NGINX_CHANGED=true
+              echo "🌐 Изменен nginx.conf"
+              break
+            fi
+          done
+          
+          # Добавляем nginx в список сервисов если он изменился
+          if [[ "$NGINX_CHANGED" == "true" ]]; then
+            echo "➕ Добавляем nginx в список сервисов для сборки"
+            if [[ -n "$CHANGED_SERVICES" ]]; then
+              CHANGED_SERVICES="$CHANGED_SERVICES,nginx"
+            else
+              CHANGED_SERVICES="nginx"
+            fi
+          fi
           
           echo "📦 Сервисы для сборки: $CHANGED_SERVICES"
           echo "services=$CHANGED_SERVICES" >> $GITHUB_OUTPUT
