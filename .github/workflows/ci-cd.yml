@@ -3,26 +3,37 @@ name: CI/CD Pipeline
 on:
   pull_request:
     branches: [ main, testing ]
-  push:
-    branches: [ main, testing ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository }}
+
 
 jobs:
-  validate-pr-to-main:
-    if: github.base_ref == 'main'
+  validate-if-pr-to-main-from-testing-only:
     runs-on: ubuntu-latest
+    outputs:
+      pr_valid: ${{ steps.validate.outputs.valid }}
     steps:
-      - name: Check PR to main is from testing
+      - name: Check PR to main is from testing only
+        id: validate
         run: |
-          if [ "${{ github.head_ref }}" != "testing" ]; then
+          echo "🔍 Проверяем правила Pull Request..."
+          echo "Целевая ветка: ${{ github.base_ref }}"
+          echo "Исходная ветка: ${{ github.head_ref }}"
+          
+          if [[ "${{ github.base_ref }}" == "main" && "${{ github.head_ref }}" != "testing" ]]; then
             echo "❌ PR to main can only be from testing branch"
-            echo "Current source: ${{ github.head_ref }}"
+            echo "valid=false" >> $GITHUB_OUTPUT
             exit 1
           fi
+          
           echo "✅ Valid PR: main ← testing"
+          echo "valid=true" >> $GITHUB_OUTPUT
 
-  pr-validation:
-    needs: validate-pr-to-main
-    if: always() && (needs.validate-pr-to-main.result == 'skipped' || needs.validate-pr-to-main.result == 'success') && github.event_name == 'pull_request'
+  linters-and-tests:
+    needs: validate-if-pr-to-main-from-testing-only
+    if: needs.validate-if-pr-to-main-from-testing-only.outputs.pr_valid == 'true'
     runs-on: ubuntu-latest
 
     services:
@@ -67,10 +78,6 @@ jobs:
         EOF
         echo "✅ Created .env file"
 
-    - name: Run tests
-      run: |
-        pytest -s -v
-
     - name: Run ruff check
       run: |
         echo "🔍 Checking code with ruff..."
@@ -94,3 +101,112 @@ jobs:
         echo "✅ Code formatting is correct"
 
         echo "🎉 All checks passed!"
+
+    - name: Run tests
+      run: |
+        pytest -s -vv
+
+  analyze-changes:
+    needs: linters-and-tests
+    runs-on: ubuntu-latest
+    outputs:
+      services_to_build: ${{ steps.detect.outputs.services }}
+      build_all: ${{ steps.detect.outputs.build_all }}
+
+    steps:
+      - name: Получаем код
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Анализируем изменения
+        id: detect
+        run: |
+          echo "🔍 Анализируем что изменилось в PR..."
+          
+          # Получаем измененные файлы
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }})
+          echo "📄 Измененные файлы:"
+          echo "$CHANGED_FILES"
+          echo ""
+          
+          # ПРАВИЛО 1: Игнорируем если только тесты
+          ONLY_TESTS=true
+          for file in $CHANGED_FILES; do
+            if [[ ! $file =~ /tests/ ]] && [[ ! $file =~ ^lib/tests/ ]]; then
+              ONLY_TESTS=false
+            fi
+          done
+          
+          if [[ "$ONLY_TESTS" == "true" ]]; then
+            echo "📝 Только тесты изменены - ничего не билдим"
+            echo "services=" >> $GITHUB_OUTPUT
+            echo "build_all=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # ПРАВИЛО 2: Проверяем CI/CD файлы
+          CI_FILES_CHANGED=false
+          for file in $CHANGED_FILES; do
+            if [[ $file =~ ^\.github/ ]] || [[ $file =~ (docker-compose|Dockerfile) ]]; then
+              CI_FILES_CHANGED=true
+            fi
+          done
+          
+          if [[ "$CI_FILES_CHANGED" == "true" ]]; then
+            echo "⚙️  Изменены CI/CD файлы - билдим ВСЕ сервисы"
+            echo "build_all=true" >> $GITHUB_OUTPUT
+            echo "services=migrant,api,rest,events,cron" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # ПРАВИЛО 3: Проверяем lib/utils (кроме models)
+          LIB_UTILS_CHANGED=false
+          for file in $CHANGED_FILES; do
+            if [[ $file =~ ^lib/utils/ ]] && [[ ! $file =~ ^lib/utils/models/ ]]; then
+              LIB_UTILS_CHANGED=true
+            fi
+          done
+          
+          if [[ "$LIB_UTILS_CHANGED" == "true" ]]; then
+            echo "📚 Изменены общие утилиты - билдим ВСЕ сервисы"
+            echo "build_all=true" >> $GITHUB_OUTPUT
+            echo "services=migrant,api,rest,events,cron" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # ПРАВИЛО 4: Определяем измененные сервисы
+          echo "🔎 Ищем измененные микросервисы..."
+          CHANGED_SERVICES=""
+          
+          # Список всех сервисов
+          ALL_SERVICES=("migrant" "api" "rest" "events" "cron")
+          
+          for service in "${ALL_SERVICES[@]}"; do
+            for file in $CHANGED_FILES; do
+              if [[ $file =~ ^services/$service/ ]] && [[ ! $file =~ ^services/$service/tests/ ]]; then
+                echo "✅ Сервис '$service' изменился"
+                CHANGED_SERVICES="$CHANGED_SERVICES$service,"
+                break
+              fi
+            done
+          done
+          
+          # ПРАВИЛО 5: Если только модели изменились
+          if [[ -z "$CHANGED_SERVICES" ]]; then
+            ONLY_MODELS=true
+            for file in $CHANGED_FILES; do
+              if [[ $file =~ ^lib/utils/models/ ]]; then
+                echo "🗃️  Изменены модели - билдим migrant и api"
+                CHANGED_SERVICES="migrant,api,"
+                break
+              fi
+            done
+          fi
+          
+          # Убираем последнюю запятую
+          CHANGED_SERVICES=${CHANGED_SERVICES%,}
+          
+          echo "📦 Сервисы для сборки: $CHANGED_SERVICES"
+          echo "services=$CHANGED_SERVICES" >> $GITHUB_OUTPUT
+          echo "build_all=false" >> $GITHUB_OUTPUT
