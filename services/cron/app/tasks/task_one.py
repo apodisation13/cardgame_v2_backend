@@ -13,6 +13,7 @@ class TaskOne(TaskBase):
 
     async def do(self):
         logger.info("Starting TaskOne execution")
+        print(1)
 
         async with self.db.connection() as conn:
             users = await conn.fetch("SELECT * FROM users")
