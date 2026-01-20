@@ -22,6 +22,7 @@
 #
 #         a = await db_connection.fetch("SELECT * FROM users")
 #         print("STR40", a)
+#         print(2)
 #
 #         response_json = response.json()
 #         print("STR38", response_json)

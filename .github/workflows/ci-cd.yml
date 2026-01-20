@@ -3,6 +3,18 @@ name: CI/CD Pipeline
 on:
   pull_request:
     branches: [ main, testing ]
+    types: [opened, synchronize, closed]
+
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Целевое окружение'
+        required: true
+        default: 'testing'
+        type: choice
+        options:
+          - testing
+          - production
 
 env:
   REGISTRY: ghcr.io
@@ -107,11 +119,15 @@ jobs:
         pytest -s -vv
 
   analyze-changes:
+    if: |
+      github.event.action == 'closed' &&
+      github.event.pull_request.merged == true
     needs: linters-and-tests
     runs-on: ubuntu-latest
     outputs:
       services_to_build: ${{ steps.detect.outputs.services }}
       build_all: ${{ steps.detect.outputs.build_all }}
+      services_json: ${{ steps.detect.outputs.services_json }}
 
     steps:
       - name: Получаем код
@@ -122,6 +138,8 @@ jobs:
       - name: Анализируем изменения
         id: detect
         run: |
+          ALL_SERVICES_LIST="migrant,api,rest,events,cron"
+          
           echo "🔍 Анализируем что изменилось в PR..."
           
           # Получаем измененные файлы
@@ -142,21 +160,6 @@ jobs:
             echo "📝 Только тесты изменены - ничего не билдим"
             echo "services=" >> $GITHUB_OUTPUT
             echo "build_all=false" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          
-          # ПРАВИЛО 2: Проверяем CI/CD файлы
-          CI_FILES_CHANGED=false
-          for file in $CHANGED_FILES; do
-            if [[ $file =~ ^\.github/ ]] || [[ $file =~ (docker-compose|Dockerfile) ]]; then
-              CI_FILES_CHANGED=true
-            fi
-          done
-          
-          if [[ "$CI_FILES_CHANGED" == "true" ]]; then
-            echo "⚙️  Изменены CI/CD файлы - билдим ВСЕ сервисы"
-            echo "build_all=true" >> $GITHUB_OUTPUT
-            echo "services=migrant,api,rest,events,cron" >> $GITHUB_OUTPUT
             exit 0
           fi
           
@@ -192,21 +195,142 @@ jobs:
             done
           done
           
-          # ПРАВИЛО 5: Если только модели изменились
-          if [[ -z "$CHANGED_SERVICES" ]]; then
-            ONLY_MODELS=true
-            for file in $CHANGED_FILES; do
-              if [[ $file =~ ^lib/utils/models/ ]]; then
-                echo "🗃️  Изменены модели - билдим migrant и api"
-                CHANGED_SERVICES="migrant,api,"
-                break
-              fi
-            done
-          fi
-          
           # Убираем последнюю запятую
           CHANGED_SERVICES=${CHANGED_SERVICES%,}
           
           echo "📦 Сервисы для сборки: $CHANGED_SERVICES"
           echo "services=$CHANGED_SERVICES" >> $GITHUB_OUTPUT
           echo "build_all=false" >> $GITHUB_OUTPUT
+          
+          if [[ -n "$CHANGED_SERVICES" ]]; then
+            # Способ 1: Через sed и tr (простой)
+            SERVICES_JSON="[\"$(echo "$CHANGED_SERVICES" | sed 's/,/","/g')\"]"
+            echo "✅ Преобразовано в JSON: $SERVICES_JSON"
+            echo "services_json=$SERVICES_JSON" >> $GITHUB_OUTPUT
+          else
+            echo "services_json=[]" >> $GITHUB_OUTPUT
+          fi
+
+  build-images:
+    needs: [ linters-and-tests, analyze-changes]
+    if: |
+      github.event.action == 'closed' &&
+      github.event.pull_request.merged == true  &&
+      needs.analyze-changes.outputs.services_to_build != '' &&
+      success()
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.analyze-changes.outputs.services_json) }}
+
+    steps:
+      - name: Получаем код
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Настройка Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Логин в GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Билд и пуш образа
+        run: |
+          echo "🔨 Собираем образ для ${{ matrix.service }}"
+          
+          # Определяем тег
+          if [[ "${{ github.base_ref }}" == "main" ]]; then
+            TAG="production"
+          else
+            TAG="testing"
+          fi
+          
+          echo "${{ matrix.service }}:$TAG"
+
+  # ==========================================
+  # 🖐️ РУЧНОЙ ФЛОУ (только для workflow_dispatch)
+  # ==========================================
+  manual-build-and-deploy:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    environment: ${{ github.event.inputs.environment }}
+
+    steps:
+      - name: 📥 Получаем код
+        uses: actions/checkout@v4
+
+      - name: 🔐 Логин в GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔨 Билдим свои сервисы
+        run: |
+          export TAG="${{ github.event.inputs.environment }}"
+          
+          # Сервисы у которых есть build: в docker-compose
+          OUR_SERVICES="migrant api rest events cron"
+          
+          echo "🚀 Билдим: $OUR_SERVICES"
+          echo "🏷️ Тег: $TAG"
+          echo ""
+          
+          docker compose build $OUR_SERVICES
+
+      - name: 📤 Пушим образы в registry
+        run: |
+          export TAG="${{ github.event.inputs.environment }}"
+          
+          OUR_SERVICES="migrant api rest events cron"
+          
+          echo "📤 Пушим образы..."
+          docker compose push $OUR_SERVICES
+          
+          echo "✅ Все образы в registry!"
+
+      - name: 🚀 Деплой на сервер
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "🚀 Деплой на ${{ github.event.inputs.environment }}"
+            
+            cd ${{ secrets.PROJECT_PATH }}
+            
+            export TAG="${{ github.event.inputs.environment }}"
+            
+            echo "📥 Логинимся в registry..."
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            echo "📥 Пуллим новые образы..."
+            docker compose pull migrant api rest events cron
+            
+            echo "🔄 Перезапускаем сервисы..."
+            docker compose up -d
+            
+            echo "🧹 Чистим старые образы..."
+            docker image prune -f
+            
+            echo ""
+            echo "✅ Деплой завершён!"
+            docker compose ps
+
+      - name: 📋 Итог
+        run: |
+          echo "=========================================="
+          echo "✅ Ручной билд и деплой завершён!"
+          echo "=========================================="
+          echo ""
+          echo "🏷️ Окружение: ${{ github.event.inputs.environment }}"
+          echo "📦 Сервисы: migrant, api, rest, events, cron"
+          echo "🖥️ Сервер: ${{ secrets.SERVER_HOST }}"
