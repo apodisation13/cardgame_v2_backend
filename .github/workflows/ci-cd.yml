@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: ci-cd gridways backend
 
 on:
   pull_request:
@@ -279,6 +279,8 @@ jobs:
     runs-on: ubuntu-latest
 
     environment: ${{ github.base_ref == 'main' && 'production' || 'testing' }}
+    env:
+      MODE: ${{ github.ref_name == 'main' && 'production' || 'testing' }}
 
     steps:
       - name: 🏷️ Определяем окружение
@@ -289,6 +291,15 @@ jobs:
           else
             echo "tag=testing" >> $GITHUB_OUTPUT
           fi
+
+      - name: Send docker-compose
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_SERVER }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "docker-compose.yml"
+          target: "/srv/cardgame/backend/${{ env.MODE }}"
 
       - name: 🚀 Деплой на сервер
         uses: appleboy/ssh-action@v1
@@ -331,6 +342,8 @@ jobs:
     runs-on: ubuntu-latest
 
     environment: ${{ github.event.inputs.environment }}
+    env:
+      MODE: ${{ github.ref_name == 'main' && 'production' || 'testing' }}
 
     steps:
       - name: 📥 Получаем код
@@ -366,6 +379,15 @@ jobs:
           docker-compose push $OUR_SERVICES
           
           echo "✅ Все образы в registry!"
+
+      - name: Send docker-compose
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_SERVER }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "docker-compose.yaml"
+          target: "/srv/cardgame/backend/${{ env.MODE }}"
 
       - name: 🚀 Деплой на сервер
         uses: appleboy/ssh-action@v1
