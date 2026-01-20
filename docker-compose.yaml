@@ -11,8 +11,8 @@
 x-common: &common
   networks:
     - app-network
-  env_file:
-    - ./.env.docker
+#  env_file:
+#    - ./.env.docker
 
 services:
   # ============ БАЗОВЫЕ СЕРВИСЫ ============
