@@ -367,7 +367,7 @@ jobs:
           echo "🏷️ Тег: $TAG"
           echo ""
           
-          docker-compose build $OUR_SERVICES
+          docker compose build $OUR_SERVICES
 
       - name: 📤 Пушим образы в registry
         run: |
@@ -376,7 +376,7 @@ jobs:
           OUR_SERVICES="migrant api rest events cron"
           
           echo "📤 Пушим образы..."
-          docker-compose push $OUR_SERVICES
+          docker compose push $OUR_SERVICES
           
           echo "✅ Все образы в registry!"
 
