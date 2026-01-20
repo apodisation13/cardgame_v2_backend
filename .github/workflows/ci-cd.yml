@@ -417,7 +417,7 @@ jobs:
           script: |
             echo "🚀 Деплой на ${{ github.event.inputs.environment }}"
             
-            cd ${{ secrets.PROJECT_PATH }}
+            cd /srv/cardgame/backend/${{ env.MODE }}
             
             export TAG="${{ github.event.inputs.environment }}"
             
