@@ -24,6 +24,7 @@ env:
 jobs:
   validate-if-pr-to-main-from-testing-only:
     runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_dispatch'
     outputs:
       pr_valid: ${{ steps.validate.outputs.valid }}
     steps:
@@ -45,7 +46,9 @@ jobs:
 
   linters-and-tests:
     needs: validate-if-pr-to-main-from-testing-only
-    if: needs.validate-if-pr-to-main-from-testing-only.outputs.pr_valid == 'true'
+    if: | 
+      github.event_name != 'workflow_dispatch' &&
+      needs.validate-if-pr-to-main-from-testing-only.outputs.pr_valid == 'true'
     runs-on: ubuntu-latest
 
     services:
@@ -212,6 +215,7 @@ jobs:
   build-images:
     needs: [ linters-and-tests, analyze-changes ]
     if: |
+      github.event_name != 'workflow_dispatch' &&
       github.event_name == 'pull_request' &&
       github.event.action == 'closed' &&
       github.event.pull_request.merged == true &&
@@ -271,6 +275,7 @@ jobs:
   deploy:
     needs: [ analyze-changes, build-images ]
     if: |
+      github.event_name != 'workflow_dispatch' &&
       github.event_name == 'pull_request' &&
       github.event.action == 'closed' &&
       github.event.pull_request.merged == true &&
@@ -342,7 +347,6 @@ jobs:
   # ==========================================
   manual-build-and-deploy:
     if: github.event_name == 'workflow_dispatch'
-    needs: linters-and-tests
     runs-on: ubuntu-latest
 
     environment: ${{ github.event.inputs.environment }}
@@ -434,9 +438,9 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           envs: ENV_CONTENT,MODE
           script: |
-            echo "🚀 Деплой на ${{ github.event.inputs.environment }}"
+            echo "🚀 Деплой на $MODE"
             
-            cd /srv/cardgame/backend/${{ env.MODE }}
+            cd /srv/cardgame/backend/$MODE
             
             printf '%s\n' "$ENV_CONTENT" > .env.docker
             
