@@ -35,7 +35,7 @@ def get_secret(
 ) -> str | int | float | bool:
     value = os.getenv(secret_name)
 
-    if value is None:
+    if value is None or value == "":
         return default
 
     try:
