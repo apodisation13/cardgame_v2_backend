@@ -363,7 +363,6 @@ jobs:
       - name: 🔐 Создаем .env из Environment secrets
         run: |
           cat > .env << EOF
-          CONFIG=${{ secrets.CONFIG }}
           DB_PORT_OUTSIDE=${{ secrets.DB_PORT_OUTSIDE }}
           DB_NAME=${{ secrets.DB_NAME }}
           DB_USER=${{ secrets.DB_USER }}
@@ -418,27 +417,28 @@ jobs:
           host: ${{ secrets.SSH_SERVER }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
+          envs: ENV_CONTENT,MODE
+        env:
+          MODE: ${{ github.event.inputs.environment }}
+          ENV_CONTENT: |
+            CONFIG=${{ secrets.CONFIG }}
+            DB_PORT_OUTSIDE=${{ secrets.DB_PORT_OUTSIDE }}
+            DB_NAME=${{ secrets.DB_NAME }}
+            DB_USER=${{ secrets.DB_USER }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            DJANGO_SUPERUSER_USERNAME=${{ secrets.DJANGO_SUPERUSER_USERNAME }}
+            DJANGO_SUPERUSER_EMAIL=${{ secrets.DJANGO_SUPERUSER_EMAIL }}
+            DJANGO_SUPERUSER_PASSWORD=${{ secrets.DJANGO_SUPERUSER_PASSWORD }}
+            ELASTIC_PASSWORD=${{ secrets.ELASTIC_PASSWORD }}
+            KIBANA_SYSTEM_PASSWORD=${{ secrets.KIBANA_SYSTEM_PASSWORD }}
+            APM_SECRET_TOKEN=${{ secrets.APM_SECRET_TOKEN }}
+            APP_PORT_OUTSIDE=${{ secrets.APP_PORT_OUTSIDE }}
           script: |
             echo "🚀 Деплой на ${{ github.event.inputs.environment }}"
             
             cd /srv/cardgame/backend/${{ env.MODE }}
             
-            export REGISTRY=${{ env.REGISTRY }}
-            export BACKEND_IMAGE_NAME=${{ env.BACKEND_IMAGE_NAME }}
-            export MODE=${{ env.MODE }}
-            
-            echo "CONFIG=${{ secrets.CONFIG }}" > .env
-            echo "DB_PORT_OUTSIDE=${{ secrets.DB_PORT_OUTSIDE }}" >> .env
-            echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
-            echo "DB_USER=${{ secrets.DB_USER }}" >> .env
-            echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-            echo "DJANGO_SUPERUSER_USERNAME=${{ secrets.DJANGO_SUPERUSER_USERNAME }}" >> .env
-            echo "DJANGO_SUPERUSER_EMAIL=${{ secrets.DJANGO_SUPERUSER_EMAIL }}" >> .env
-            echo "DJANGO_SUPERUSER_PASSWORD=${{ secrets.DJANGO_SUPERUSER_PASSWORD }}" >> .env
-            echo "ELASTIC_PASSWORD=${{ secrets.ELASTIC_PASSWORD }}" >> .env
-            echo "KIBANA_SYSTEM_PASSWORD=${{ secrets.KIBANA_SYSTEM_PASSWORD }}" >> .env
-            echo "APM_SECRET_TOKEN=${{ secrets.APM_SECRET_TOKEN }}" >> .env
-            echo "APP_PORT_OUTSIDE=${{ secrets.APP_PORT_OUTSIDE }}" >> .env
+            printf '%s\n' "$ENV_CONTENT" > .env.docker
             
             export TAG="${{ github.event.inputs.environment }}"
             

@@ -11,8 +11,8 @@
 x-common: &common
   networks:
     - app-network
-#  env_file:
-#    - ./.env.docker
+  env_file:
+    - ./.env.docker
 
 services:
   # ============ БАЗОВЫЕ СЕРВИСЫ ============
@@ -107,6 +107,12 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
 
   elasticsearch-setup:
     <<: *common
@@ -240,7 +246,7 @@ services:
   # ============ МИКРОСЕРВИСЫ ============
   migrant:
     <<: *common
-    image: ${REGISTRY}/${BACKEND_IMAGE_NAME}/migrant:${MODE}
+    image: ${REGISTRY:-ghcr.io}/${BACKEND_IMAGE_NAME:-gridways_backend}/migrant:${MODE:-latest}
     container_name: gridways-migrant
     depends_on:
       postgres:
@@ -251,7 +257,7 @@ services:
 
   api:
     <<: *common
-    image: ${REGISTRY}/${BACKEND_IMAGE_NAME}/api:${MODE}
+    image: ${REGISTRY:-ghcr.io}/${BACKEND_IMAGE_NAME:-gridways_backend}/api:${MODE:-latest}
     container_name: gridways-api
     depends_on:
       - migrant
@@ -281,7 +287,7 @@ services:
 
   rest:
     <<: *common
-    image: ${REGISTRY}/${BACKEND_IMAGE_NAME}/rest:${MODE}
+    image: ${REGISTRY:-ghcr.io}/${BACKEND_IMAGE_NAME:-gridways_backend}/rest:${MODE:-latest}
     container_name: gridways-rest
     depends_on:
       - migrant
@@ -300,7 +306,7 @@ services:
 
   cron:
     <<: *common
-    image: ${REGISTRY}/${BACKEND_IMAGE_NAME}/cron:${MODE}
+    image: ${REGISTRY:-ghcr.io}/${BACKEND_IMAGE_NAME:-gridways_backend}/cron:${MODE:-latest}
     container_name: gridways-cron
     depends_on:
       - migrant
@@ -312,7 +318,7 @@ services:
 
   events:
     <<: *common
-    image: ${REGISTRY}/${BACKEND_IMAGE_NAME}/events:${MODE}
+    image: ${REGISTRY:-ghcr.io}/${BACKEND_IMAGE_NAME:-gridways_backend}/events:${MODE:-latest}
     container_name: gridways-events
     depends_on:
       - migrant
