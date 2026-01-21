@@ -33,7 +33,7 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -293,6 +293,7 @@ services:
     depends_on:
       - migrant
       - kibana
+    restart: unless-stopped
     build:
       context: .
       dockerfile: services/rest/docker/Dockerfile

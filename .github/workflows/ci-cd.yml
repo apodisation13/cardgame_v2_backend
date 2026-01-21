@@ -412,7 +412,7 @@ jobs:
           host: ${{ secrets.SSH_SERVER }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          source: "docker-compose.yaml"
+          source: "docker-compose.yaml,nginx/nginx.conf"
           target: "/srv/cardgame/backend/${{ env.MODE }}"
 
       - name: 🚀 Деплой на сервер
@@ -477,4 +477,4 @@ jobs:
           echo ""
           echo "🏷️ Окружение: ${{ github.event.inputs.environment }}"
           echo "📦 Сервисы: migrant, api, rest, events, cron"
-          echo "🖥️ Сервер: ${{ secrets.SERVER_HOST }}"
+          echo "🖥️ Сервер: ${{ secrets.SSH_SERVER }}"
