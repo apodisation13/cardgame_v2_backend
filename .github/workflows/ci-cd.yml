@@ -212,134 +212,134 @@ jobs:
             echo "services_json=[]" >> $GITHUB_OUTPUT
           fi
 
-  build-images:
-    needs: [ linters-and-tests, analyze-changes ]
-    if: |
-      github.event_name != 'workflow_dispatch' &&
-      github.event_name == 'pull_request' &&
-      github.event.action == 'closed' &&
-      github.event.pull_request.merged == true &&
-      needs.analyze-changes.outputs.services_to_build != ''
-
-    runs-on: ubuntu-latest
-
-    # Определяем окружение по целевой ветке
-    environment: ${{ github.base_ref == 'main' && 'production' || 'testing' }}
-
-    strategy:
-      matrix:
-        service: ${{ fromJson(needs.analyze-changes.outputs.services_json) }}
-
-    steps:
-      - name: 📥 Получаем код
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.merge_commit_sha }}
-
-      - name: 🏷️ Определяем тег
-        id: vars
-        run: |
-          if [[ "${{ github.base_ref }}" == "main" ]]; then
-            echo "tag=production" >> $GITHUB_OUTPUT
-            echo "🏷️ Окружение: production"
-          else
-            echo "tag=testing" >> $GITHUB_OUTPUT
-            echo "🏷️ Окружение: testing"
-          fi
-
-      - name: 🔧 Настройка Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: 🔐 Логин в GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: 🔨 Билд и пуш образа
-        run: |
-          export TAG="${{ steps.vars.outputs.tag }}"
-          
-          echo "🔨 Собираем: ${{ matrix.service }}"
-          echo "🏷️ Тег: $TAG"
-          
-          docker-compose build ${{ matrix.service }}
-          docker-compose push ${{ matrix.service }}
-          
-          echo "✅ ${{ matrix.service }}:$TAG готов!"
-
-  # ==========================================
-  # 🚀 ДЕПЛОЙ (после всех билдов)
-  # ==========================================
-  deploy:
-    needs: [ analyze-changes, build-images ]
-    if: |
-      github.event_name != 'workflow_dispatch' &&
-      github.event_name == 'pull_request' &&
-      github.event.action == 'closed' &&
-      github.event.pull_request.merged == true &&
-      needs.analyze-changes.outputs.services_to_build != ''
-
-    runs-on: ubuntu-latest
-
-    environment: ${{ github.base_ref == 'main' && 'production' || 'testing' }}
-    env:
-      MODE: ${{ github.ref_name == 'main' && 'production' || 'testing' }}
-
-    steps:
-      - name: 🏷️ Определяем окружение
-        id: vars
-        run: |
-          if [[ "${{ github.base_ref }}" == "main" ]]; then
-            echo "tag=production" >> $GITHUB_OUTPUT
-          else
-            echo "tag=testing" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Send docker-compose
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_SERVER }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          source: "docker-compose.yml"
-          target: "/srv/cardgame/backend/${{ env.MODE }}"
-
-      - name: 🚀 Деплой на сервер
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            echo "🚀 Деплой на ${{ steps.vars.outputs.tag }}"
-            
-            cd /srv/cardgame/backend/${{ env.MODE }}
-            
-            export REGISTRY=${{ env.REGISTRY }}
-            export BACKEND_IMAGE_NAME=${{ env.BACKEND_IMAGE_NAME }}
-            export MODE=${{ env.MODE }}
-            
-            export TAG="${{ steps.vars.outputs.tag }}"
-            
-            # Логин в registry
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            
-            # Пуллим только изменённые сервисы
-            echo "📥 Пуллим: ${{ needs.analyze-changes.outputs.services_to_build }}"
-            docker-compose pull ${{ needs.analyze-changes.outputs.services_to_build }}
-            
-            # Перезапускаем
-            echo "🔄 Перезапускаем сервисы..."
-            docker-compose up -d
-            
-            # Чистим
-            docker image prune -f
-            
-            echo ""
-            echo "✅ Деплой завершён!"
-            docker-compose ps  
+#  build-images:
+#    needs: [ linters-and-tests, analyze-changes ]
+#    if: |
+#      github.event_name != 'workflow_dispatch' &&
+#      github.event_name == 'pull_request' &&
+#      github.event.action == 'closed' &&
+#      github.event.pull_request.merged == true &&
+#      needs.analyze-changes.outputs.services_to_build != ''
+#
+#    runs-on: ubuntu-latest
+#
+#    # Определяем окружение по целевой ветке
+#    environment: ${{ github.base_ref == 'main' && 'production' || 'testing' }}
+#
+#    strategy:
+#      matrix:
+#        service: ${{ fromJson(needs.analyze-changes.outputs.services_json) }}
+#
+#    steps:
+#      - name: 📥 Получаем код
+#        uses: actions/checkout@v4
+#        with:
+#          ref: ${{ github.event.pull_request.merge_commit_sha }}
+#
+#      - name: 🏷️ Определяем тег
+#        id: vars
+#        run: |
+#          if [[ "${{ github.base_ref }}" == "main" ]]; then
+#            echo "tag=production" >> $GITHUB_OUTPUT
+#            echo "🏷️ Окружение: production"
+#          else
+#            echo "tag=testing" >> $GITHUB_OUTPUT
+#            echo "🏷️ Окружение: testing"
+#          fi
+#
+#      - name: 🔧 Настройка Docker Buildx
+#        uses: docker/setup-buildx-action@v3
+#
+#      - name: 🔐 Логин в GitHub Container Registry
+#        uses: docker/login-action@v3
+#        with:
+#          registry: ghcr.io
+#          username: ${{ github.actor }}
+#          password: ${{ secrets.GITHUB_TOKEN }}
+#
+#      - name: 🔨 Билд и пуш образа
+#        run: |
+#          export TAG="${{ steps.vars.outputs.tag }}"
+#
+#          echo "🔨 Собираем: ${{ matrix.service }}"
+#          echo "🏷️ Тег: $TAG"
+#
+#          docker-compose build ${{ matrix.service }}
+#          docker-compose push ${{ matrix.service }}
+#
+#          echo "✅ ${{ matrix.service }}:$TAG готов!"
+#
+#  # ==========================================
+#  # 🚀 ДЕПЛОЙ (после всех билдов)
+#  # ==========================================
+#  deploy:
+#    needs: [ analyze-changes, build-images ]
+#    if: |
+#      github.event_name != 'workflow_dispatch' &&
+#      github.event_name == 'pull_request' &&
+#      github.event.action == 'closed' &&
+#      github.event.pull_request.merged == true &&
+#      needs.analyze-changes.outputs.services_to_build != ''
+#
+#    runs-on: ubuntu-latest
+#
+#    environment: ${{ github.base_ref == 'main' && 'production' || 'testing' }}
+#    env:
+#      MODE: ${{ github.ref_name == 'main' && 'production' || 'testing' }}
+#
+#    steps:
+#      - name: 🏷️ Определяем окружение
+#        id: vars
+#        run: |
+#          if [[ "${{ github.base_ref }}" == "main" ]]; then
+#            echo "tag=production" >> $GITHUB_OUTPUT
+#          else
+#            echo "tag=testing" >> $GITHUB_OUTPUT
+#          fi
+#
+#      - name: Send docker-compose
+#        uses: appleboy/scp-action@v0.1.7
+#        with:
+#          host: ${{ secrets.SSH_SERVER }}
+#          username: ${{ secrets.SSH_USER }}
+#          key: ${{ secrets.SSH_KEY }}
+#          source: "docker-compose.yml"
+#          target: "/srv/cardgame/backend/${{ env.MODE }}"
+#
+#      - name: 🚀 Деплой на сервер
+#        uses: appleboy/ssh-action@v1
+#        with:
+#          host: ${{ secrets.SERVER_HOST }}
+#          username: ${{ secrets.SERVER_USER }}
+#          key: ${{ secrets.SSH_PRIVATE_KEY }}
+#          script: |
+#            echo "🚀 Деплой на ${{ steps.vars.outputs.tag }}"
+#
+#            cd /srv/cardgame/backend/${{ env.MODE }}
+#
+#            export REGISTRY=${{ env.REGISTRY }}
+#            export BACKEND_IMAGE_NAME=${{ env.BACKEND_IMAGE_NAME }}
+#            export MODE=${{ env.MODE }}
+#
+#            export TAG="${{ steps.vars.outputs.tag }}"
+#
+#            # Логин в registry
+#            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+#
+#            # Пуллим только изменённые сервисы
+#            echo "📥 Пуллим: ${{ needs.analyze-changes.outputs.services_to_build }}"
+#            docker-compose pull ${{ needs.analyze-changes.outputs.services_to_build }}
+#
+#            # Перезапускаем
+#            echo "🔄 Перезапускаем сервисы..."
+#            docker-compose up -d
+#
+#            # Чистим
+#            docker image prune -f
+#
+#            echo ""
+#            echo "✅ Деплой завершён!"
+#            docker-compose ps
             
 
   # ==========================================
@@ -460,7 +460,7 @@ jobs:
             docker-compose pull migrant api rest events cron
             
             echo "🔄 Перезапускаем сервисы..."
-            docker-compose up -d
+            docker-compose --env-file .env.docker up -d
             
             echo "🧹 Чистим старые образы..."
             docker image prune -f

@@ -33,6 +33,7 @@ app_config = get_config()
 
 # Переопределяем URL из alembic.ini нашим конфигом
 url = app_config.DB_URL
+print("STR36", url)
 config.set_main_option("sqlalchemy.url", url)
 
 if config.config_file_name is not None:
