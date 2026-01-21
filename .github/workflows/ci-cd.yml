@@ -439,6 +439,9 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           envs: ENV_CONTENT,MODE,TAG
           script: |
+            export TAG="$TAG"
+            export MODE="$MODE"
+            
             echo "🚀 Деплой на $MODE"
             echo "MODE length: ${#MODE}"
             echo "TAG length: ${#TAG}"
@@ -447,9 +450,6 @@ jobs:
             cd /srv/cardgame/backend/$MODE
             
             printf '%s\n' "$ENV_CONTENT" > .env.docker
-            
-            
-            export TAG="$TAG"
             
             echo "📥 Логинимся в registry..."
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
