@@ -413,11 +413,6 @@ jobs:
 
       - name: 🚀 Деплой на сервер
         uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.SSH_SERVER }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          envs: ENV_CONTENT,MODE
         env:
           MODE: ${{ github.event.inputs.environment }}
           ENV_CONTENT: |
@@ -433,6 +428,11 @@ jobs:
             KIBANA_SYSTEM_PASSWORD=${{ secrets.KIBANA_SYSTEM_PASSWORD }}
             APM_SECRET_TOKEN=${{ secrets.APM_SECRET_TOKEN }}
             APP_PORT_OUTSIDE=${{ secrets.APP_PORT_OUTSIDE }}
+        with:
+          host: ${{ secrets.SSH_SERVER }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          envs: ENV_CONTENT,MODE
           script: |
             echo "🚀 Деплой на ${{ github.event.inputs.environment }}"
             
