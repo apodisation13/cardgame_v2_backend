@@ -69,7 +69,7 @@ class BaseConfig:
 
     # Elastic
     ELASTIC_HOST: str = get_secret("ELASTIC_HOST", default="http://elasticsearch:9200")
-    ELASTIC_USERNAME: str = get_secret("ELASTIC_USERNAME")
+    ELASTIC_USERNAME: str = get_secret("ELASTIC_USERNAME", default="elastic")
     ELASTIC_PASSWORD: str = get_secret("ELASTIC_PASSWORD")
     ELASTIC_APM_SERVER_URL: str = get_secret("ELASTIC_APM_SERVER_URL", default="http://apm-server:8200")
     ELASTIC_APM_SECRET_TOKEN: str = get_secret("ELASTIC_APM_SECRET_TOKEN")

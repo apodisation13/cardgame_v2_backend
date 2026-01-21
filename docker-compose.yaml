@@ -275,7 +275,7 @@ services:
     volumes:
       - shared_static:/shared_static
     expose:
-      - "8000"
+      - "8001"
     environment:
       - APM_SERVER_URL=http://apm-server:8200
       - APM_SECRET_TOKEN=${APM_SECRET_TOKEN}

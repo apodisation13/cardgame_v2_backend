@@ -34,4 +34,4 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-CMD ["python", "-m", "uvicorn", "services.api.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "-m", "uvicorn", "services.api.app.main:app", "--host", "0.0.0.0", "--port", "8001"]
