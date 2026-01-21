@@ -420,6 +420,7 @@ jobs:
         env:
           TAG: ${{ github.event.inputs.environment }}
           MODE: ${{ github.event.inputs.environment }}
+          BACKEND_IMAGE_NAME: ${{ github.repository }}
           ENV_CONTENT: |
             CONFIG=${{ secrets.CONFIG }}
             DB_PORT_OUTSIDE=${{ secrets.DB_PORT_OUTSIDE }}
@@ -437,10 +438,11 @@ jobs:
           host: ${{ secrets.SSH_SERVER }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          envs: ENV_CONTENT,MODE,TAG
+          envs: ENV_CONTENT,MODE,TAG,BACKEND_IMAGE_NAME
           script: |
             export TAG="$TAG"
             export MODE="$MODE"
+            export BACKEND_IMAGE_NAME="$BACKEND_IMAGE_NAME"
             
             echo "🚀 Деплой на $MODE"
             echo "MODE length: ${#MODE}"
