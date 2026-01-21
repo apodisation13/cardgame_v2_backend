@@ -418,6 +418,7 @@ jobs:
       - name: 🚀 Деплой на сервер
         uses: appleboy/ssh-action@v1
         env:
+          TAG: ${{ github.event.inputs.environment }}
           MODE: ${{ github.event.inputs.environment }}
           ENV_CONTENT: |
             CONFIG=${{ secrets.CONFIG }}
@@ -436,15 +437,19 @@ jobs:
           host: ${{ secrets.SSH_SERVER }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          envs: ENV_CONTENT,MODE
+          envs: ENV_CONTENT,MODE,TAG
           script: |
+            export TAG="$TAG"
+            export MODE="$MODE"
+            
             echo "🚀 Деплой на $MODE"
+            echo "MODE length: ${#MODE}"
+            echo "TAG length: ${#TAG}"
+            echo "MODE first char: $(echo $MODE | cut -c1)"
             
             cd /srv/cardgame/backend/$MODE
             
             printf '%s\n' "$ENV_CONTENT" > .env.docker
-            
-            export TAG="${{ github.event.inputs.environment }}"
             
             echo "📥 Логинимся в registry..."
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
