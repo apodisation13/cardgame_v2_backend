@@ -95,6 +95,8 @@ services:
       - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
 
+      - ingest.geoip.downloader.enabled=false
+
       # отключаем логи Elasticsearch
       - logger.level=ERROR
       - logger.org.elasticsearch=ERROR
@@ -111,9 +113,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: 2G
         reservations:
-          memory: 512M
+          memory: 1G
 
   elasticsearch-setup:
     <<: *common
