@@ -103,6 +103,7 @@ class AuthService:
         )
 
         access_token = create_access_token(
+            config=self.config,
             data={"sub": user_data.email},
             # expires_delta_minutes=1,
         )
@@ -154,7 +155,10 @@ class AuthService:
         self,
         token: str,
     ) -> UserRegisterRequest:
-        email = decode_token(token)
+        email = decode_token(
+            config=self.config,
+            token=token,
+        )
 
         if email is None:
             raise HTTPException(
@@ -198,7 +202,10 @@ class AuthService:
         self,
         token: str,
     ) -> UserCheckTokenResponse:
-        email = decode_token(token)
+        email = decode_token(
+            config=self.config,
+            token=token,
+        )
 
         if email is None:
             raise HTTPException(

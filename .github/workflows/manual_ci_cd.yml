@@ -1,0 +1,166 @@
+name: MANUAL ci-cd gridways backend
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Ветка для деплоя'
+        required: true
+        type: choice
+        options:
+          - testing
+          - main
+        default: 'testing'
+
+env:
+  REGISTRY: ghcr.io
+  BACKEND_IMAGE_NAME: ${{ github.repository }}
+
+
+jobs:
+  # ==========================================
+  # 🖐️ РУЧНОЙ ФЛОУ (только для workflow_dispatch)
+  # ==========================================
+  manual-build-and-deploy:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    environment: ${{ github.event.inputs.branch == 'main' && 'production' || 'testing' }}
+    env:
+      MODE: ${{ github.event.inputs.branch == 'main' && 'production' || 'testing' }}
+
+    steps:
+      - name: 📥 Получаем код
+        uses: actions/checkout@v4
+
+      - name: 🔐 Логин в GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔐 Создаем .env из Environment secrets
+        run: |
+          cat > .env << EOF
+          APP_PORT_OUTSIDE=${{ secrets.APP_PORT_OUTSIDE }}
+          
+          DB_PORT_OUTSIDE=${{ secrets.DB_PORT_OUTSIDE }}
+          DB_NAME=${{ secrets.DB_NAME }}
+          DB_HOST=${{ secrets.DB_HOST }} 
+          DB_USER=${{ secrets.DB_USER }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          
+          DJANGO_SUPERUSER_USERNAME=${{ secrets.DJANGO_SUPERUSER_USERNAME }}
+          DJANGO_SUPERUSER_EMAIL=${{ secrets.DJANGO_SUPERUSER_EMAIL }}
+          DJANGO_SUPERUSER_PASSWORD=${{ secrets.DJANGO_SUPERUSER_PASSWORD }}
+          
+          KAFKA_BOOTSTRAP_SERVERS=${{ secrets.KAFKA_BOOTSTRAP_SERVERS }}
+          
+          ELASTIC_USERNAME=${{ secrets.ELASTIC_USERNAME }}
+          ELASTIC_PASSWORD=${{ secrets.ELASTIC_PASSWORD }}
+          KIBANA_SYSTEM_PASSWORD=${{ secrets.KIBANA_SYSTEM_PASSWORD }}
+          APM_SECRET_TOKEN=${{ secrets.APM_SECRET_TOKEN }}
+          
+          EOF
+          
+          echo "✅ .env создан для Environment: ${{ env.MODE }}"
+
+      - name: 🔨 Билдим свои сервисы
+        run: |
+          export TAG="${{ env.MODE }}"
+          
+          # Сервисы у которых есть build: в docker-compose
+          OUR_SERVICES="migrant api rest events cron"
+          
+          echo "🚀 Билдим: $OUR_SERVICES"
+          echo "🏷️ Тег: $TAG"
+          echo ""
+          
+          docker compose build $OUR_SERVICES
+
+      - name: 📤 Пушим образы в registry
+        run: |
+          export TAG="${{ env.MODE }}"
+          
+          OUR_SERVICES="migrant api rest events cron"
+          
+          echo "📤 Пушим образы..."
+          docker compose push $OUR_SERVICES
+          
+          echo "✅ Все образы в registry!"
+
+      - name: Send docker-compose
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_SERVER }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "docker-compose.yaml,nginx/nginx.conf"
+          target: "/srv/cardgame/backend/${{ env.MODE }}"
+
+      - name: 🚀 Деплой на сервер
+        uses: appleboy/ssh-action@v1
+        env:
+          TAG: ${{ env.MODE }}
+          MODE: ${{ env.MODE }}
+          BACKEND_IMAGE_NAME: ${{ github.repository }}
+          ENV_CONTENT: |
+            CONFIG=${{ secrets.CONFIG }}
+            
+            APP_PORT_OUTSIDE=${{ secrets.APP_PORT_OUTSIDE }}
+            
+            DB_PORT_OUTSIDE=${{ secrets.DB_PORT_OUTSIDE }}
+            DB_NAME=${{ secrets.DB_NAME }}
+            DB_HOST=${{ secrets.DB_HOST }} 
+            DB_USER=${{ secrets.DB_USER }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            
+            DJANGO_SUPERUSER_USERNAME=${{ secrets.DJANGO_SUPERUSER_USERNAME }}
+            DJANGO_SUPERUSER_EMAIL=${{ secrets.DJANGO_SUPERUSER_EMAIL }}
+            DJANGO_SUPERUSER_PASSWORD=${{ secrets.DJANGO_SUPERUSER_PASSWORD }}
+            
+            USER_PASSWORD_SECRET_KEY=${{ secrets.USER_PASSWORD_SECRET_KEY }}
+            
+            KAFKA_BOOTSTRAP_SERVERS=${{ secrets.KAFKA_BOOTSTRAP_SERVERS }}
+            
+            ELASTIC_USERNAME=${{ secrets.ELASTIC_USERNAME }}
+            ELASTIC_PASSWORD=${{ secrets.ELASTIC_PASSWORD }}
+            KIBANA_SYSTEM_PASSWORD=${{ secrets.KIBANA_SYSTEM_PASSWORD }}
+            APM_SECRET_TOKEN=${{ secrets.APM_SECRET_TOKEN }}
+
+        with:
+          host: ${{ secrets.SSH_SERVER }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          envs: ENV_CONTENT,MODE,TAG,BACKEND_IMAGE_NAME
+          script: |
+            export TAG="$TAG"
+            export MODE="$MODE"
+            export BACKEND_IMAGE_NAME="$BACKEND_IMAGE_NAME"
+
+            cd /srv/cardgame/backend/$MODE
+            
+            printf '%s\n' "$ENV_CONTENT" > .env.docker
+            
+            echo "📥 Логинимся в registry..."
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            echo "📥 Пуллим новые образы..."
+            docker-compose pull migrant api rest events cron
+            
+            echo "🔄 Перезапускаем сервисы..."
+            docker-compose --env-file .env.docker up -d
+            
+            echo "🧹 Чистим старые образы..."
+            docker image prune -f
+            
+            echo ""
+            echo "✅ Деплой завершён!"
+            docker-compose ps
+
+      - name: 📋 Итог
+        run: |
+          echo "=========================================="
+          echo "✅ Ручной билд и деплой завершён!"
+          echo "=========================================="

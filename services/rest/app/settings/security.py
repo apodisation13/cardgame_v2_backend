@@ -1,9 +1,14 @@
 from pathlib import Path
 
+from services.rest.app.config import Config, get_config
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = "django-insecure-your-secret-key-change-this!"  # В продакшене используйте переменные окружения!
+
+config: Config = get_config()
+
+SECRET_KEY = config.DJANGO_SECRET_KEY
 
 # ALLOWED_HOSTS = []
 # ALLOWED_HOSTS = [

@@ -3,12 +3,8 @@ import hashlib
 import secrets
 
 from jose import ExpiredSignatureError, JWTError, jwt
+from services.api.app.config import Config
 from services.api.app.exceptions import UserIncorrectPasswordError
-
-
-SECRET_KEY = "your-secret-key-here"  # В продакшене используйте надежный ключ
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
 def get_password_hash(
@@ -42,6 +38,7 @@ def verify_password(
 
 
 def create_access_token(
+    config: Config,
     data: dict,
     expires_delta_minutes: int = 30,
 ) -> str:
@@ -49,16 +46,23 @@ def create_access_token(
     expire = now + timedelta(minutes=expires_delta_minutes)
     to_encode = data.copy()
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(
+        to_encode,
+        config.USER_PASSWORD_SECRET_KEY,
+        algorithm=config.ALGORITHM,
+    )
     return encoded_jwt
 
 
-def decode_token(token: str) -> str | None:
+def decode_token(
+    config: Config,
+    token: str,
+) -> str | None:
     try:
         payload = jwt.decode(
             token,
-            SECRET_KEY,
-            algorithms=[ALGORITHM],
+            config.USER_PASSWORD_SECRET_KEY,
+            algorithms=[config.ALGORITHM],
             options={"verify_exp": True},
         )
 

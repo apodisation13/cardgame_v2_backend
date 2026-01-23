@@ -13,7 +13,10 @@ load_env()
 
 
 class Config(BaseConfig):
-    AAA = "asdsadasdasdasdaassssssssssssssssssssssssssssssssssssss"
+    # шифрование пароля
+    USER_PASSWORD_SECRET_KEY = get_secret("USER_PASSWORD_SECRET_KEY", default="your-secret-key-here")
+    ALGORITHM = get_secret("ALGORITHM", default="HS256")
+    ACCESS_TOKEN_EXPIRE_MINUTES = get_secret("ACCESS_TOKEN_EXPIRE_MINUTES", default=30)
 
 
 class TestingConfig(BaseTestingConfig, Config): ...

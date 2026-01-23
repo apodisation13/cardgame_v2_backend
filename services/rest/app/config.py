@@ -27,7 +27,11 @@ sys.path.insert(0, os.path.join(BASE_DIR, "apps"))
 load_env()
 
 
-class Config(BaseConfig): ...
+class Config(BaseConfig):
+    DJANGO_SECRET_KEY = get_secret(
+        "DJANGO_SECRET_KEY",
+        default="django-insecure-your-secret-key-change-this!",
+    )
 
 
 class TestingConfig(BaseTestingConfig, Config): ...
