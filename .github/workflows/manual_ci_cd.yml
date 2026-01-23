@@ -3,14 +3,14 @@ name: MANUAL ci-cd gridways backend
 on:
   workflow_dispatch:
     inputs:
-      environment:
-        description: 'Целевое окружение'
+      branch:
+        description: 'Ветка для деплоя'
         required: true
-        default: 'testing'
         type: choice
         options:
           - testing
-          - production
+          - main
+        default: 'testing'
 
 env:
   REGISTRY: ghcr.io
@@ -25,9 +25,9 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
 
-    environment: ${{ github.event.inputs.environment }}
+    environment: ${{ github.event.inputs.branch == 'main' && 'production' || 'testing' }}
     env:
-      MODE: ${{ github.event.inputs.environment }}
+      MODE: ${{ github.event.inputs.branch == 'main' && 'production' || 'testing' }}
 
     steps:
       - name: 📥 Получаем код
@@ -68,7 +68,7 @@ jobs:
 
       - name: 🔨 Билдим свои сервисы
         run: |
-          export TAG="${{ github.event.inputs.environment }}"
+          export TAG="${{ env.MODE }}"
           
           # Сервисы у которых есть build: в docker-compose
           OUR_SERVICES="migrant api rest events cron"
@@ -81,7 +81,7 @@ jobs:
 
       - name: 📤 Пушим образы в registry
         run: |
-          export TAG="${{ github.event.inputs.environment }}"
+          export TAG="${{ env.MODE }}"
           
           OUR_SERVICES="migrant api rest events cron"
           
@@ -102,8 +102,8 @@ jobs:
       - name: 🚀 Деплой на сервер
         uses: appleboy/ssh-action@v1
         env:
-          TAG: ${{ github.event.inputs.environment }}
-          MODE: ${{ github.event.inputs.environment }}
+          TAG: ${{ env.MODE }}
+          MODE: ${{ env.MODE }}
           BACKEND_IMAGE_NAME: ${{ github.repository }}
           ENV_CONTENT: |
             CONFIG=${{ secrets.CONFIG }}
@@ -164,7 +164,3 @@ jobs:
           echo "=========================================="
           echo "✅ Ручной билд и деплой завершён!"
           echo "=========================================="
-          echo ""
-          echo "🏷️ Окружение: ${{ github.event.inputs.environment }}"
-          echo "📦 Сервисы: migrant, api, rest, events, cron"
-          echo "🖥️ Сервер: ${{ secrets.SSH_SERVER }}"
