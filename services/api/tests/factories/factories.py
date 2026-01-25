@@ -47,29 +47,27 @@ class GameConstantsFactory(BaseModelFactory):
     class Meta:
         model = GameConstants
 
-    data = factory.LazyFunction(
-        lambda: {
-            "hand_size": 6,
-            "mill_gold": 200,
-            "craft_gold": -2000,
-            "mill_bronze": 20,
-            "mill_leader": 300,
-            "mill_silver": 100,
-            "craft_bronze": -200,
-            "craft_leader": -3000,
-            "craft_silver": -1000,
-            "pay_for_kegs": -200,
-            "pay_for_chests": -2000,
-            "win_level_easy": 125,
-            "win_level_hard": 500,
-            "play_level_easy": -50,
-            "play_level_hard": -200,
-            "pay_for_big_kegs": -400,
-            "win_level_normal": 275,
-            "play_level_normal": -100,
-            "number_of_cards_in_deck": 12,
-        },
-    )
+    data = {
+        "hand_size": 6,
+        "mill_gold": 200,
+        "craft_gold": -2000,
+        "mill_bronze": 20,
+        "mill_leader": 300,
+        "mill_silver": 100,
+        "craft_bronze": -200,
+        "craft_leader": -3000,
+        "craft_silver": -1000,
+        "pay_for_kegs": -200,
+        "pay_for_chests": -2000,
+        "win_level_easy": 125,
+        "win_level_hard": 500,
+        "play_level_easy": -50,
+        "play_level_hard": -200,
+        "pay_for_big_kegs": -400,
+        "win_level_normal": 275,
+        "play_level_normal": -100,
+        "number_of_cards_in_deck": 12,
+    }
 
 
 class TypeFactory(BaseModelFactory):

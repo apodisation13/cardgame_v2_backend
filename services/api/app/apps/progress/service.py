@@ -50,6 +50,7 @@ class UserProgressService:
         user_id: int,
         base_url: str,
     ) -> UserProgressResponse:
+        logger.info("Getting database for user %s", user_id)
         async with self.db_pool.connection() as connection:
             user_resources: UserResources = await logic.get_user_resources(
                 connection=connection,
@@ -243,19 +244,10 @@ class UserProgressService:
 
         match subtype:
             case subtype.START_SEASON_LEVEL:
-                """ { subtype: start_game, data: {level_id: int}} """
-                level_id: int = resource_request.data["level_id"]
+                """ { subtype: start_game, data: {difficulty: str}} """
+                difficulty: LevelDifficulty = resource_request.data["difficulty"]
 
                 async with self.db_pool.transaction() as connection:
-                    difficulty: LevelDifficulty = await connection.fetchval(
-                        """
-                            SELECT difficulty
-                            FROM levels
-                            WHERE levels.id = $1
-                        """,
-                        level_id,
-                    )
-
                     game_constants: dict = await logic.get_game_constants(
                         connection=connection,
                     )

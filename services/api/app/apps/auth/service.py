@@ -65,6 +65,8 @@ class AuthService:
         self,
         user_data: UserRegisterRequest,
     ) -> UserRegisterResponse:
+        email_to_lower = str(user_data.email).lower()
+        logger.info("Registering user with email %s, username %s", email_to_lower, user_data.username)
         async with self.db_pool.transaction() as connection:
             try:
                 user_id = await connection.fetchval(
@@ -74,7 +76,7 @@ class AuthService:
                     VALUES ($1, $2, $3)
                     RETURNING id
                     """,
-                    user_data.email,
+                    email_to_lower,
                     user_data.username,
                     get_password_hash(user_data.password),
                 )
@@ -89,22 +91,25 @@ class AuthService:
         user_model = {
             "id": user_id,
             "username": user_data.username,
-            "email": user_data.email,
+            "email": email_to_lower,
         }
+        logger.info("Successfully registered user %s", user_id)
         return UserRegisterResponse.model_validate(user_model)
 
     async def login_user(
         self,
         user_data: UserLoginRequest,
     ) -> UserLoginResponse:
+        email_to_lower = str(user_data.email).lower()
+        logger.info("Login user %s", email_to_lower)
         user: dict = await self._get_authenticated_user(
-            email=str(user_data.email),
+            email=email_to_lower,
             password=user_data.password,
         )
 
         access_token = create_access_token(
             config=self.config,
-            data={"sub": user_data.email},
+            data={"sub": email_to_lower},
             # expires_delta_minutes=1,
         )
 

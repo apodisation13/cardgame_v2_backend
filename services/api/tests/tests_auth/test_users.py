@@ -36,21 +36,18 @@ class TestUserRegisterAPI:
         init_db_cards,
     ):
         users_before: list = await db_connection.fetch("""SELECT * FROM users""")
-        print(41, users_before)
-        # assert users_before == 0
+        assert len(users_before) == 0
 
         response = await client.post(
             self.endpoint,
             json={
-                "email": "testemail@mail.ru",
+                "email": "teSTemail@mail.ru",  # <- почта будет приведена к нижнему регистру на бэке тоже (и на фронте)
                 "password": "password",
                 "username": "username",
             },
         )
 
         response_json = response.json()
-
-        print("54444444444444444", response_json)
 
         assert response.status_code == 200
         assert (
@@ -246,7 +243,7 @@ class TestUserLoginAPI:
         response = await client.post(
             self.endpoint,
             json={
-                "email": "email@mail.ru",
+                "email": "emaIL@mail.ru",  # <- автоматически приводится тоже к нижнему регистру
                 "password": "password",
             },
         )

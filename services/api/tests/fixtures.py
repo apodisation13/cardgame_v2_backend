@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from lib.utils.db.pool import Database
 import pytest_asyncio
+from services.api.app.apps.auth.lib import get_password_hash
 from services.api.app.config import Config, get_config
 from services.api.app.config import get_config as get_app_settings
 
@@ -44,3 +45,27 @@ async def client(app: FastAPI) -> AsyncClient:
 @pytest.fixture(scope="session")
 def config() -> Config:
     return get_config()
+
+
+@pytest_asyncio.fixture
+async def user_login_fixture(
+    user_factory,
+    client: AsyncClient,
+) -> dict:
+    plain_password = "password"
+    user = await user_factory(
+        email="email@mail.ru",
+        password=get_password_hash(plain_password),
+        username="username",
+    )
+
+    response = await client.post(
+        "users/login-user",
+        json={
+            "email": user.email,
+            "password": plain_password,
+        },
+    )
+
+    response_json = response.json()
+    yield response_json

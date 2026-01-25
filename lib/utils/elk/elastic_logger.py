@@ -6,6 +6,7 @@ import time
 
 from lib.utils.config.base import BaseConfig
 from lib.utils.config.env_types import EnvType
+from lib.utils.elk.request_id import request_id_var
 
 
 # КРИТИЧНО: Отключаем логи ДО импорта Elasticsearch!
@@ -50,7 +51,6 @@ class ElasticsearchHandler(logging.Handler):
 
     def _init_elasticsearch(self):
         try:
-            print("STR53!!!!!!!!!!!!!!!!!!!", self.service_name, self.config.ELASTIC_HOST, self.config.ELASTIC_USERNAME)
             self.es = Elasticsearch(
                 [self.config.ELASTIC_HOST],
                 verify_certs=False,
@@ -87,6 +87,10 @@ class ElasticsearchHandler(logging.Handler):
         try:
             self._sending.in_progress = True
 
+            request_id = getattr(record, "request_id", None)
+            if not request_id:
+                request_id = request_id_var.get()
+
             # Формируем JSON
             log_data = {
                 "@timestamp": datetime.now().isoformat() + "Z",
@@ -96,6 +100,7 @@ class ElasticsearchHandler(logging.Handler):
                 "logger": record.name,
                 "hostname": os.getenv("HOSTNAME", "unknown"),
                 "timestamp": datetime.fromtimestamp(record.created).isoformat(),
+                "request_id": request_id if request_id else "system",
             }
 
             # Добавляем exception если есть

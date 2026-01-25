@@ -570,7 +570,9 @@ async def open_default_content(
     logger.info("Number of user_cards inserted: %s", len(user_cards))
 
     if len(user_cards) != len(cards):
-        raise Exception("Number of unlocked cards does not match number of inserted user_cards")
+        msg = "Number of unlocked cards %s does not match number of inserted user_cards %"
+        logger.error(msg, len(cards), len(user_cards))
+        raise Exception(msg % (len(cards), len(user_cards)))
 
     # 3. берем всех открытых по умолчанию лидеров
     leaders = await connection.fetch("""SELECT leaders.id FROM leaders WHERE leaders.unlocked IS TRUE""")
@@ -590,7 +592,9 @@ async def open_default_content(
     logger.info("Number of user_leaders inserted: %s", len(user_leaders))
 
     if len(user_leaders) != len(leaders):
-        raise Exception("Number of unlocked leaders does not match number of inserted user_leaders")
+        msg = "Number of unlocked leaders %s does not match number of inserted user_leaders %s"
+        logger.error(msg, len(leaders), len(user_leaders))
+        raise Exception(msg % (len(leaders), len(user_leaders)))
 
     # 5. инзертим юзеру base-desk
     await connection.execute(
@@ -621,7 +625,9 @@ async def open_default_content(
     logger.info("Number of user_levels inserted: %s", len(user_levels))
 
     if len(user_levels) != len(levels):
-        raise Exception("Number of unlocked levels does not match number of inserted user_levels")
+        msg = "Number of unlocked levels %s does not match number of inserted user_levels %s"
+        logger.error(msg, len(levels), len(user_levels))
+        raise Exception(msg % (len(levels), len(user_levels)))
 
     # 8. создаем юзеру дефолтные ресурсы - они указаны напрямую в БД
     await connection.execute("""INSERT INTO user_resources (id) VALUES ($1)""", user_id)
