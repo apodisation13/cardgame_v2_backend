@@ -60,17 +60,36 @@ class UserLevel(Base):
     level: Level
 
 
+class SeasonRelatedSeason(Base):
+    related_season_id: int | None
+    line: str | None
+    connection: str | None
+
+
 class Season(Base):
     id: int
     name: str
     description: str
+    x: int
+    y: int
     levels: list[UserLevel]
+    children: list[SeasonRelatedSeason]
+
+
+class Stats(Base):
+    total_levels: int
+    finished_levels: int = 0
+    unlocked_levels: int = 0
+    easy_levels: int = 0
+    normal_levels: int = 0
+    hard_levels: int = 0
 
 
 class UserSeason(Base):
     id: int | None
     finished: bool | None
     season: Season
+    stats: Stats
 
 
 class UserProgressResponse(Base):

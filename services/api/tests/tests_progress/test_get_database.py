@@ -2,8 +2,6 @@ import pytest
 
 from httpx import AsyncClient
 
-from services.api.tests.factories.fixtures import user_season_factory, user_level_factory
-
 
 class TestGetUserProgressAPI:
     endpoint = "user-progress/{user_id}"
@@ -49,4 +47,8 @@ class TestGetUserProgressAPI:
         for season in seasons:
             # season.pop("levels")
             print(season)
+
+            for level in season["season"]["levels"]:
+                print(level)
+
             print()
