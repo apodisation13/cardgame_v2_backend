@@ -61,7 +61,7 @@ class UserProgressService:
                 connection=connection,
             )
 
-            enemies, enemy_leaders, seasons = await logic.process_enemies(
+            enemies, enemy_leaders, user_seasons = await logic.process_enemies(
                 connection=connection,
                 user_id=user_id,
                 base_url=base_url,
@@ -80,7 +80,7 @@ class UserProgressService:
                 decks=user_decks,
             ),
             resources=user_resources,
-            seasons=seasons,
+            seasons=user_seasons,
             game_const=game_constants,
             enemies=enemies,
             enemy_leaders=enemy_leaders,
@@ -667,19 +667,25 @@ class UserProgressService:
 
         # Ставим текущему user_levels.finished = true, уровень пройден
         async with self.db_pool.transaction() as connection:
-            await connection.execute(
+            season_id: int = await connection.fetchval(
                 """
                     UPDATE user_levels
                     SET
                         finished = TRUE,
                         updated_at = NOW()
-                    WHERE user_levels.id = $2
-                      AND user_levels.user_id = $1;
+                    FROM levels
+                    WHERE user_levels.level_id = levels.id
+                        AND user_levels.user_id = $1
+                        AND user_levels.id = $2
+                    RETURNING levels.season_id;
                 """,
                 user_id,
                 user_level_id,
             )
+            print(season_id)
 
+            # TODO: если тут что-то хотя бы открылось, значит сезон еще точно НЕ пройден
+            # если не открылось - ничего не значит, надо проверять тогда все остальные уровни сезона
             # находим для этого уровня все его связанные related_level_id и инзертим их как user_levels
             level_related_levels = await connection.fetch(
                 """
@@ -701,14 +707,14 @@ class UserProgressService:
                 user_id,
             )
 
-            _, _, seasons = await logic.process_enemies(
+            _, _, user_seasons = await logic.process_enemies(
                 connection=connection,
                 user_id=user_id,
                 base_url=base_url,
             )
 
         return OpenRelatedLevelsResponse(
-            seasons=seasons,
+            seasons=user_seasons,
         )
 
     async def craft_bonus_cards(

@@ -20,12 +20,14 @@ from lib.utils.models import (
     Move,
     PassiveAbility,
     Season,
+    SeasonRelatedSeasons,
     Type,
     UserCard,
     UserDeck,
     UserLeader,
     UserLevel,
     UserResource,
+    UserSeason,
 )
 from lib.utils.schemas.game import LevelDifficulty
 
@@ -251,6 +253,8 @@ class SeasonFactory(BaseModelFactory):
     name = factory.Sequence(lambda n: f"Season {n}")
     description = factory.Faker("paragraph")
     unlocked = False
+    x = 0
+    y = 0
 
 
 class LevelFactory(BaseModelFactory):
@@ -273,6 +277,16 @@ class LevelRelatedLevelsFactory(BaseModelFactory):
 
     level_id = factory.SubFactory(LevelFactory)
     related_level_id = factory.SubFactory(LevelFactory)
+    line = "right"
+    connection = "1-2"
+
+
+class SeasonRelatedSeasonsFactory(BaseModelFactory):
+    class Meta:
+        model = SeasonRelatedSeasons
+
+    season_id = factory.SubFactory(SeasonFactory)
+    related_season_id = factory.SubFactory(SeasonFactory)
     line = "right"
     connection = "1-2"
 
@@ -330,4 +344,13 @@ class UserLevelFactory(BaseModelFactory):
 
     user_id = factory.SubFactory(UserFactory)
     level_id = factory.SubFactory(LevelFactory)
+    finished = False
+
+
+class UserSeasonFactory(BaseModelFactory):
+    class Meta:
+        model = UserSeason
+
+    user_id = factory.SubFactory(UserFactory)
+    season_id = factory.SubFactory(SeasonFactory)
     finished = False

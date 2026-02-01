@@ -164,3 +164,35 @@ class UserLevel(BaseModel, TimestampMixin):
         nullable=False,
         server_default="false",
     )
+
+
+class UserSeason(BaseModel, TimestampMixin):
+    __tablename__ = "user_seasons"
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id",
+            "season_id",
+            name="uq_user_season",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        autoincrement=True,
+    )
+    user_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("users.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    season_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("seasons.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    finished: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        server_default="false",
+    )

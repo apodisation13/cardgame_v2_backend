@@ -74,6 +74,9 @@ class TestUserRegisterAPI:
         user_levels: int = await db_connection.fetchval("""SELECT COUNT(*) FROM user_levels""")
         assert user_levels == 1
 
+        user_seasons: int = await db_connection.fetchval("""SELECT COUNT(*) FROM user_seasons""")
+        assert user_seasons == 1
+
         user_resources: list[dict] = await db_connection.fetch(
             """SELECT scraps, wood, kegs, big_kegs, chests, keys FROM user_resources""",
         )

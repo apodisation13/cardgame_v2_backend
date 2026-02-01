@@ -26,6 +26,16 @@ class Season(BaseModel, TimestampMixin):
         nullable=False,
         server_default="false",
     )
+    x: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="0",
+    )
+    y: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="0",
+    )
 
 
 class Level(BaseModel, TimestampMixin):
@@ -129,4 +139,39 @@ class LevelEnemy(BaseModel, TimestampMixin):
         Integer,
         ForeignKey("enemies.id", ondelete="RESTRICT"),
         nullable=False,
+    )
+
+
+class SeasonRelatedSeasons(BaseModel, TimestampMixin):
+    __tablename__ = "season_related_seasons"
+    __table_args__ = (
+        UniqueConstraint(
+            "season_id",
+            "related_season_id",
+            name="uq_season_related_seasons",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        autoincrement=True,
+    )
+    season_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("seasons.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    related_season_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("seasons.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    line: Mapped[Optional[str]] = mapped_column(
+        String(16),
+        nullable=True,
+    )
+    connection: Mapped[str] = mapped_column(
+        String(16),
+        nullable=True,
     )
