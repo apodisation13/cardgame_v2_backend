@@ -26,6 +26,7 @@ from lib.utils.models import (
     UserLeader,
     UserLevel,
     UserResource,
+    UserSeason,
 )
 from lib.utils.schemas.game import LevelDifficulty
 
@@ -330,4 +331,13 @@ class UserLevelFactory(BaseModelFactory):
 
     user_id = factory.SubFactory(UserFactory)
     level_id = factory.SubFactory(LevelFactory)
+    finished = False
+
+
+class UserSeasonFactory(BaseModelFactory):
+    class Meta:
+        model = UserSeason
+
+    user_id = factory.SubFactory(UserFactory)
+    season_id = factory.SubFactory(SeasonFactory)
     finished = False

@@ -24,6 +24,7 @@ from lib.utils.models import (
     UserLeader,
     UserLevel,
     UserResource,
+    UserSeason,
 )
 import pytest_asyncio
 from services.api.tests.factories.factories import (
@@ -52,6 +53,7 @@ from services.api.tests.factories.factories import (
     UserLeaderFactory,
     UserLevelFactory,
     UserResourceFactory,
+    UserSeasonFactory,
 )
 
 
@@ -261,6 +263,14 @@ def user_level_factory(db_connection):
 
 
 @pytest_asyncio.fixture
+def user_season_factory(db_connection):
+    async def factory(**kwargs) -> UserSeason:
+        return await UserSeasonFactory.create_in_db(conn=db_connection, **kwargs)
+
+    return factory
+
+
+@pytest_asyncio.fixture
 async def init_db_cards(
     faction_factory,
     color_factory,
@@ -296,8 +306,8 @@ async def init_db_cards(
     - 1 пассивка лидера врагов, 1 пассивка врагов, 1 завещание
     - 1 лидер врагов
     - 3 врага
-    - 1 сезон
-    - 3 уровня (1 открыт, 2 нет)
+    - 2 сезона (1 открытый, 2 закрытый + у него нет связей)
+    - 4 уровня (1 открыт, 3 нет) (3 для сезона 1, 1 для сезона 2)
     - связи между сезоном и уровнем, уровнем и его детьми, уровнем и врагами
     """
     f1 = await faction_factory(name="Neutrals")
@@ -390,6 +400,11 @@ async def init_db_cards(
         description="Season 1",
         unlocked=True,
     )
+    s2 = await season_factory(
+        name="Season 2",
+        description="Season 2",
+        unlocked=False,
+    )
     l1 = await level_factory(
         name="Level 1",
         season_id=s1.id,
@@ -404,6 +419,11 @@ async def init_db_cards(
     l3 = await level_factory(
         name="Level 3",
         season_id=s1.id,
+        enemy_leader_id=enemy_leader.id,
+    )
+    l4 = await level_factory(
+        name="Level 4",
+        season_id=s2.id,
         enemy_leader_id=enemy_leader.id,
     )
 
@@ -442,5 +462,9 @@ async def init_db_cards(
     )
     await level_enemy_factory(
         level_id=l3.id,
+        enemy_id=enemy_3.id,
+    )
+    await level_enemy_factory(
+        level_id=l4.id,
         enemy_id=enemy_3.id,
     )

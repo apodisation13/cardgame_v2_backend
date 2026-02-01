@@ -18,10 +18,11 @@ class TestOpenRelatedLevelsAPI:
         level_enemy_factory,
         user_login_fixture,
         user_level_factory,
+        user_season_factory,
     ):
         """
-        Базовая фикстура добавила уже 3 разных уровня
-        У юзера открыт уровень id=4
+        Базовая фикстура добавила уже 4 разных уровня
+        У юзера открыт уровень id=5, который мы создали в этом тесте
         У этого уровня нет связанных уровней (level_related_levels)
         Соответственно если юзер проходит этот уровень, то ему мы поставим finished
         И всё, открывать новые не надо, их ведь нет
@@ -45,6 +46,10 @@ class TestOpenRelatedLevelsAPI:
             level_id=level.id,
             finished=level_finished,
         )
+        await user_season_factory(
+            user_id=user_id,
+            season_id=1,
+        )
 
         response = await client.patch(
             self.endpoint.format(user_id=user_id, user_level_id=user_level.id),
@@ -55,8 +60,12 @@ class TestOpenRelatedLevelsAPI:
 
         response_json = response.json()
 
-        levels = response_json["seasons"][0]["levels"]
+        # в 1м сезоне добавился 1 уровень!
+        levels = response_json["seasons"][0]["season"]["levels"]
         assert len(levels) == 4  # 3 было по дефолту, и еще 1 мы в этом тесте создали
+        # во 2м сезоне без изменения
+        levels = response_json["seasons"][1]["season"]["levels"]
+        assert len(levels) == 1
 
         user_levels: list[dict] = await db_connection.fetch("""SELECT * FROM user_levels""")
         assert len(user_levels) == 1
@@ -100,8 +109,11 @@ class TestOpenRelatedLevelsAPI:
 
         response_json = response.json()
 
-        levels = response_json["seasons"][0]["levels"]
+        levels = response_json["seasons"][0]["season"]["levels"]
         assert len(levels) == 3  # 3 было по дефолту
+
+        levels = response_json["seasons"][1]["season"]["levels"]
+        assert len(levels) == 1  # для сезона 2 ничего не поменялось
 
         user_levels: list[dict] = await db_connection.fetch("""SELECT * FROM user_levels ORDER BY updated_at""")
 
@@ -124,7 +136,7 @@ class TestOpenRelatedLevelsAPI:
 
         response_json = response.json()
 
-        levels = response_json["seasons"][0]["levels"]
+        levels = response_json["seasons"][0]["season"]["levels"]
         assert len(levels) == 3
 
         user_levels: list[dict] = await db_connection.fetch("""SELECT * FROM user_levels ORDER BY updated_at""")
@@ -148,7 +160,7 @@ class TestOpenRelatedLevelsAPI:
 
         response_json = response.json()
 
-        levels = response_json["seasons"][0]["levels"]
+        levels = response_json["seasons"][0]["season"]["levels"]
         assert len(levels) == 3
 
         user_levels: list[dict] = await db_connection.fetch("""SELECT * FROM user_levels ORDER BY updated_at DESC""")
@@ -166,3 +178,60 @@ class TestOpenRelatedLevelsAPI:
         # ничего не изменилось с 3м уровнем! он все еще не пройден (но открыт, так как вообще есть в user_levels)
         assert user_levels[2]["id"] == 3
         assert user_levels[2]["finished"] is False
+
+    @pytest.mark.asyncio
+    async def test_open_open_level_related_levels_already_open(
+        self,
+        client: AsyncClient,
+        db_connection,
+        init_db_cards,
+        user_login_fixture,
+        user_level_factory,
+    ):
+        """
+        Базовая фикстура добавила уже 3 разных уровня, и там у уровня 1 есть связанные: 2 и 3
+        Пусть у юзера уже открыты уровни 1 и 3 (и не важно, пройдены ли), он проходит 1, открывается только 2
+        """
+        user_id = user_login_fixture["id"]
+        access_token = user_login_fixture["token"]["access_token"]
+
+        # 1й уровень открыт у юзера, но еще не пройден
+        user_level = await user_level_factory(
+            user_id=user_id,
+            level_id=1,
+            finished=False,
+        )
+        # 3й уровень открыт у юзера, и не важно, пройден он или нет
+        await user_level_factory(
+            user_id=user_id,
+            level_id=3,
+            finished=True,
+        )
+
+        # проходит 1й уровень
+        response = await client.patch(
+            self.endpoint.format(user_id=user_id, user_level_id=user_level.id),
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+        assert response.status_code == 200
+
+        response_json = response.json()
+
+        levels = response_json["seasons"][0]["season"]["levels"]
+        assert len(levels) == 3  # 3 было по дефолту
+
+        levels = response_json["seasons"][1]["season"]["levels"]
+        assert len(levels) == 1  # для сезона 2 ничего не поменялось
+
+        # поскольку там транзакция, то по updated_at не совсем корректно смотреть
+        user_levels: list[dict] = await db_connection.fetch("""SELECT * FROM user_levels ORDER BY created_at DESC""")
+        assert len(user_levels) == 3  # было 2, стало 3
+
+        assert user_levels[0]["level_id"] == 2
+        assert user_levels[0]["finished"] is False  # а вот это 2й - который открылся последним по времени
+
+        assert user_levels[1]["level_id"] == 3
+        assert user_levels[1]["finished"] is True  # это 3й уровень, который не изменился
+
+        assert user_levels[2]["finished"] is True  # 1му уровню поставилось что он пройден

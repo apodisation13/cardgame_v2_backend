@@ -64,13 +64,18 @@ class Season(Base):
     id: int
     name: str
     description: str
-    unlocked: bool
     levels: list[UserLevel]
+
+
+class UserSeason(Base):
+    id: int | None
+    finished: bool | None
+    season: Season
 
 
 class UserProgressResponse(Base):
     user_database: UserDatabase
-    seasons: list[Season]
+    seasons: list[UserSeason]
     resources: UserResources
     enemies: list[Enemy]
     enemy_leaders: list[EnemyLeader]
@@ -102,7 +107,7 @@ class CardCraftMillResponse(Base):
 
 
 class OpenRelatedLevelsResponse(Base):
-    seasons: list[Season]
+    seasons: list[UserSeason]
 
 
 class CardCraftBonusRequest(Base):

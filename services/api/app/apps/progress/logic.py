@@ -11,7 +11,7 @@ from services.api.app.apps.progress.schemas import (
     UserDeck,
     UserLeader,
     UserLevel,
-    UserResources,
+    UserResources, UserSeason,
 )
 
 
@@ -22,7 +22,7 @@ async def process_enemies(
     connection: asyncpg.Connection,
     user_id: int,
     base_url: str,
-) -> tuple[list[Enemy], list[EnemyLeader], list[Season]]:
+) -> tuple[list[Enemy], list[EnemyLeader], list[UserSeason]]:
     # собираем список врагов
     enemies: list[Enemy] = await get_enemies(
         connection=connection,
@@ -58,7 +58,7 @@ async def process_enemies(
         level_ids=level_ids,
     )
 
-    user_seasons: list[Season] = await construct_seasons(
+    user_seasons: list[UserSeason] = await construct_seasons(
         seasons=seasons,
         enemies_dict=enemies_dict,
         enemy_leaders_dict=enemy_leaders_dict,
@@ -174,11 +174,15 @@ async def get_seasons(
                 user_levels.id AS user_level_id,
                 user_levels.finished AS user_level_finished,
                 levels.enemy_leader_id AS enemy_leader_id,
-                level_enemies.enemy_id AS enemy_id
+                level_enemies.enemy_id AS enemy_id,
+                user_seasons.id AS user_season_id,
+                user_seasons.finished AS user_season_finished
             FROM seasons
             JOIN levels ON seasons.id = levels.season_id
             JOIN level_enemies ON levels.id = level_enemies.level_id
-            LEFT JOIN user_levels ON levels.id = user_levels.level_id AND user_levels.user_id = $1;
+            LEFT JOIN user_levels ON levels.id = user_levels.level_id AND user_levels.user_id = $1
+            LEFT JOIN user_seasons ON user_seasons.season_id = seasons.id AND user_seasons.user_id = $1
+            ORDER BY seasons.id;
         """,
         user_id,
     )
@@ -224,7 +228,7 @@ async def construct_seasons(
     enemies_dict: dict,
     enemy_leaders_dict: dict,
     level_related_levels: dict[int, list[LevelRelatedLevel]],
-) -> list[Season]:
+) -> list[UserSeason]:
     user_seasons_dict = {}
     levels_dict = {}
 
@@ -282,12 +286,16 @@ async def construct_seasons(
                 id=season_id,
                 name=row["season_name"],
                 description=row["season_description"],
-                unlocked=row["season_unlocked"],
                 levels=[user_level],
             )
-            user_seasons_dict[season_id] = season
+            user_season = UserSeason(
+                id=row["user_season_id"],
+                season=season,
+                finished=row["user_season_finished"],
+            )
+            user_seasons_dict[season_id] = user_season
         else:
-            season: Season = user_seasons_dict[season_id]
+            season: Season = user_seasons_dict[season_id].season
             # print("STR214 season_id", season_id)
             if user_level not in season.levels:
                 # print("STR215 appending level", level.id)
@@ -629,7 +637,29 @@ async def open_default_content(
         logger.error(msg, len(levels), len(user_levels))
         raise Exception(msg % (len(levels), len(user_levels)))
 
-    # 8. создаем юзеру дефолтные ресурсы - они указаны напрямую в БД
+    # 8. берем все открытые по умолчанию сезоны
+    seasons = await connection.fetch("""SELECT seasons.id FROM seasons WHERE seasons.unlocked IS TRUE""")
+    logger.info("Number of default seasons to insert: %s", len(seasons))
+
+    # 9. инзертим их юзеру
+    user_seasons = await connection.fetch(
+        """
+            INSERT INTO user_seasons (user_id, season_id)
+            SELECT $1, s.season_id
+            FROM unnest($2::int[]) AS s(season_id)
+            RETURNING id
+        """,
+        user_id,
+        [season["id"] for season in seasons],
+    )
+    logger.info("Number of user_seasons inserted: %s", len(user_seasons))
+
+    if len(user_seasons) != len(seasons):
+        msg = "Number of unlocked seasons %s does not match number of inserted user_seasons %s"
+        logger.error(msg, len(seasons), len(user_seasons))
+        raise Exception(msg % (len(seasons), len(user_seasons)))
+
+    # 10. создаем юзеру дефолтные ресурсы - они указаны напрямую в БД
     await connection.execute("""INSERT INTO user_resources (id) VALUES ($1)""", user_id)
 
     logger.info("Finished creating user database for user %s", user_id)
