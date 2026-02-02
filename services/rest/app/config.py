@@ -32,6 +32,10 @@ class Config(BaseConfig):
         "DJANGO_SECRET_KEY",
         default="django-insecure-your-secret-key-change-this!",
     )
+    CSRF_TRUSTED_ORIGINS = get_secret(
+        "CSRF_TRUSTED_ORIGINS",
+        cast=list,
+    )
 
 
 class TestingConfig(BaseTestingConfig, Config): ...
