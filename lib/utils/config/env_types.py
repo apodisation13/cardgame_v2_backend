@@ -32,7 +32,7 @@ def get_secret(
     secret_name: str,
     default: str | float | bool = None,
     cast: type = str,
-) -> str | int | float | bool:
+) -> str | int | float | bool | list:
     value = os.getenv(secret_name)
 
     if value is None or value == "":
@@ -52,6 +52,8 @@ def get_secret(
             return float(value)
         elif cast is str:
             return value
+        elif cast is list:
+            return value.split(",")
         else:
             raise ValueError(f"Unsupported type: {cast}")
     except (ValueError, TypeError) as e:
