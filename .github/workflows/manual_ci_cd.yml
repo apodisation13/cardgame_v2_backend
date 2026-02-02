@@ -62,6 +62,9 @@ jobs:
           KIBANA_SYSTEM_PASSWORD=${{ secrets.KIBANA_SYSTEM_PASSWORD }}
           APM_SECRET_TOKEN=${{ secrets.APM_SECRET_TOKEN }}
           
+          DOMAIN_NAME=${{ secrets.DOMAIN_NAME }}
+          LETSENCRYPT_EMAIL=${{ secrets.LETSENCRYPT_EMAIL }}
+          
           EOF
           
           echo "✅ .env создан для Environment: ${{ env.MODE }}"
@@ -128,6 +131,9 @@ jobs:
             ELASTIC_PASSWORD=${{ secrets.ELASTIC_PASSWORD }}
             KIBANA_SYSTEM_PASSWORD=${{ secrets.KIBANA_SYSTEM_PASSWORD }}
             APM_SECRET_TOKEN=${{ secrets.APM_SECRET_TOKEN }}
+            
+            DOMAIN_NAME=${{ secrets.DOMAIN_NAME }}
+            LETSENCRYPT_EMAIL=${{ secrets.LETSENCRYPT_EMAIL }}
 
         with:
           host: ${{ secrets.SSH_SERVER }}
