@@ -368,11 +368,8 @@ services:
     volumes:
       - certs:/etc/nginx/certs:ro
       - html:/usr/share/nginx/html
+      - vhost:/etc/nginx/vhost.d
       - /var/run/docker.sock:/tmp/docker.sock:ro
-    environment:
-      - VIRTUAL_HOST=${DOMAIN_NAME}
-      - LETSENCRYPT_HOST=${DOMAIN_NAME}
-      - VIRTUAL_PORT=80
     networks:
       - proxy
 
@@ -385,6 +382,7 @@ services:
     volumes:
       - certs:/etc/nginx/certs:rw
       - html:/usr/share/nginx/html
+      - vhost:/etc/nginx/vhost.d
       - acme:/etc/acme.sh
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
@@ -407,3 +405,4 @@ volumes:
   certs:
   html:
   acme:
+  vhost:
