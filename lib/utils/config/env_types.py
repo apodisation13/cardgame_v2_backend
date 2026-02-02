@@ -53,7 +53,7 @@ def get_secret(
         elif cast is str:
             return value
         elif cast is list:
-            return value.split(',')
+            return value.split(",")
         else:
             raise ValueError(f"Unsupported type: {cast}")
     except (ValueError, TypeError) as e:
