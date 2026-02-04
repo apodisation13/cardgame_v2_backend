@@ -363,7 +363,7 @@ services:
 
   # ============ ПРОКСИ ДЛЯ SSL ============
   nginx-proxy:
-    image: nginxproxy/nginx-proxy:1.4
+    image: nginxproxy/nginx-proxy:1.9
     container_name: nginx-proxy
     restart: unless-stopped
     ports:
@@ -378,7 +378,7 @@ services:
       - proxy
 
   acme-companion:
-    image: nginxproxy/acme-companion:2.2
+    image: nginxproxy/acme-companion:2.6
     container_name: acme-companion
     restart: unless-stopped
     depends_on:
