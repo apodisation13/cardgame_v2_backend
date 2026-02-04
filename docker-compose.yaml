@@ -344,10 +344,10 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro  # так мы подгружаем туда свой nginx.conf файл!
       - shared_static:/shared_static
-#    ports:
-#      - "${APP_PORT_OUTSIDE}:80"  # локально будет виден этот порт -> а в контейнере этот
-    expose:
-      - "80"
+    ports:
+      - "${APP_PORT_OUTSIDE}:80"  # локально будет виден этот порт -> а в контейнере этот
+#    expose:
+#      - "80"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:80/health" ]
       interval: 30s
@@ -355,25 +355,25 @@ services:
       retries: 3
     networks:
       - app-network
-      - proxy
-    environment:
-      - VIRTUAL_HOST=${DOMAIN_NAME}
-      - LETSENCRYPT_HOST=${DOMAIN_NAME}
-      - VIRTUAL_PORT=80
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=proxy"
-      # HTTPS
-      - "traefik.http.routers.nginx-secure.rule=Host(`${DOMAIN_NAME}`)"
-      - "traefik.http.routers.nginx-secure.entrypoints=websecure"
-      - "traefik.http.routers.nginx-secure.tls.certresolver=letsencrypt"
-      # HTTP -> HTTPS redirect
-      - "traefik.http.routers.nginx.rule=Host(`${DOMAIN_NAME}`)"
-      - "traefik.http.routers.nginx.entrypoints=web"
-      - "traefik.http.routers.nginx.middlewares=redirect-to-https"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-      # Service
-      - "traefik.http.services.nginx.loadbalancer.server.port=80"
+#      - proxy
+#    environment:
+#      - VIRTUAL_HOST=${DOMAIN_NAME}
+#      - LETSENCRYPT_HOST=${DOMAIN_NAME}
+#      - VIRTUAL_PORT=80
+#    labels:
+#      - "traefik.enable=true"
+#      - "traefik.docker.network=proxy"
+#      # HTTPS
+#      - "traefik.http.routers.nginx-secure.rule=Host(`${DOMAIN_NAME}`)"
+#      - "traefik.http.routers.nginx-secure.entrypoints=websecure"
+#      - "traefik.http.routers.nginx-secure.tls.certresolver=letsencrypt"
+#      # HTTP -> HTTPS redirect
+#      - "traefik.http.routers.nginx.rule=Host(`${DOMAIN_NAME}`)"
+#      - "traefik.http.routers.nginx.entrypoints=web"
+#      - "traefik.http.routers.nginx.middlewares=redirect-to-https"
+#      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+#      # Service
+#      - "traefik.http.services.nginx.loadbalancer.server.port=80"
 
   # ============ ПРОКСИ ДЛЯ SSL ============
 #  nginx-proxy:
@@ -409,43 +409,43 @@ services:
 #    networks:
 #      - proxy
 
-  traefik:
-    image: traefik:v3.6.7
-    container_name: traefik
-    restart: unless-stopped
-    command:
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
-      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
-      - "--certificatesresolvers.letsencrypt.acme.email=${LETSENCRYPT_EMAIL}"
-      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - letsencrypt:/letsencrypt
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    networks:
-      - proxy
+#  traefik:
+#    image: traefik:v3.6.7
+#    container_name: traefik
+#    restart: unless-stopped
+#    command:
+#      - "--api.insecure=true"
+#      - "--providers.docker=true"
+#      - "--providers.docker.exposedbydefault=false"
+#      - "--entrypoints.web.address=:80"
+#      - "--entrypoints.websecure.address=:443"
+#      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+#      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+#      - "--certificatesresolvers.letsencrypt.acme.email=${LETSENCRYPT_EMAIL}"
+#      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+#    ports:
+#      - "80:80"
+#      - "443:443"
+#    volumes:
+#      - letsencrypt:/letsencrypt
+#      - /var/run/docker.sock:/var/run/docker.sock:ro
+#    networks:
+#      - proxy
 
 
 networks:
   app-network:
     name: app-network
     external: true  # вот это значит, что сеть УЖЕ существует, и нужно подключаться к ней, создавать не надо тут ее
-  proxy:
-    name: proxy
-    driver: bridge
+#  proxy:
+#    name: proxy
+#    driver: bridge
 
 volumes:
   docker_postgres_data:
   shared_static:
   elasticsearch_data:
-  letsencrypt:
+#  letsencrypt:
 #  certs:
 #  html:
 #  acme:

@@ -162,9 +162,6 @@ jobs:
             echo "🧹 Чистим старые образы..."
             docker image prune -f
             
-            sleep 10
-            docker restart gridways-nginx
-            
             echo ""
             echo "✅ Деплой завершён!"
             docker-compose ps
