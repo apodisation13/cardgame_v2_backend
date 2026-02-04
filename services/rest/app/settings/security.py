@@ -28,10 +28,12 @@ SECRET_KEY = config.DJANGO_SECRET_KEY
 # ]
 ALLOWED_HOSTS = ["*"]
 
+CSRF_TRUSTED_ORIGINS = [
+    "http://*",
+    "https://*",
+]
 if config.ENV_TYPE in EnvType.docker_development():
     CSRF_TRUSTED_ORIGINS = config.CSRF_TRUSTED_ORIGINS
-else:
-    CSRF_TRUSTED_ORIGINS = ["*"]
 
 # Security settings
 SECURE_BROWSER_XSS_FILTER = True
