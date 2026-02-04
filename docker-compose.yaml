@@ -362,6 +362,7 @@ services:
       - VIRTUAL_PORT=80
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
       # HTTPS
       - "traefik.http.routers.nginx-secure.rule=Host(`${DOMAIN_NAME}`)"
       - "traefik.http.routers.nginx-secure.entrypoints=websecure"
