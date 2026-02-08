@@ -2,7 +2,11 @@ from datetime import UTC, datetime, timedelta
 import hashlib
 import secrets
 
+from fastapi import HTTPException, status
+
 from jose import ExpiredSignatureError, JWTError, jwt
+
+from services.api.app.apps.auth.schemas import TokenType
 from services.api.app.config import Config
 from services.api.app.exceptions import UserIncorrectPasswordError
 
@@ -37,15 +41,29 @@ def verify_password(
         raise UserIncorrectPasswordError
 
 
-def create_access_token(
+def create_token(
     config: Config,
     data: dict,
-    expires_delta_minutes: int = 30,
+    token_type: TokenType,
 ) -> str:
+    # Создает токен: или access_token, или refresh_token в зависимости от token_type
     now = datetime.now(UTC)
-    expire = now + timedelta(minutes=expires_delta_minutes)
+
+    if token_type == TokenType.ACCESS_TOKEN:
+        expire_minutes = config.ACCESS_TOKEN_EXPIRE_MINUTES
+    elif token_type == TokenType.REFRESH_TOKEN:
+        expire_minutes = config.REFRESH_TOKEN_EXPIRE_MINUTES
+    else:
+        raise Exception("Invalid token type")
+
+    expire = now + timedelta(minutes=expire_minutes)
     to_encode = data.copy()
-    to_encode.update({"exp": expire})
+    to_encode.update(
+        {
+            "exp": expire,
+            "type": token_type,
+        },
+    )
     encoded_jwt = jwt.encode(
         to_encode,
         config.USER_PASSWORD_SECRET_KEY,
@@ -57,7 +75,7 @@ def create_access_token(
 def decode_token(
     config: Config,
     token: str,
-) -> str | None:
+) -> tuple[str, TokenType] | None:
     try:
         payload = jwt.decode(
             token,
@@ -70,7 +88,12 @@ def decode_token(
 
         if email is None:
             return None
-        return email
+
+        token_type: TokenType = payload.get("type")
+        if token_type is None:
+            return None
+
+        return email, token_type
 
     except ExpiredSignatureError:
         return None

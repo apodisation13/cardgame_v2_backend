@@ -5,7 +5,7 @@ from services.api.app.apps.auth.schemas import (
     UserLoginRequest,
     UserLoginResponse,
     UserRegisterRequest,
-    UserRegisterResponse,
+    UserRegisterResponse, RefreshTokenRequest, RefreshTokenResponse,
 )
 from services.api.app.apps.auth.service import AuthService
 from services.api.app.dependencies import get_auth_service
@@ -39,14 +39,18 @@ async def login_user(
     1) С фронта приходит почта пользователя и голый пароль
     2) Проверяем по почте, есть ли такой пользователь, если нет - кидаем ошибку
     3) Проверяем его пароль (голый пароль и зашифрованный в базе)
-    4) Создаем по его почте уникальный токен
+    4) Создаем по его почте уникальный токен - access_token + refresh_token
     """
     return await service.login_user(user_data=user_data)
 
 
-@router.get("/users/{user_id}")
-async def read_users_me(
-    current_user: UserRegisterRequest = Depends(auth_dependencies.get_current_user),
-    user_id: int = Path(..., gt=0),
-) -> UserRegisterRequest:
-    return current_user
+@router.post("/refresh-token")
+async def refresh_token(
+    user_data: RefreshTokenRequest,
+    service: AuthService = Depends(get_auth_service),
+) -> RefreshTokenResponse:
+    """
+    Роут для обновления протухшего access_token
+    Каждый раз, когда у пользователя протух access_token, присылаем сюда refresh_token и получаем новый access_token
+    """
+    return await service.refresh_access_token(user_data=user_data)

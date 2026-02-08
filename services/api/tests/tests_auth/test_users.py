@@ -1,10 +1,12 @@
+from datetime import datetime, timedelta, UTC
 from unittest.mock import ANY
 
 import pytest
+from freezegun import freeze_time
 
 from httpx import AsyncClient
-from services.api.app.apps.auth.lib import get_password_hash
-from services.api.app.apps.auth.schemas import UserRegisterResponse
+from services.api.app.apps.auth.lib import get_password_hash, create_token, decode_token
+from services.api.app.apps.auth.schemas import UserRegisterResponse, TokenType
 from services.api.app.apps.progress.schemas import UserResources
 
 
@@ -261,6 +263,7 @@ class TestUserLoginAPI:
             "token": {
                 "token_type": "bearer",
                 "access_token": ANY,
+                "refresh_token": ANY,
             },
         }
 
@@ -453,3 +456,101 @@ class TestUserLoginAPI:
         )
 
         assert response.status_code == 422
+
+
+class TestRefreshAccessTokenAPI:
+    endpoint = "users/refresh-token"
+
+    @pytest.mark.asyncio
+    async def test_user_refresh_token_success(
+        self,
+        app_config,
+        client: AsyncClient,
+        db_connection,
+        user_factory,
+    ) -> None:
+        user = await user_factory(
+            email="email@mail.ru",
+            password=get_password_hash("password"),
+            username="username",
+        )
+
+        token_data = {"sub": user.email.lower()}
+
+        refresh_token = create_token(
+            config=app_config,
+            data=token_data,
+            token_type=TokenType.REFRESH_TOKEN,
+        )
+
+        response = await client.post(
+            self.endpoint,
+            json={
+                "refresh_token": refresh_token,
+            },
+        )
+
+        response_json = response.json()
+        assert response.status_code == 200
+
+        assert response_json == {
+            "access_token": ANY,
+            "token_type": "bearer",
+        }
+
+        access_token = response_json["access_token"]
+
+        email, token_type = decode_token(app_config, access_token)
+
+        assert email == user.email
+        assert token_type == TokenType.ACCESS_TOKEN
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "expires_in, expected_status",
+        [
+            (4, 200),
+            (12, 401),
+        ]
+    )
+    async def test_user_refresh_token_expired(
+        self,
+        expires_in,
+        expected_status,
+        app_config,
+        client: AsyncClient,
+        db_connection,
+        user_factory,
+    ) -> None:
+        app_config.ACCESS_TOKEN_EXPIRE_MINUTES = 1
+        app_config.REFRESH_TOKEN_EXPIRE_MINUTES = 10
+
+        user = await user_factory(
+            email="email@mail.ru",
+            password=get_password_hash("password"),
+            username="username",
+        )
+
+        token_data = {"sub": user.email.lower()}
+
+        # как будто юзер создал этот токен слишком давно
+        time_past = datetime.now(UTC) - timedelta(minutes=expires_in)
+        with freeze_time(time_past):
+            refresh_token = create_token(
+                config=app_config,
+                data=token_data,
+                token_type=TokenType.REFRESH_TOKEN,
+            )
+
+        response = await client.post(
+            self.endpoint,
+            json={
+                "refresh_token": refresh_token,
+            },
+        )
+
+        response_json = response.json()
+        assert response.status_code == expected_status
+
+        if expected_status == 401:
+            assert response_json == {'detail': 'Refresh token expired. Please login again.'}

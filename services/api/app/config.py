@@ -16,7 +16,16 @@ class Config(BaseConfig):
     # шифрование пароля
     USER_PASSWORD_SECRET_KEY = get_secret("USER_PASSWORD_SECRET_KEY", default="your-secret-key-here")
     ALGORITHM = get_secret("ALGORITHM", default="HS256")
-    ACCESS_TOKEN_EXPIRE_MINUTES = get_secret("ACCESS_TOKEN_EXPIRE_MINUTES", default=30)
+    ACCESS_TOKEN_EXPIRE_MINUTES = get_secret(
+        "ACCESS_TOKEN_EXPIRE_MINUTES",
+        default=30,
+        cast=int,
+    )
+    REFRESH_TOKEN_EXPIRE_MINUTES = get_secret(
+        "REFRESH_TOKEN_EXPIRE_MINUTES",
+        default=60 * 24 * 7,  # 7 дней
+        cast=int,
+    )
 
 
 class TestingConfig(BaseTestingConfig, Config): ...
