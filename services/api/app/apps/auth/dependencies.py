@@ -1,10 +1,13 @@
 import logging
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from fastapi import Depends, HTTPException, Header, status
-from services.api.app.apps.auth.schemas import UserCheckTokenResponse
 from services.api.app.apps.auth.service import AuthService
 from services.api.app.dependencies import get_auth_service
+
+
+if TYPE_CHECKING:
+    from services.api.app.apps.auth.schemas import UserCheckTokenResponse
 
 
 logger = logging.getLogger(__name__)
