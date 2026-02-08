@@ -1,22 +1,16 @@
 import logging
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from fastapi import Depends, HTTPException, Header, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from services.api.app.apps.auth.schemas import UserCheckTokenResponse, UserRegisterRequest
 from services.api.app.apps.auth.service import AuthService
 from services.api.app.dependencies import get_auth_service
 
 
+if TYPE_CHECKING:
+    from services.api.app.apps.auth.schemas import UserCheckTokenResponse
+
+
 logger = logging.getLogger(__name__)
-security_s = HTTPBearer()
-
-
-async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security_s),
-    auth_service: AuthService = Depends(get_auth_service),
-) -> UserRegisterRequest:
-    return await auth_service.get_current_user(credentials.credentials)
 
 
 def get_token_from_header(

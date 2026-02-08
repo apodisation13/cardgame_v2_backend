@@ -6,16 +6,18 @@ from lib.utils.db.pool import Database
 import pytest_asyncio
 from services.api.app.apps.auth.lib import get_password_hash
 from services.api.app.config import Config, get_config
-from services.api.app.config import get_config as get_app_settings
 
 
 @pytest_asyncio.fixture
-async def app(db_pool) -> FastAPI:
+async def app(
+    db_pool,
+    app_config,
+) -> FastAPI:
     """Настроенное приложение FastAPI для тестов"""
     # Устанавливаем тестовый конфиг
     from services.api.app.main import app as fastapi_app
 
-    fastapi_app.state.config = get_app_settings()
+    fastapi_app.state.config = app_config
 
     # Создаем Database обертку используя существующий пул из фикстуры
     db = Database(fastapi_app.state.config)
@@ -43,7 +45,7 @@ async def client(app: FastAPI) -> AsyncClient:
 
 
 @pytest.fixture(scope="session")
-def config() -> Config:
+def app_config() -> Config:
     return get_config()
 
 

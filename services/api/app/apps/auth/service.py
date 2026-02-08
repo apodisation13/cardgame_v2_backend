@@ -5,9 +5,12 @@ from asyncpg import UniqueViolationError
 from fastapi import HTTPException, status
 from lib.utils.db.pool import Database
 from lib.utils.schemas.users import UserRole
-from services.api.app.apps.auth.lib import create_access_token, decode_token, get_password_hash, verify_password
+from services.api.app.apps.auth.lib import create_token, decode_token, get_password_hash, verify_password
 from services.api.app.apps.auth.schemas import (
+    RefreshTokenRequest,
+    RefreshTokenResponse,
     Token,
+    TokenType,
     UserCheckTokenResponse,
     UserLoginRequest,
     UserLoginResponse,
@@ -107,13 +110,24 @@ class AuthService:
             password=user_data.password,
         )
 
-        access_token = create_access_token(
+        token_data = {"sub": email_to_lower}
+
+        access_token = create_token(
             config=self.config,
-            data={"sub": email_to_lower},
-            # expires_delta_minutes=1,
+            data=token_data,
+            token_type=TokenType.ACCESS_TOKEN,
+        )
+        refresh_token = create_token(
+            config=self.config,
+            data=token_data,
+            token_type=TokenType.REFRESH_TOKEN,
         )
 
-        token = Token(access_token=access_token, token_type="bearer")
+        token = Token(
+            access_token=access_token,
+            refresh_token=refresh_token,
+        )
+
         return UserLoginResponse(
             id=user["id"],
             username=user["username"],
@@ -156,30 +170,6 @@ class AuthService:
         verify_password(password, user["password"])
         return user
 
-    async def get_current_user(
-        self,
-        token: str,
-    ) -> UserRegisterRequest:
-        email = decode_token(
-            config=self.config,
-            token=token,
-        )
-
-        if email is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Could not validate credentials",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-
-        user = await self._get_user_by_email(email=email)
-
-        return UserRegisterRequest(
-            username=user["username"],
-            email=user["email"],
-            password=user["password"],
-        )
-
     async def get_developer_user(
         self,
         email: str,
@@ -207,21 +197,55 @@ class AuthService:
         self,
         token: str,
     ) -> UserCheckTokenResponse:
-        email = decode_token(
+        result: tuple | None = decode_token(
             config=self.config,
             token=token,
         )
 
-        if email is None:
+        if result is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not validate credentials",
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
+        email = result[0]
         user = await self._get_user_by_email(email=email)
 
         return UserCheckTokenResponse(
             id=user["id"],
             email=user["email"],
         )
+
+    async def refresh_access_token(
+        self,
+        user_data: RefreshTokenRequest,
+    ) -> RefreshTokenResponse:
+        result: tuple | None = decode_token(
+            config=self.config,
+            token=user_data.refresh_token,
+        )
+
+        if result is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Refresh token expired. Please login again.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        email, token_type = result[0], result[1]
+
+        if token_type != TokenType.REFRESH_TOKEN:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token type",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        new_access_token = create_token(
+            config=self.config,
+            data={"sub": email.lower()},
+            token_type=TokenType.ACCESS_TOKEN,
+        )
+
+        return RefreshTokenResponse(access_token=new_access_token)

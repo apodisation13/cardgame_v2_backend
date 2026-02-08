@@ -345,8 +345,8 @@ async def upload_seasons(file, db_pool):
 
     data = file["Enemies.Season"]
 
-    # берем name, unlocked, description (столбцы 2,3,4) + так же пропускаем первую строку, там названия столбцов
-    data_to_insert = [row[1:4] for row in data[1:] if row]
+    # берем name, unlocked, description, x, y (столбцы 2,3,4) + так же пропускаем первую строку, там названия столбцов
+    data_to_insert = [row[1:6] for row in data[1:] if row]
 
     async with db_pool.acquire() as connection:
         existing_row_count = await connection.fetchval("""select count(*) from seasons""")
@@ -356,9 +356,34 @@ async def upload_seasons(file, db_pool):
             return
 
         await connection.executemany(
-            """INSERT INTO seasons (name, unlocked, description) VALUES ($1, $2, $3)""",
+            """INSERT INTO seasons (name, unlocked, description, x, y) VALUES ($1, $2, $3, $4, $5)""",
             data_to_insert,
         )
+
+    data = file["Seasons.SeasonRelatedSeason"]
+
+    data_to_insert = [row[1:4] for row in data[1:] if row]
+    print(len(data_to_insert), data_to_insert)
+
+    for element in data_to_insert:
+        if element[2] == "NONE":
+            element[2] = None
+        element.append(f"{element[0]}-{element[1]}")
+
+    print(len(data_to_insert), data_to_insert)
+    async with db_pool.acquire() as connection:
+        existing_row_count = await connection.fetchval("""select count(*) from season_related_seasons""")
+        print(existing_row_count, len(data_to_insert))
+
+        if existing_row_count != len(data_to_insert):
+            await connection.executemany(
+                """
+                    INSERT INTO season_related_seasons
+                     (season_id, related_season_id, line, connection)
+                     VALUES ($1, $2, $3, $4)
+                """,
+                data_to_insert,
+            )
 
 
 async def upload_levels_enemies(file, db_pool):
@@ -441,6 +466,7 @@ async def upload_from_excel():
     load_env()
     config = get_config()
     # config.DB_URL = "postgresql://postgres:pass@localhost:YOUR_DOCKER_DB_OUTSIDE_PORT/docker_db_name"
+    # config.DB_URL = "postgresql://postgres:ПАРОЛЬ@IP:ПОРТ/gridways_testing"
     db = Database(config)
 
     data = get_data("database.ods")

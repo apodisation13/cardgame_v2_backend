@@ -88,8 +88,6 @@ class BaseDevelopmentLocalConfig(BaseConfig):
 
 
 class BaseTestLocalConfig(BaseConfig):
-    load_env()
-
     ENV_TYPE = EnvType.TEST_LOCAL
 
     # Test Database for local tests only
