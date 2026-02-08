@@ -7,12 +7,15 @@ from lib.utils.db.pool import Database
 from lib.utils.schemas.users import UserRole
 from services.api.app.apps.auth.lib import create_token, decode_token, get_password_hash, verify_password
 from services.api.app.apps.auth.schemas import (
+    RefreshTokenRequest,
+    RefreshTokenResponse,
     Token,
+    TokenType,
     UserCheckTokenResponse,
     UserLoginRequest,
     UserLoginResponse,
     UserRegisterRequest,
-    UserRegisterResponse, TokenType, RefreshTokenResponse, RefreshTokenRequest,
+    UserRegisterResponse,
 )
 from services.api.app.apps.progress import logic
 from services.api.app.config import Config

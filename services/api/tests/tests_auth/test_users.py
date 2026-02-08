@@ -1,12 +1,12 @@
-from datetime import datetime, timedelta, UTC
+from datetime import UTC, datetime, timedelta
 from unittest.mock import ANY
 
 import pytest
-from freezegun import freeze_time
 
+from freezegun import freeze_time
 from httpx import AsyncClient
-from services.api.app.apps.auth.lib import get_password_hash, create_token, decode_token
-from services.api.app.apps.auth.schemas import UserRegisterResponse, TokenType
+from services.api.app.apps.auth.lib import create_token, decode_token, get_password_hash
+from services.api.app.apps.auth.schemas import TokenType, UserRegisterResponse
 from services.api.app.apps.progress.schemas import UserResources
 
 
@@ -511,7 +511,7 @@ class TestRefreshAccessTokenAPI:
         [
             (4, 200),
             (12, 401),
-        ]
+        ],
     )
     async def test_user_refresh_token_expired(
         self,
@@ -553,4 +553,4 @@ class TestRefreshAccessTokenAPI:
         assert response.status_code == expected_status
 
         if expected_status == 401:
-            assert response_json == {'detail': 'Refresh token expired. Please login again.'}
+            assert response_json == {"detail": "Refresh token expired. Please login again."}

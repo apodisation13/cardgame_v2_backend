@@ -2,10 +2,7 @@ from datetime import UTC, datetime, timedelta
 import hashlib
 import secrets
 
-from fastapi import HTTPException, status
-
 from jose import ExpiredSignatureError, JWTError, jwt
-
 from services.api.app.apps.auth.schemas import TokenType
 from services.api.app.config import Config
 from services.api.app.exceptions import UserIncorrectPasswordError

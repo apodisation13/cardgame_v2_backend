@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends
-from fastapi.params import Path
-from services.api.app.apps.auth import dependencies as auth_dependencies
 from services.api.app.apps.auth.schemas import (
+    RefreshTokenRequest,
+    RefreshTokenResponse,
     UserLoginRequest,
     UserLoginResponse,
     UserRegisterRequest,
-    UserRegisterResponse, RefreshTokenRequest, RefreshTokenResponse,
+    UserRegisterResponse,
 )
 from services.api.app.apps.auth.service import AuthService
 from services.api.app.dependencies import get_auth_service

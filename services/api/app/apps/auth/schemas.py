@@ -5,8 +5,8 @@ from pydantic import EmailStr, Field
 
 
 class TokenType(StrEnum):
-    ACCESS_TOKEN = 'access_token'
-    REFRESH_TOKEN = 'refresh_token'
+    ACCESS_TOKEN = "access_token"
+    REFRESH_TOKEN = "refresh_token"
 
 
 class UserRegisterRequest(Base):
