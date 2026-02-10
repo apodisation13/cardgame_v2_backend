@@ -107,6 +107,7 @@ class LeaderFactory(BaseModelFactory):
     unlocked = False
     faction_id = factory.SubFactory(FactionFactory)
     ability_id = factory.SubFactory(AbilityFactory)
+    hp = 0
     damage = 0
     charges = 1
     heal = 0

@@ -88,11 +88,11 @@ async def upload_leaders(file, db_pool):
     # вместо пустой строки ставим None для инзерта в бд
     needed_data = [row[1:len(row) - 1] for row in data[1:] if row]
     for element in needed_data:
-        if element[9] == "":
-            element[9] = None
+        if element[10] == "":
+            element[10] = None
 
     # добавляем туда измененные картинк
-    data_to_insert = await update_images_in_place(needed_data, img_idx=7)
+    data_to_insert = await update_images_in_place(needed_data, img_idx=8)
     print(len(data_to_insert), data_to_insert)
 
     async with db_pool.acquire() as connection:
@@ -110,6 +110,7 @@ async def upload_leaders(file, db_pool):
                 unlocked,
                 faction_id,
                 ability_id,
+                hp,
                 damage,
                 charges,
                 heal,

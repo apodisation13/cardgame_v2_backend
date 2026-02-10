@@ -499,6 +499,7 @@ async def get_user_leaders(
                 factions.name AS faction_name,
                 abilities.name AS ability_name,
                 abilities.description AS ability_description,
+                leaders.hp,
                 leaders.damage,
                 leaders.charges,
                 leaders.heal,
@@ -521,6 +522,10 @@ async def get_user_leaders(
                 abilities ON leaders.ability_id = abilities.id
             LEFT JOIN
                 passive_abilities ON leaders.passive_ability_id = passive_abilities.id
+            ORDER BY 
+                leaders.faction_id,
+                leaders.hp DESC,
+                leaders.charges DESC
         """,
         user_id,
     )
@@ -580,7 +585,7 @@ async def construct_user_decks(
                     id=deck_id,
                     name=deck_name,
                     leader=leader,
-                    health=hp,
+                    health=hp + leader.hp,  # при первом заходе сюда добавляем сразу и жизни лидера, и первой карты
                     cards=[card_for_deck],
                 ),
             )
