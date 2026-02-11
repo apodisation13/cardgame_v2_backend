@@ -25,7 +25,7 @@ from lib.utils.models import (
     UserLeader,
     UserLevel,
     UserResource,
-    UserSeason,
+    UserSeason, UserPreferences,
 )
 from lib.utils.schemas.game import LevelDifficulty
 import pytest_asyncio
@@ -56,7 +56,7 @@ from services.api.tests.factories.factories import (
     UserLeaderFactory,
     UserLevelFactory,
     UserResourceFactory,
-    UserSeasonFactory,
+    UserSeasonFactory, UserPreferenceFactory,
 )
 
 
@@ -277,6 +277,14 @@ def user_level_factory(db_connection):
 def user_season_factory(db_connection):
     async def factory(**kwargs) -> UserSeason:
         return await UserSeasonFactory.create_in_db(conn=db_connection, **kwargs)
+
+    return factory
+
+
+@pytest_asyncio.fixture
+def user_preferences_factory(db_connection):
+    async def factory(**kwargs) -> UserPreferences:
+        return await UserPreferenceFactory.create_in_db(conn=db_connection, **kwargs)
 
     return factory
 

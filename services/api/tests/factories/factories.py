@@ -27,9 +27,10 @@ from lib.utils.models import (
     UserLeader,
     UserLevel,
     UserResource,
-    UserSeason,
+    UserSeason, UserPreferences,
 )
 from lib.utils.schemas.game import LevelDifficulty
+from services.api.app.apps.preferences.schemas import DEFAULT_PREFERENCES
 
 
 class FactionFactory(BaseModelFactory):
@@ -355,3 +356,11 @@ class UserSeasonFactory(BaseModelFactory):
     user_id = factory.SubFactory(UserFactory)
     season_id = factory.SubFactory(SeasonFactory)
     finished = False
+
+
+class UserPreferenceFactory(BaseModelFactory):
+    class Meta:
+        model = UserPreferences
+
+    id = factory.SubFactory(UserFactory)
+    data = DEFAULT_PREFERENCES

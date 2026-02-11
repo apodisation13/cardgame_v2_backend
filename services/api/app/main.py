@@ -8,6 +8,7 @@ from lib.utils.elk.elastic_tracer import ElasticTracerManager
 from services.api.app.apps.api_docs.routes import router as swagger_router
 from services.api.app.apps.auth.routes import router as users_router
 from services.api.app.apps.news.routes import router as news_router
+from services.api.app.apps.preferences.routes import router as preferences_router
 from services.api.app.apps.progress.routes import router as progress_router
 from services.api.app.config import get_config as get_app_settings
 from services.api.app.dependencies import set_global_app
@@ -70,5 +71,6 @@ api_v1_router.include_router(swagger_router, prefix="", tags=["swagger"])
 api_v1_router.include_router(users_router, prefix="/users", tags=["accounts"])
 api_v1_router.include_router(news_router, prefix="/news", tags=["news"])
 api_v1_router.include_router(progress_router, prefix="/user-progress", tags=["progress"])
+api_v1_router.include_router(preferences_router, prefix="/preferences", tags=["preferences"])
 
 app.include_router(api_v1_router)
