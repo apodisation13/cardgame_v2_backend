@@ -24,6 +24,7 @@ from lib.utils.models import (
     UserDeck,
     UserLeader,
     UserLevel,
+    UserPreferences,
     UserResource,
     UserSeason,
 )
@@ -55,6 +56,7 @@ from services.api.tests.factories.factories import (
     UserDeckFactory,
     UserLeaderFactory,
     UserLevelFactory,
+    UserPreferenceFactory,
     UserResourceFactory,
     UserSeasonFactory,
 )
@@ -277,6 +279,14 @@ def user_level_factory(db_connection):
 def user_season_factory(db_connection):
     async def factory(**kwargs) -> UserSeason:
         return await UserSeasonFactory.create_in_db(conn=db_connection, **kwargs)
+
+    return factory
+
+
+@pytest_asyncio.fixture
+def user_preferences_factory(db_connection):
+    async def factory(**kwargs) -> UserPreferences:
+        return await UserPreferenceFactory.create_in_db(conn=db_connection, **kwargs)
 
     return factory
 

@@ -98,6 +98,11 @@ class Leader(BaseModel, TimestampMixin):
         ForeignKey("abilities.id", ondelete="RESTRICT"),
         nullable=False,
     )
+    hp: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="0",
+    )
     damage: Mapped[int] = mapped_column(
         Integer,
         nullable=False,

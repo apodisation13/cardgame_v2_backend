@@ -26,10 +26,12 @@ from lib.utils.models import (
     UserDeck,
     UserLeader,
     UserLevel,
+    UserPreferences,
     UserResource,
     UserSeason,
 )
 from lib.utils.schemas.game import LevelDifficulty
+from services.api.app.apps.preferences.schemas import DEFAULT_PREFERENCES
 
 
 class FactionFactory(BaseModelFactory):
@@ -107,6 +109,7 @@ class LeaderFactory(BaseModelFactory):
     unlocked = False
     faction_id = factory.SubFactory(FactionFactory)
     ability_id = factory.SubFactory(AbilityFactory)
+    hp = 0
     damage = 0
     charges = 1
     heal = 0
@@ -354,3 +357,11 @@ class UserSeasonFactory(BaseModelFactory):
     user_id = factory.SubFactory(UserFactory)
     season_id = factory.SubFactory(SeasonFactory)
     finished = False
+
+
+class UserPreferenceFactory(BaseModelFactory):
+    class Meta:
+        model = UserPreferences
+
+    id = factory.SubFactory(UserFactory)
+    data = DEFAULT_PREFERENCES

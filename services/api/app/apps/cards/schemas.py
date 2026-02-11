@@ -80,6 +80,7 @@ class Leader(Base):
     unlocked: bool
     faction: str
     ability: Ability
+    hp: int
     damage: int
     charges: int
     heal: int
@@ -105,6 +106,7 @@ class Leader(Base):
                 name=row["ability_name"],
                 description=row["ability_description"],
             ),
+            hp=row["hp"],
             damage=row["damage"],
             charges=row["charges"],
             heal=row["heal"],
