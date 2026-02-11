@@ -522,7 +522,7 @@ async def get_user_leaders(
                 abilities ON leaders.ability_id = abilities.id
             LEFT JOIN
                 passive_abilities ON leaders.passive_ability_id = passive_abilities.id
-            ORDER BY 
+            ORDER BY
                 leaders.faction_id,
                 leaders.hp DESC,
                 leaders.charges DESC

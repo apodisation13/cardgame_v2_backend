@@ -1,9 +1,8 @@
 from typing import Any
 
-from sqlalchemy.dialects.postgresql import JSONB
-
 from lib.utils.models import BaseModel, TimestampMixin
 from sqlalchemy import ForeignKey, Integer
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 

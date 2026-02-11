@@ -1,7 +1,6 @@
 import pytest
 
 from httpx import AsyncClient
-
 from services.api.app.apps.preferences.schemas import DEFAULT_PREFERENCES
 
 

@@ -26,8 +26,9 @@ from lib.utils.models import (
     UserDeck,
     UserLeader,
     UserLevel,
+    UserPreferences,
     UserResource,
-    UserSeason, UserPreferences,
+    UserSeason,
 )
 from lib.utils.schemas.game import LevelDifficulty
 from services.api.app.apps.preferences.schemas import DEFAULT_PREFERENCES

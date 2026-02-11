@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, Path
-
 from services.api.app.apps.auth import dependencies as auth_dependencies
-from services.api.app.apps.preferences.schemas import UserPreferencesResponse, UpdateUserPreferencesRequest
+from services.api.app.apps.preferences.schemas import UpdateUserPreferencesRequest, UserPreferencesResponse
 from services.api.app.apps.preferences.service import PreferencesService
 from services.api.app.dependencies import get_preferences_service
+
 
 router = APIRouter()
 

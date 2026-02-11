@@ -24,8 +24,9 @@ from lib.utils.models import (
     UserDeck,
     UserLeader,
     UserLevel,
+    UserPreferences,
     UserResource,
-    UserSeason, UserPreferences,
+    UserSeason,
 )
 from lib.utils.schemas.game import LevelDifficulty
 import pytest_asyncio
@@ -55,8 +56,9 @@ from services.api.tests.factories.factories import (
     UserDeckFactory,
     UserLeaderFactory,
     UserLevelFactory,
+    UserPreferenceFactory,
     UserResourceFactory,
-    UserSeasonFactory, UserPreferenceFactory,
+    UserSeasonFactory,
 )
 
 

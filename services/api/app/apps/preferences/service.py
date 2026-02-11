@@ -1,9 +1,11 @@
 import logging
 
 from lib.utils.db.pool import Database
-from services.api.app.apps.preferences.schemas import UserPreferencesResponse, DEFAULT_PREFERENCES, \
-    UpdateUserPreferencesRequest
-
+from services.api.app.apps.preferences.schemas import (
+    DEFAULT_PREFERENCES,
+    UpdateUserPreferencesRequest,
+    UserPreferencesResponse,
+)
 from services.api.app.config import Config
 
 
@@ -39,9 +41,9 @@ class PreferencesService:
                 logger.info("User %s preferences not found, gotta insert new", user_id)
                 preferences = await connection.fetchval(
                     """
-                        INSERT INTO user_preferences 
+                        INSERT INTO user_preferences
                         (
-                            id, 
+                            id,
                             data
                         )
                         VALUES ($1, $2)
@@ -62,7 +64,7 @@ class PreferencesService:
         async with self.db_pool.connection() as connection:
             preferences: dict = await connection.fetchval(
                 """
-                    UPDATE user_preferences 
+                    UPDATE user_preferences
                     SET
                         data = $2,
                         updated_at = NOW()
