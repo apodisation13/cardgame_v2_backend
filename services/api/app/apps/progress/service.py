@@ -195,7 +195,8 @@ class UserProgressService:
                     UPDATE decks
                     SET
                         name = $2,
-                        leader_id = $3
+                        leader_id = $3,
+                        updated_at = NOW()
                     WHERE
                         decks.id = $1
                 """,
@@ -213,7 +214,7 @@ class UserProgressService:
             )
 
             card_decks: list[tuple[deck_id, Card.id]] = [(deck_id, card_id) for card_id in deck.cards]
-            print("STR220", card_decks)
+
             await connection.executemany(
                 """
                 INSERT INTO card_decks
@@ -228,7 +229,6 @@ class UserProgressService:
                 user_id=user_id,
                 base_url=base_url,
             )
-            print("STR235", len(user_decks))
 
         return ListDecksResponse(
             decks=user_decks,

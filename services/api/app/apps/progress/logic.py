@@ -558,7 +558,8 @@ async def construct_user_decks(
             JOIN decks ON user_decks.deck_id = decks.id
             JOIN card_decks ON decks.id = card_decks.deck_id
             WHERE
-                user_decks.user_id = $1;
+                user_decks.user_id = $1
+            ORDER BY decks.updated_at DESC;
         """,
         user_id,
     )

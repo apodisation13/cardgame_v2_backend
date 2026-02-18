@@ -12,14 +12,18 @@ class SmartImageOptimizer:
                 'tablet': 'webp',
                 'phone': 'webp'
             },
+            # 'sizes': {
+            #     'tablet': 0.5,
+            #     'phone': 0.2,
+            # },
             'sizes': {
-                'tablet': 0.5,
-                'phone': 0.2,
+                'tablet': 0.9,
+                'phone': 0.7,
             },
             'quality': {
                 'original': 90,
-                'tablet': 80,
-                'phone': 70
+                'tablet': 90,
+                'phone': 90
             },
         }
 
@@ -123,8 +127,9 @@ def main():
     optimizer = SmartImageOptimizer()
 
     # Обработка всех изображений в папке
-    source_dir = Path("../../shared_static/media")
-    for img_file in list(source_dir.rglob("*.jpg")):
+    # source_dir = Path("../../shared_static/media")
+    source_dir = Path("../../shared_static/media2")
+    for img_file in list(source_dir.rglob("*.webp")):
         print(f"Обработка: {img_file.name}")
         result = optimizer.optimize_image(img_file)
         print(f"  Результат: {result}")
