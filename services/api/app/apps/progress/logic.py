@@ -96,7 +96,7 @@ async def get_enemies(
             SELECT
                 enemies.id,
                 enemies.name,
-                enemies.image_phone AS image,
+                enemies.image_original AS image,
                 factions.name AS faction_name,
                 colors.name AS color_name,
                 moves.name AS move_name,
@@ -146,7 +146,7 @@ async def get_enemy_leaders(
             SELECT
                 enemy_leaders.id,
                 enemy_leaders.name,
-                enemy_leaders.image_phone AS image,
+                enemy_leaders.image_original AS image,
                 factions.name AS faction_name,
                 enemy_leaders.hp,
                 enemy_leaders.base_hp,
@@ -427,7 +427,7 @@ async def get_user_cards(
             SELECT
                 cards.id,
                 cards.name,
-                cards.image_phone AS image,
+                cards.image_original AS image,
                 cards.unlocked,
                 factions.name AS faction_name,
                 colors.name AS color_name,
@@ -494,7 +494,7 @@ async def get_user_leaders(
             SELECT
                 leaders.id,
                 leaders.name,
-                leaders.image_phone AS image,
+                leaders.image_original AS image,
                 leaders.unlocked,
                 factions.name AS faction_name,
                 abilities.name AS ability_name,
