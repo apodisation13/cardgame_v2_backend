@@ -30,7 +30,7 @@ from lib.utils.models import (
     UserResource,
     UserSeason,
 )
-from lib.utils.schemas.game import LevelDifficulty
+from lib.utils.schemas.game import DEFAULT_RESOURCES_TRANSITIONS, LevelDifficulty
 from services.api.app.apps.preferences.schemas import DEFAULT_PREFERENCES
 
 
@@ -72,6 +72,7 @@ class GameConstantsFactory(BaseModelFactory):
         "win_level_normal": 275,
         "play_level_normal": -100,
         "number_of_cards_in_deck": 12,
+        "resources_transitions": DEFAULT_RESOURCES_TRANSITIONS,
     }
 
 
@@ -308,11 +309,21 @@ class UserResourceFactory(BaseModelFactory):
 
     id = factory.SubFactory(UserFactory)
     scraps = 1000
+    raw_bronze = 0
+    raw_silver = 0
+    raw_gold = 0
+    bronze_ingots = 0
+    silver_ingots = 0
+    gold_ingots = 0
+    crops = 1000
     wood = 1000
+    silk = 0
     kegs = 3
     big_kegs = 1
     chests = 0
     keys = 3
+    rare_gem = 0
+    money = 2000
 
 
 class UserCardFactory(BaseModelFactory):
