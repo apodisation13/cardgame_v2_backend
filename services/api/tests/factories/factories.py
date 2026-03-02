@@ -30,7 +30,7 @@ from lib.utils.models import (
     UserResource,
     UserSeason,
 )
-from lib.utils.schemas.game import DEFAULT_RESOURCES_TRANSITIONS, LevelDifficulty
+from lib.utils.schemas.game import DEFAULT_RESOURCES_TRANSITIONS, DEFAULT_CARDS_PRICES, DEFAULT_START_LEVEL_PRICES, DEFAULT_WIN_LEVEL_REWARDS, DEFAULT_KEY_REWARDS, LevelDifficulty
 from services.api.app.apps.preferences.schemas import DEFAULT_PREFERENCES
 
 
@@ -73,6 +73,10 @@ class GameConstantsFactory(BaseModelFactory):
         "play_level_normal": -100,
         "number_of_cards_in_deck": 12,
         "resources_transitions": DEFAULT_RESOURCES_TRANSITIONS,
+        "key_rewards": DEFAULT_KEY_REWARDS,
+        "win_level_rewards": DEFAULT_WIN_LEVEL_REWARDS,
+        "start_level_prices": DEFAULT_START_LEVEL_PRICES,
+        "cards_resources_prices": DEFAULT_CARDS_PRICES,
     }
 
 

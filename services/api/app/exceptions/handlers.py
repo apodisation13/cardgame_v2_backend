@@ -5,8 +5,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from services.api.app.exceptions import UserAlreadyExistsError
-from services.api.app.exceptions.exceptions import ManageResourcesProcessError
-
+from services.api.app.exceptions.exceptions import ManageResourcesProcessError, CraftMillCardProcessError
 
 logger = logging.getLogger(__name__)
 
@@ -195,5 +194,6 @@ def add_exceptions(app: FastAPI) -> FastAPI:
     app.add_exception_handler(RequestValidationError, validation_exception_handler)
     app.add_exception_handler(UserAlreadyExistsError, user_already_exists_exception_handler)
     app.add_exception_handler(ManageResourcesProcessError, manage_resources_exception_handler)
+    app.add_exception_handler(CraftMillCardProcessError, manage_resources_exception_handler)
     app.add_exception_handler(Exception, global_exception_handler)
     return app

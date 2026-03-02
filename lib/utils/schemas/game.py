@@ -340,3 +340,169 @@ DEFAULT_WIN_LEVEL_REWARDS = {
         },
     },
 }
+
+DEFAULT_START_LEVEL_PRICES = {
+    "levels_difficulty_values": {
+        LevelDifficulty.EASY: {
+            ResourceType.CROPS: {
+                "value": -50,
+                "type": "simple",
+            },
+            ResourceType.MONEY: {
+                "value": -200,
+                "type": "simple",
+            },
+        },
+        LevelDifficulty.NORMAL: {
+            ResourceType.CROPS: {
+                "value": -100,
+                "type": "simple",
+            },
+            ResourceType.WOOD: {
+                "value": -50,
+                "type": "simple",
+            },
+            ResourceType.MONEY: {
+                "value": -500,
+                "type": "simple",
+            },
+        },
+        LevelDifficulty.HARD: {
+            ResourceType.CROPS: {
+                "value": -200,
+                "type": "simple",
+            },
+            ResourceType.WOOD: {
+                "value": -100,
+                "type": "simple",
+            },
+            ResourceType.MONEY: {
+                "value": -1000,
+                "type": "simple",
+            },
+            ResourceType.SILK: {
+                "value": -1,
+                "type": "simple",
+            },
+        },
+    },
+    "player_cards_values": {
+        "bronze": {
+            ResourceType.CROPS: -1,
+            ResourceType.WOOD: -1,
+            ResourceType.MONEY: -10,
+        },
+        "silver": {
+            ResourceType.CROPS: -2,
+            ResourceType.WOOD: -2,
+            ResourceType.MONEY: -20,
+        },
+        "gold": {
+            ResourceType.CROPS: -3,
+            ResourceType.WOOD: -3,
+            ResourceType.MONEY: -30,
+        },
+    },
+}
+
+DEFAULT_CARDS_PRICES = {
+    CardColorName.BRONZE: {
+        CardActionSubtype.CRAFT_CARD: [
+            {
+                ResourceType.SCRAPS: -250,
+                ResourceType.RAW_BRONZE: -50,
+                ResourceType.MONEY: -500,
+            },
+            {
+                ResourceType.SCRAPS: -250,
+                ResourceType.BRONZE_INGOTS: -3,
+                ResourceType.MONEY: -500,
+            },
+            {
+                ResourceType.RARE_GEM: -1,
+            },
+        ],
+        CardActionSubtype.MILL_CARD: [
+            {
+                ResourceType.SCRAPS: 100,
+                ResourceType.BRONZE_INGOTS: 1,
+                ResourceType.MONEY: -200,
+            },
+        ],
+    },
+    CardColorName.SILVER: {
+        CardActionSubtype.CRAFT_CARD: [
+            {
+                ResourceType.SCRAPS: -1000,
+                ResourceType.RAW_SILVER: -50,
+                ResourceType.MONEY: -1000,
+            },
+            {
+                ResourceType.SCRAPS: -1000,
+                ResourceType.SILVER_INGOTS: -3,
+                ResourceType.MONEY: -1000,
+            },
+            {
+                ResourceType.RARE_GEM: -1,
+            },
+        ],
+        CardActionSubtype.MILL_CARD: [
+            {
+                ResourceType.SCRAPS: 250,
+                ResourceType.SILVER_INGOTS: 1,
+                ResourceType.MONEY: -200,
+            },
+        ],
+    },
+    CardColorName.GOLD: {
+        CardActionSubtype.CRAFT_CARD: [
+            {
+                ResourceType.SCRAPS: -2000,
+                ResourceType.RAW_GOLD: -50,
+                ResourceType.MONEY: -2000,
+            },
+            {
+                ResourceType.SCRAPS: -2000,
+                ResourceType.GOLD_INGOTS: -3,
+                ResourceType.MONEY: -2000,
+            },
+            {
+                ResourceType.RARE_GEM: -1,
+            },
+        ],
+        CardActionSubtype.MILL_CARD: [
+            {
+                ResourceType.SCRAPS: 500,
+                ResourceType.GOLD_INGOTS: 1,
+                ResourceType.MONEY: -200,
+            },
+        ],
+    },
+    "leader": {
+        CardActionSubtype.CRAFT_LEADER: [
+            {
+                ResourceType.SCRAPS: -1000,
+                ResourceType.BRONZE_INGOTS: -1,
+                ResourceType.SILVER_INGOTS: -1,
+                ResourceType.GOLD_INGOTS: -1,
+                ResourceType.MONEY: -2000,
+            },
+            {
+                ResourceType.SCRAPS: -1000,
+                ResourceType.RAW_BRONZE: -15,
+                ResourceType.RAW_SILVER: -15,
+                ResourceType.RAW_GOLD: -15,
+                ResourceType.MONEY: -2000,
+            },
+            {
+                ResourceType.RARE_GEM: -1,
+            },
+        ],
+        CardActionSubtype.MILL_LEADER: [
+            {
+                ResourceType.SCRAPS: 500,
+                ResourceType.MONEY: -200,
+            },
+        ],
+    },
+}
