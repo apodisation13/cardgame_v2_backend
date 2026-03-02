@@ -14,22 +14,11 @@ from services.api.app.apps.progress.schemas import UserResources
 class TestManageResourcesAPI:
     endpoint = "user-progress/{user_id}/resource"
 
-    @pytest.mark.parametrize(
-        "difficulty, constant_name",
-        (
-            (LevelDifficulty.EASY, "play_level_easy"),
-            (LevelDifficulty.NORMAL, "play_level_normal"),
-            (LevelDifficulty.HARD, "play_level_hard"),
-        ),
-    )
     @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
-    async def test_start_season_level(
+    async def test_start_season_level_success(
         self,
-        difficulty: LevelDifficulty,
-        constant_name: str,
         client: AsyncClient,
-        game_constants_factory,
         user_login_fixture,
         user_resource_factory,
     ):
@@ -38,15 +27,14 @@ class TestManageResourcesAPI:
 
         user_resources = await user_resource_factory(id=user_id)
 
-        game_constants = await game_constants_factory()
-        play_level_price = game_constants.data[constant_name]  # -50, со знаком минус
-
         response = await client.patch(
             self.endpoint.format(user_id=user_id),
             json={
                 "subtype": ResourceActionSubtype.START_SEASON_LEVEL,
                 "data": {
-                    "difficulty": difficulty,
+                    ResourceType.CROPS: -300,
+                    ResourceType.WOOD: -200,
+                    ResourceType.MONEY: -1000,
                 },
             },
             headers={"Authorization": f"Bearer {access_token}"},
@@ -65,17 +53,74 @@ class TestManageResourcesAPI:
                 bronze_ingots=0,
                 silver_ingots=0,
                 gold_ingots=0,
-                crops=1000,
-                wood=user_resources.wood + play_level_price,  # вот тут списали ресурсы за начало уровня
+                crops=user_resources.crops - 300,
+                wood=user_resources.wood -200,
                 silk=0,
                 kegs=user_resources.kegs,
                 big_kegs=user_resources.big_kegs,
                 chests=user_resources.chests,
                 keys=user_resources.keys,
                 rare_gem=0,
-                money=user_resources.money,
+                money=user_resources.money - 1000,
             ).model_dump()
         )
+
+    @pytest.mark.usefixtures("init_db_cards")
+    @pytest.mark.asyncio
+    async def test_start_season_level_fails(
+        self,
+        client: AsyncClient,
+        user_login_fixture,
+        user_resource_factory,
+    ):
+        subtype = ResourceActionSubtype.START_SEASON_LEVEL
+
+        user_id = user_login_fixture["id"]
+        access_token = user_login_fixture["token"]["access_token"]
+
+        await user_resource_factory(
+            id=user_id,
+            money=200,
+        )
+
+        # кейс 1 - не хватает ресурсов для начала уровня
+        response = await client.patch(
+            self.endpoint.format(user_id=user_id),
+            json={
+                "subtype": subtype,
+                "data": {
+                    ResourceType.CROPS: -300,
+                    ResourceType.WOOD: -200,
+                    ResourceType.MONEY: -1000,  # не хватит денег для игры
+                },
+            },
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+        assert response.status_code == 400
+
+        response_json = response.json()
+        message = response_json["error"]["message"]
+        assert message == f"Can not process subtype {subtype} for user {user_id}, negative value: {-800} money"
+
+        # кейс 1 - грязный хак через постман - накручиваем положительные ресурсы
+        response = await client.patch(
+            self.endpoint.format(user_id=user_id),
+            json={
+                "subtype": subtype,
+                "data": {
+                    ResourceType.MONEY: 300,
+                },
+            },
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+        assert response.status_code == 400
+
+        response_json = response.json()
+        message = response_json["error"]["message"]
+        assert message == f"Can not process subtype {subtype} for user {user_id}, wrong value: {300} money"
+
 
     @pytest.mark.parametrize(
         "subtype",

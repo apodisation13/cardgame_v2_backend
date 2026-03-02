@@ -6,12 +6,11 @@ from httpx import AsyncClient
 class TestGetUserProgressAPI:
     endpoint = "user-progress/{user_id}"
 
+    @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
     async def test_get_user_progress(
         self,
         client: AsyncClient,
-        db_connection,
-        init_db_cards,
         user_login_fixture,
         user_resource_factory,
         game_constants_factory,

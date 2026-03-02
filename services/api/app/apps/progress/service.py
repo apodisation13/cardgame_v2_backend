@@ -333,9 +333,9 @@ class UserProgressService:
                 # на случай запросов из постмана с положительными ресурсами вместо отрицательных :)
                 for resource, value in resource_request.data.items():
                     if value >= 0:
-                        msg = "Can not process %s %s for user %s, wrong value %s"
-                        logger.error(msg, subtype, resource, user_id, value)
-                        raise ManageResourcesProcessError(msg % (subtype, resource, user_id, value))
+                        msg = "Can not process subtype %s for user %s, wrong value: %s %s"
+                        logger.error(msg, subtype, user_id, value, resource)
+                        raise ManageResourcesProcessError(msg % (subtype, user_id, value, resource))
 
                 async with self.db_pool.transaction() as connection:
                     user_resources: UserResources = await self._change_resources(
@@ -347,9 +347,9 @@ class UserProgressService:
                 for resource in resource_request.data:
                     actual_resource: int = getattr(user_resources, resource)
                     if actual_resource < 0:
-                        msg = "Can not process open bonus reward %s for user %s, negative value %s"
-                        logger.error(msg, resource, user_id, actual_resource)
-                        raise ManageResourcesProcessError(msg % (resource, user_id, actual_resource))
+                        msg = "Can not process subtype %s for user %s, negative value: %s %s"
+                        logger.error(msg, subtype, user_id, actual_resource, resource)
+                        raise ManageResourcesProcessError(msg % (subtype, user_id, actual_resource, resource))
 
                 return user_resources
 
