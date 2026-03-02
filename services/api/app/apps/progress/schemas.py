@@ -151,6 +151,7 @@ class ResourcesRequest(Base):
 
 class CardCraftMillRequest(Base):
     subtype: CardActionSubtype
+    recipe: dict | None = None
 
 
 class CardCraftMillResponse(Base):

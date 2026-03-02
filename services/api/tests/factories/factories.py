@@ -30,7 +30,14 @@ from lib.utils.models import (
     UserResource,
     UserSeason,
 )
-from lib.utils.schemas.game import DEFAULT_RESOURCES_TRANSITIONS, DEFAULT_CARDS_PRICES, DEFAULT_START_LEVEL_PRICES, DEFAULT_WIN_LEVEL_REWARDS, DEFAULT_KEY_REWARDS, LevelDifficulty
+from lib.utils.schemas.game import (
+    DEFAULT_CARDS_PRICES,
+    DEFAULT_KEY_REWARDS,
+    DEFAULT_RESOURCES_TRANSITIONS,
+    DEFAULT_START_LEVEL_PRICES,
+    DEFAULT_WIN_LEVEL_REWARDS,
+    LevelDifficulty,
+)
 from services.api.app.apps.preferences.schemas import DEFAULT_PREFERENCES
 
 
@@ -54,23 +61,6 @@ class GameConstantsFactory(BaseModelFactory):
 
     data = {
         "hand_size": 6,
-        "mill_gold": 200,
-        "craft_gold": -2000,
-        "mill_bronze": 20,
-        "mill_leader": 300,
-        "mill_silver": 100,
-        "craft_bronze": -200,
-        "craft_leader": -3000,
-        "craft_silver": -1000,
-        "pay_for_kegs": -200,
-        "pay_for_chests": -2000,
-        "win_level_easy": 125,
-        "win_level_hard": 500,
-        "play_level_easy": -50,
-        "play_level_hard": -200,
-        "pay_for_big_kegs": -400,
-        "win_level_normal": 275,
-        "play_level_normal": -100,
         "number_of_cards_in_deck": 12,
         "resources_transitions": DEFAULT_RESOURCES_TRANSITIONS,
         "key_rewards": DEFAULT_KEY_REWARDS,

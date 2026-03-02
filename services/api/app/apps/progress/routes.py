@@ -105,6 +105,7 @@ async def manage_craft_mill_card(
         user_id=user_id,
         card_id=card_id,
         subtype=card_request.subtype,
+        recipe=card_request.recipe,
         base_url=str(request.base_url),
     )
 

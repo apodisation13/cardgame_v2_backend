@@ -7,7 +7,6 @@ from lib.utils.db.pool import Database
 from lib.utils.schemas.game import (
     CardActionSubtype,
     CardColorName,
-    LevelDifficulty,
     ResourceActionSubtype,
     ResourceTransitionActionType,
     ResourceType,
@@ -242,37 +241,6 @@ class UserProgressService:
         subtype: ResourceActionSubtype = resource_request.subtype
 
         match subtype:
-            case subtype.START_SEASON_LEVEL:
-                """ { subtype: start_game, data: {difficulty: str}} """
-                difficulty: LevelDifficulty = resource_request.data["difficulty"]
-
-                async with self.db_pool.transaction() as connection:
-                    game_constants: dict = await logic.get_game_constants(
-                        connection=connection,
-                    )
-
-                    if difficulty == LevelDifficulty.EASY:
-                        pay_resources = {ResourceType.WOOD: game_constants["play_level_easy"]}
-                    elif difficulty == LevelDifficulty.NORMAL:
-                        pay_resources = {ResourceType.WOOD: game_constants["play_level_normal"]}
-                    elif difficulty == LevelDifficulty.HARD:
-                        pay_resources = {ResourceType.WOOD: game_constants["play_level_hard"]}
-                    else:
-                        raise TypeError(f"Invalid level difficulty {difficulty}")
-
-                    user_resources: UserResources = await self._change_resources(
-                        connection=connection,
-                        user_id=user_id,
-                        resources_to_change=pay_resources,
-                    )
-
-                    if user_resources.wood < 0:
-                        msg = "Can not change resources for user %s, seems to be negative value wood"
-                        logger.error(msg, user_id)
-                        raise ManageResourcesProcessError(msg, user_id)
-
-                    return user_resources
-
             case subtype.WIN_SEASON_LEVEL | subtype.ACCEPT_KEY_REWARD:
                 """
                 data: { wood: 201, scraps: 185, etc }
@@ -356,18 +324,18 @@ class UserProgressService:
 
                 return user_resources
 
-            case subtype.OPEN_BONUS_RESOURCE:
+            case subtype.START_SEASON_LEVEL | subtype.OPEN_BONUS_RESOURCE:
                 """
-                data: { kegs: -1 }
-                Тут придет словарь с ресурсами, которые нужно отнять (по сути что-то одно из keys, chests, kegs/big)
+                data: { kegs: -1 }, { wood: -40, crops: -200, etc }
+                Тут придет словарь с ресурсами, которые нужно отнять
                 """
 
                 # на случай запросов из постмана с положительными ресурсами вместо отрицательных :)
                 for resource, value in resource_request.data.items():
                     if value >= 0:
-                        msg = "Can not process open bonus reward %s for user %s, wrong value %s"
-                        logger.error(msg, resource, user_id, value)
-                        raise ManageResourcesProcessError(msg % (resource, user_id, value))
+                        msg = "Can not process %s %s for user %s, wrong value %s"
+                        logger.error(msg, subtype, resource, user_id, value)
+                        raise ManageResourcesProcessError(msg % (subtype, resource, user_id, value))
 
                 async with self.db_pool.transaction() as connection:
                     user_resources: UserResources = await self._change_resources(
@@ -419,6 +387,7 @@ class UserProgressService:
         card_id: int,
         subtype: CardActionSubtype,
         base_url: str,
+        recipe: dict | None = None,
     ) -> CardCraftMillResponse:
         logger.info("Got here for user %s trying (subtype %s) for card %s", user_id, subtype, card_id)
         match subtype:
@@ -441,28 +410,35 @@ class UserProgressService:
                         connection=connection,
                     )
 
-                    if card_color == CardColorName.BRONZE:
-                        pay_resources = {ResourceType.SCRAPS: game_constants["craft_bronze"]}
-                    elif card_color == CardColorName.SILVER:
-                        pay_resources = {ResourceType.SCRAPS: game_constants["craft_silver"]}
-                    elif card_color == CardColorName.GOLD:
-                        pay_resources = {ResourceType.SCRAPS: game_constants["craft_gold"]}
-                    else:
-                        logger.error("Unknown color %s", card_color)
-                        raise TypeError(f"Invalid card color {card_color}")
+                    card_resources: dict = game_constants["cards_resources_prices"][card_color]
+                    craft_card_recipes: list[dict] = card_resources[CardActionSubtype.CRAFT_CARD]
 
-                    # 1.3. Попытались списать ресурсы
+                    # 1.3. Тут ищем, какую конкретно формулу крафта выбрал юзер (пришла с фронта)
+                    pay_resources = {}
+                    for r in craft_card_recipes:
+                        if r == recipe:
+                            pay_resources = recipe
+
+                    # 1.4. Если не нашлось, рейзим ошибку!
+                    if not pay_resources:
+                        msg = "Craft card error: no config for recipe %s for user %s"
+                        logger.error(msg, recipe, user_id)
+                        raise ManageResourcesProcessError(msg % (recipe, user_id))
+
+                    # 1.5. Попытались списать ресурсы
                     user_resources: UserResources = await self._change_resources(
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=pay_resources,
                     )
 
-                    # 1.4. Если получилось, что ресурсов на списание не хватило, отменяем транзакцию!
-                    if user_resources.scraps < 0:
-                        msg = "Can not craft card %s for user %s, not enough scraps"
-                        logger.error(msg, card_id, user_id)
-                        raise CraftMillCardProcessError(msg % (card_id, user_id))
+                    # 1.6. Проверяем, если какого-то ресурса стало 0, рейзим ошибку!
+                    for r in pay_resources:
+                        actual_resource: int = getattr(user_resources, r)
+                        if actual_resource < 0:
+                            msg = "Craft card error: user %s, ACTUAL: %s %s"
+                            logger.error(msg, user_id, actual_resource, r)
+                            raise ManageResourcesProcessError(msg % (user_id, actual_resource, r))
 
                     # 2. Создаем юзеру карту
                     # 2.1. Крафтим карту - пытаемся сделать инзерт, а если такая уже есть, делаем count += 1
@@ -501,21 +477,37 @@ class UserProgressService:
                     game_constants: dict = await logic.get_game_constants(
                         connection=connection,
                     )
-                    # 1.2. А тут проще - не нужно делать запрос, мы всегда знаем стоимость за крафт лидера
-                    pay_resources = {ResourceType.SCRAPS: game_constants["craft_leader"]}
 
-                    # 1.3. Попытались списать ресурсы
+                    # 1.2. Ищем цену на крафт лидера
+                    leader_resources: dict = game_constants["cards_resources_prices"]["leader"]
+                    craft_leader_recipes: list[dict] = leader_resources[CardActionSubtype.CRAFT_LEADER]
+
+                    # 1.3. Тут ищем, какую конкретно формулу крафта выбрал юзер (пришла с фронта)
+                    pay_resources = {}
+                    for r in craft_leader_recipes:
+                        if r == recipe:
+                            pay_resources = recipe
+
+                    # 1.4. Если не нашлось, рейзим ошибку!
+                    if not pay_resources:
+                        msg = "Craft leader error: no config for recipe %s for user %s"
+                        logger.error(msg, recipe, user_id)
+                        raise ManageResourcesProcessError(msg % (recipe, user_id))
+
+                    # 1.5. Попытались списать ресурсы
                     user_resources: UserResources = await self._change_resources(
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=pay_resources,
                     )
 
-                    # 1.4. Если получилось, что ресурсов на списание не хватило, отменяем транзакцию!
-                    if user_resources.scraps < 0:
-                        msg = "Can not craft leader card %s for user %s, not enough scraps"
-                        logger.error(msg, card_id, user_id)
-                        raise CraftMillCardProcessError(msg % (card_id, user_id))
+                    # 1.6. Проверяем, если какого-то ресурса стало 0, рейзим ошибку!
+                    for r in pay_resources:
+                        actual_resource: int = getattr(user_resources, r)
+                        if actual_resource < 0:
+                            msg = "Craft leader error: user %s, ACTUAL: %s %s"
+                            logger.error(msg, user_id, actual_resource, r)
+                            raise ManageResourcesProcessError(msg % (user_id, actual_resource, r))
 
                     # 2. Создаем юзеру карту лидера
                     # 2.1. Крафтим карту лидера - пытаемся сделать инзерт, а если такая уже есть, делаем count += 1
@@ -620,21 +612,25 @@ class UserProgressService:
                         connection=connection,
                     )
 
-                    if card_color == CardColorName.BRONZE:
-                        pay_resources = {ResourceType.SCRAPS: game_constants["mill_bronze"]}
-                    elif card_color == CardColorName.SILVER:
-                        pay_resources = {ResourceType.SCRAPS: game_constants["mill_silver"]}
-                    elif card_color == CardColorName.GOLD:
-                        pay_resources = {ResourceType.SCRAPS: game_constants["mill_gold"]}
-                    else:
-                        raise TypeError(f"Invalid card color {card_color}")
+                    # здесь для порядка список из 1 элемента, мы возьмем первый (единственный)
+                    pay_resources = game_constants["cards_resources_prices"][card_color][CardActionSubtype.MILL_CARD]
 
                     # 2.3. Добавляем тут юзеру ресурсы
                     user_resources: UserResources = await self._change_resources(
                         connection=connection,
                         user_id=user_id,
-                        resources_to_change=pay_resources,
+                        resources_to_change=pay_resources[0],
                     )
+
+                    # 2.4. Проверяем, что ресурса не стало меньше 0
+                    for r in pay_resources[0]:
+                        actual_resource: int = getattr(user_resources, r)
+                        if actual_resource < 0:
+                            msg = "Mill card error: user %s, ACTUAL: %s %s"
+                            logger.error(msg, user_id, actual_resource, r)
+                            raise ManageResourcesProcessError(
+                                msg % (user_id, actual_resource, r),
+                            )
 
                     # 3. Карту уничтожили, ресурсы добавили, можем собирать все карты юзера для ответа
                     user_cards: list[UserCard] = await logic.get_user_cards(
@@ -669,19 +665,19 @@ class UserProgressService:
                     )
 
                     if not user_leader:
-                        msg = "Cannot find such leader card %s for user %s"
+                        msg = "Cannot find such leader %s for user %s"
                         logger.error(msg, card_id, user_id)
                         raise CraftMillCardProcessError(msg % (card_id, user_id))
 
                     # 1.2. Если карта лидера из дефолтного набора и ее у юзера 1, то ее нельзя миллить!
                     if user_leader["unlocked"] and user_leader["count"] <= 1:
-                        msg = "Cannot mill default unlocked leader card %s for user %s"
+                        msg = "Cannot mill default unlocked leader %s for user %s"
                         logger.error(msg, card_id, user_id)
                         raise CraftMillCardProcessError(msg % (card_id, user_id))
 
                     # 1.3. Если карта лидера НЕ из дефолтного набора, то ее нельзя миллить если ее и так нету
                     if not user_leader["unlocked"] and user_leader["count"] <= 0:
-                        msg = "Cannot mill leader card %s for user %s, seems user doesn't have it"
+                        msg = "Cannot mill leader %s for user %s, seems user doesn't have it"
                         logger.error(msg, card_id, user_id)
                         raise CraftMillCardProcessError(msg % (card_id, user_id))
 
@@ -702,14 +698,26 @@ class UserProgressService:
                     game_constants: dict = await logic.get_game_constants(
                         connection=connection,
                     )
-                    pay_resources = {ResourceType.SCRAPS: game_constants["mill_leader"]}
+
+                    # вот тут для порядка - список, но там только 1 элемент, его мы и возьмем
+                    pay_resources = game_constants["cards_resources_prices"]["leader"][CardActionSubtype.MILL_LEADER]
 
                     # 2.2. Добавляем тут юзеру ресурсы
                     user_resources: UserResources = await self._change_resources(
                         connection=connection,
                         user_id=user_id,
-                        resources_to_change=pay_resources,
+                        resources_to_change=pay_resources[0],
                     )
+
+                    # 2.3. Проверяем, что не стало меньше 0 каких-то ресурсов
+                    for r in pay_resources[0]:
+                        actual_resource: int = getattr(user_resources, r)
+                        if actual_resource < 0:
+                            msg = "Mill leader error: user %s, ACTUAL: %s %s"
+                            logger.error(msg, user_id, actual_resource, r)
+                            raise ManageResourcesProcessError(
+                                msg % (user_id, actual_resource, r),
+                            )
 
                     # 3. Карту лидера уничтожили, ресурсы добавили, можем собирать все карты лидера юзера для ответа
 

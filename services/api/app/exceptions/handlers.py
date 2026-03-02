@@ -5,7 +5,8 @@ from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from services.api.app.exceptions import UserAlreadyExistsError
-from services.api.app.exceptions.exceptions import ManageResourcesProcessError, CraftMillCardProcessError
+from services.api.app.exceptions.exceptions import CraftMillCardProcessError, ManageResourcesProcessError
+
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +15,7 @@ async def global_exception_handler(
     request: Request,
     exc: Exception,
 ) -> JSONResponse:
-    logger.error(exc.__repr__())
+    logger.error(exc.__repr__(), exc_info=exc)
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
@@ -123,7 +124,7 @@ async def validation_exception_handler(
     else:
         error_summary = "Ошибка валидации данных"
 
-    logger.error("%s, %s", error_summary, validation_errors)
+    logger.error("%s, %s", error_summary, validation_errors, exc_info=exc)
 
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
