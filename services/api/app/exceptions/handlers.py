@@ -5,6 +5,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from services.api.app.exceptions import UserAlreadyExistsError
+from services.api.app.exceptions.exceptions import CraftMillCardProcessError, ManageResourcesProcessError
 
 
 logger = logging.getLogger(__name__)
@@ -14,40 +15,13 @@ async def global_exception_handler(
     request: Request,
     exc: Exception,
 ) -> JSONResponse:
-    logger.error(exc.__repr__())
+    logger.error(exc.__repr__(), exc_info=exc)
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
             "error": {
                 "code": "INTERNAL_SERVER_ERROR",
                 "message": exc.__class__.__name__,
-                "details": exc.__repr__(),
-            },
-        },
-        headers={
-            "Access-Control-Allow-Origin": request.headers.get("origin", "*"),
-            "Access-Control-Allow-Credentials": "true",
-        },
-    )
-
-
-async def user_already_exists_exception_handler(
-    request: Request,
-    exc: Exception,
-) -> JSONResponse:
-    if "username" in str(exc):
-        message = " Field {username} already exists"
-    elif "email" in str(exc):
-        message = "Field {email} already exists"
-    else:
-        message = "Unknown error"
-
-    return JSONResponse(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        content={
-            "error": {
-                "code": "BAD_REQUEST",
-                "message": message,
                 "details": exc.__repr__(),
             },
         },
@@ -150,7 +124,7 @@ async def validation_exception_handler(
     else:
         error_summary = "Ошибка валидации данных"
 
-    logger.error("%s, %s", error_summary, validation_errors)
+    logger.error("%s, %s", error_summary, validation_errors, exc_info=exc)
 
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -170,8 +144,57 @@ async def validation_exception_handler(
     )
 
 
+async def user_already_exists_exception_handler(
+    request: Request,
+    exc: Exception,
+) -> JSONResponse:
+    if "username" in str(exc):
+        message = " Field {username} already exists"
+    elif "email" in str(exc):
+        message = "Field {email} already exists"
+    else:
+        message = "Unknown error"
+
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={
+            "error": {
+                "code": "BAD_REQUEST",
+                "message": message,
+                "details": exc.__repr__(),
+            },
+        },
+        headers={
+            "Access-Control-Allow-Origin": request.headers.get("origin", "*"),
+            "Access-Control-Allow-Credentials": "true",
+        },
+    )
+
+
+async def manage_resources_exception_handler(
+    request: Request,
+    exc: Exception,
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={
+            "error": {
+                "code": "BAD_REQUEST",
+                "message": str(exc),
+                "details": exc.__repr__(),
+            },
+        },
+        headers={
+            "Access-Control-Allow-Origin": request.headers.get("origin", "*"),
+            "Access-Control-Allow-Credentials": "true",
+        },
+    )
+
+
 def add_exceptions(app: FastAPI) -> FastAPI:
     app.add_exception_handler(RequestValidationError, validation_exception_handler)
     app.add_exception_handler(UserAlreadyExistsError, user_already_exists_exception_handler)
+    app.add_exception_handler(ManageResourcesProcessError, manage_resources_exception_handler)
+    app.add_exception_handler(CraftMillCardProcessError, manage_resources_exception_handler)
     app.add_exception_handler(Exception, global_exception_handler)
     return app

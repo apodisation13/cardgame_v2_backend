@@ -80,7 +80,26 @@ class TestUserRegisterAPI:
         assert user_seasons == 1
 
         user_resources: list[dict] = await db_connection.fetch(
-            """SELECT scraps, wood, kegs, big_kegs, chests, keys FROM user_resources""",
+            """
+            SELECT
+                scraps,
+                raw_bronze,
+                raw_silver,
+                raw_gold,
+                bronze_ingots,
+                silver_ingots,
+                gold_ingots,
+                crops,
+                wood,
+                silk,
+                kegs,
+                big_kegs,
+                chests,
+                keys,
+                rare_gem,
+                money
+            FROM user_resources
+            """,
         )
         assert len(user_resources) == 1
 
@@ -88,11 +107,21 @@ class TestUserRegisterAPI:
             dict(user_resources[0])
             == UserResources(
                 scraps=1000,
+                raw_bronze=0,
+                raw_silver=0,
+                raw_gold=0,
+                bronze_ingots=0,
+                silver_ingots=0,
+                gold_ingots=0,
+                crops=1000,
                 wood=1000,
+                silk=0,
                 kegs=3,
                 big_kegs=1,
                 chests=0,
                 keys=3,
+                rare_gem=0,
+                money=2000,
             ).model_dump()
         )
 

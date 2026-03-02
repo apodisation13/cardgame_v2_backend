@@ -16,10 +16,50 @@ class UserResource(BaseModel, TimestampMixin):
         nullable=False,
         server_default="1000",
     )
+    raw_bronze: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="0",
+    )
+    raw_silver: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="0",
+    )
+    raw_gold: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="0",
+    )
+    bronze_ingots: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="0",
+    )
+    silver_ingots: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="0",
+    )
+    gold_ingots: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="0",
+    )
+    crops: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="1000",
+    )
     wood: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
         server_default="1000",
+    )
+    silk: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="0",
     )
     kegs: Mapped[int] = mapped_column(
         Integer,
@@ -40,6 +80,16 @@ class UserResource(BaseModel, TimestampMixin):
         Integer,
         nullable=False,
         server_default="3",
+    )
+    rare_gem: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="0",
+    )
+    money: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="2000",
     )
 
 

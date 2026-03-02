@@ -5,11 +5,44 @@ from services.api.app.apps.cards.schemas import Card, Deck, Enemy, EnemyLeader, 
 
 class UserResources(Base):
     scraps: int
+    raw_bronze: int
+    raw_silver: int
+    raw_gold: int
+    bronze_ingots: int
+    silver_ingots: int
+    gold_ingots: int
+    crops: int
+    wood: int
+    silk: int
     kegs: int
     big_kegs: int
     chests: int
-    wood: int
     keys: int
+    rare_gem: int
+    money: int
+
+    @staticmethod
+    def get_one(
+        row: dict,
+    ) -> "UserResources":
+        return UserResources(
+            scraps=row["scraps"],
+            raw_bronze=row["raw_bronze"],
+            raw_silver=row["raw_silver"],
+            raw_gold=row["raw_gold"],
+            bronze_ingots=row["bronze_ingots"],
+            silver_ingots=row["silver_ingots"],
+            gold_ingots=row["gold_ingots"],
+            crops=row["crops"],
+            wood=row["wood"],
+            silk=row["silk"],
+            kegs=row["kegs"],
+            big_kegs=row["big_kegs"],
+            chests=row["chests"],
+            keys=row["keys"],
+            rare_gem=row["rare_gem"],
+            money=row["money"],
+        )
 
 
 class UserCard(Base):
@@ -118,6 +151,7 @@ class ResourcesRequest(Base):
 
 class CardCraftMillRequest(Base):
     subtype: CardActionSubtype
+    recipe: dict | None = None
 
 
 class CardCraftMillResponse(Base):

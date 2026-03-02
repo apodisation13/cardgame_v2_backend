@@ -608,20 +608,29 @@ async def get_user_resources(
 ) -> UserResources:
     user_resources = await connection.fetchrow(
         """
-            SELECT scraps, kegs, big_kegs, chests, wood, keys
+            SELECT
+                scraps,
+                raw_bronze,
+                raw_silver,
+                raw_gold,
+                bronze_ingots,
+                silver_ingots,
+                gold_ingots,
+                crops,
+                wood,
+                silk,
+                kegs,
+                big_kegs,
+                chests,
+                keys,
+                rare_gem,
+                money
             FROM user_resources
             WHERE id = $1
         """,
         user_id,
     )
-    return UserResources(
-        scraps=user_resources["scraps"],
-        kegs=user_resources["kegs"],
-        big_kegs=user_resources["big_kegs"],
-        chests=user_resources["chests"],
-        wood=user_resources["wood"],
-        keys=user_resources["keys"],
-    )
+    return UserResources.get_one(user_resources)
 
 
 async def get_game_constants(
