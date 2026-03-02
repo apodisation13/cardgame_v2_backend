@@ -3,7 +3,6 @@ import pytest
 from httpx import AsyncClient
 from lib.utils.schemas.game import (
     DEFAULT_RESOURCES_TRANSITIONS,
-    LevelDifficulty,
     ResourceActionSubtype,
     ResourceTransitionActionType,
     ResourceType,
@@ -54,7 +53,7 @@ class TestManageResourcesAPI:
                 silver_ingots=0,
                 gold_ingots=0,
                 crops=user_resources.crops - 300,
-                wood=user_resources.wood -200,
+                wood=user_resources.wood - 200,
                 silk=0,
                 kegs=user_resources.kegs,
                 big_kegs=user_resources.big_kegs,
@@ -120,7 +119,6 @@ class TestManageResourcesAPI:
         response_json = response.json()
         message = response_json["error"]["message"]
         assert message == f"Can not process subtype {subtype} for user {user_id}, wrong value: {300} money"
-
 
     @pytest.mark.parametrize(
         "subtype",
