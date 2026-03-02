@@ -413,6 +413,8 @@ class UserProgressService:
                     card_resources: dict = game_constants["cards_resources_prices"][card_color]
                     craft_card_recipes: list[dict] = card_resources[CardActionSubtype.CRAFT_CARD]
 
+                    print("STR416", subtype, recipe, card_color, craft_card_recipes)
+
                     # 1.3. Тут ищем, какую конкретно формулу крафта выбрал юзер (пришла с фронта)
                     pay_resources = {}
                     for r in craft_card_recipes:
