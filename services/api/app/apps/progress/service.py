@@ -130,7 +130,6 @@ class UserProgressService:
                 user_id=user_id,
                 base_url=base_url,
             )
-            print("STR121", len(user_decks))
 
         return ListDecksResponse(
             decks=user_decks,
@@ -174,7 +173,6 @@ class UserProgressService:
                 user_id=user_id,
                 base_url=base_url,
             )
-            print("STR183", len(user_decks))
 
         return ListDecksResponse(
             decks=user_decks,
@@ -412,8 +410,6 @@ class UserProgressService:
 
                     card_resources: dict = game_constants["cards_resources_prices"][card_color]
                     craft_card_recipes: list[dict] = card_resources[CardActionSubtype.CRAFT_CARD]
-
-                    print("STR416", subtype, recipe, card_color, craft_card_recipes)
 
                     # 1.3. Тут ищем, какую конкретно формулу крафта выбрал юзер (пришла с фронта)
                     pay_resources = {}
@@ -765,7 +761,6 @@ class UserProgressService:
                 user_id,
                 user_level_id,
             )
-            print(season_id)
 
             # TODO: если тут что-то хотя бы открылось, значит сезон еще точно НЕ пройден
             # если не открылось - ничего не значит, надо проверять тогда все остальные уровни сезона
@@ -808,7 +803,7 @@ class UserProgressService:
     ) -> CardCraftBonusResponse:
         logger.info("Crafting bonus cards %s for user %s", cards_ids, user_id)
         async with self.db_pool.transaction() as connection:
-            r = await connection.fetch(
+            await connection.fetch(
                 """
                     WITH card_counts AS (
                         SELECT card_id, COUNT(*) as occurrence_count
@@ -829,7 +824,6 @@ class UserProgressService:
                 user_id,
                 cards_ids,
             )
-            print("STR720", r)
 
             user_cards = await logic.get_user_cards(
                 connection=connection,
