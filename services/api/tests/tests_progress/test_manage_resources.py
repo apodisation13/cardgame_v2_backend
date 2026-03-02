@@ -22,14 +22,13 @@ class TestManageResourcesAPI:
             (LevelDifficulty.HARD, "play_level_hard"),
         ),
     )
+    @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
     async def test_start_season_level(
         self,
         difficulty: LevelDifficulty,
         constant_name: str,
         client: AsyncClient,
-        db_connection,
-        init_db_cards,
         game_constants_factory,
         user_login_fixture,
         user_resource_factory,
@@ -85,13 +84,12 @@ class TestManageResourcesAPI:
             ResourceActionSubtype.ACCEPT_KEY_REWARD,
         ),
     )
+    @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
     async def test_win_season_level_or_accept_key_reward(
         self,
         subtype: ResourceActionSubtype,
         client: AsyncClient,
-        db_connection,
-        init_db_cards,
         user_login_fixture,
         user_resource_factory,
     ):
@@ -151,13 +149,12 @@ class TestManageResourcesOpenResourceAPI:
             ResourceType.CHESTS,
         ),
     )
+    @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
     async def test_open_resource_success(
         self,
         resource_type: ResourceType,
         client: AsyncClient,
-        db_connection,
-        init_db_cards,
         user_login_fixture,
         user_resource_factory,
     ):
@@ -209,13 +206,12 @@ class TestManageResourcesOpenResourceAPI:
         )
 
     @pytest.mark.parametrize("resource_type", (ResourceType.KEYS, ResourceType.KEGS))
+    @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
     async def test_open_resource_insufficient_resource(
         self,
         resource_type: ResourceType,
         client: AsyncClient,
-        db_connection,
-        init_db_cards,
         user_login_fixture,
         user_resource_factory,
     ):
@@ -242,13 +238,12 @@ class TestManageResourcesOpenResourceAPI:
         assert response.status_code == 400
 
     @pytest.mark.parametrize("resource_type", (ResourceType.KEYS, ResourceType.KEGS))
+    @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
     async def test_open_resource_cheat_with_positive_resource(
         self,
         resource_type: ResourceType,
         client: AsyncClient,
-        db_connection,
-        init_db_cards,
         user_login_fixture,
         user_resource_factory,
     ):
@@ -283,6 +278,7 @@ class TestManageResourcesTransitionAPI:
             (ResourceTransitionActionType.SELL, ResourceType.WOOD, 5, 2200, 500),
         ),
     )
+    @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
     async def test_bonus_reward_buy_sell_success(
         self,
@@ -292,8 +288,6 @@ class TestManageResourcesTransitionAPI:
         expected_result_money,
         expected_result_resource,
         client: AsyncClient,
-        db_connection,
-        init_db_cards,
         user_login_fixture,
         user_resource_factory,
         game_constants_factory,
@@ -353,6 +347,7 @@ class TestManageResourcesTransitionAPI:
             (ResourceTransitionActionType.SELL, ResourceType.KEGS, 4),  # у нас есть только 3
         ),
     )
+    @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
     async def test_bonus_reward_buy_sell_insufficient_resource(
         self,
@@ -360,8 +355,6 @@ class TestManageResourcesTransitionAPI:
         resource: ResourceType,
         quantity,
         client: AsyncClient,
-        db_connection,
-        init_db_cards,
         user_login_fixture,
         user_resource_factory,
         game_constants_factory,
@@ -387,9 +380,6 @@ class TestManageResourcesTransitionAPI:
             headers={"Authorization": f"Bearer {access_token}"},
         )
 
-        response_json = response.json()
-        print(response_json)
-
         assert response.status_code == 400
 
     @pytest.mark.parametrize(
@@ -403,14 +393,13 @@ class TestManageResourcesTransitionAPI:
             (ResourceTransitionActionType.SELL, ResourceType.RARE_GEM),
         ),
     )
+    @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
     async def test_bonus_reward_buy_sell_can_not(
         self,
         action: ResourceTransitionActionType,
         resource: ResourceType,
         client: AsyncClient,
-        db_connection,
-        init_db_cards,
         user_login_fixture,
         user_resource_factory,
         game_constants_factory,
@@ -435,9 +424,6 @@ class TestManageResourcesTransitionAPI:
             headers={"Authorization": f"Bearer {access_token}"},
         )
 
-        response_json = response.json()
-        print(response_json)
-
         assert response.status_code == 400
 
     @pytest.mark.parametrize(
@@ -447,6 +433,7 @@ class TestManageResourcesTransitionAPI:
             (5, 1000, 1),  # а тут мы купили 5, осталось всего 1 raw_bronze
         ),
     )
+    @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
     async def test_bonus_reward_craft_bronze_ingots_success(
         self,
@@ -454,8 +441,6 @@ class TestManageResourcesTransitionAPI:
         expected_result_money,
         expected_raw_bronze_left,
         client: AsyncClient,
-        db_connection,
-        init_db_cards,
         user_login_fixture,
         user_resource_factory,
         game_constants_factory,
@@ -520,6 +505,7 @@ class TestManageResourcesTransitionAPI:
             (2, 0, 0, 0),  # а тут мы купили 2, и всего осталось по нулям
         ),
     )
+    @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
     async def test_bonus_reward_craft_silk_success(
         self,
@@ -528,8 +514,6 @@ class TestManageResourcesTransitionAPI:
         expected_raw_gold_left,
         expected_scraps_left,
         client: AsyncClient,
-        db_connection,
-        init_db_cards,
         user_login_fixture,
         user_resource_factory,
         game_constants_factory,
@@ -593,6 +577,7 @@ class TestManageResourcesTransitionAPI:
             (3, 0, 3, 300),
         ),
     )
+    @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
     async def test_bonus_reward_mill_silk_success(
         self,
@@ -601,8 +586,6 @@ class TestManageResourcesTransitionAPI:
         expected_raw_gold_left,
         expected_scraps_left,
         client: AsyncClient,
-        db_connection,
-        init_db_cards,
         user_login_fixture,
         user_resource_factory,
         game_constants_factory,
@@ -668,6 +651,7 @@ class TestManageResourcesTransitionAPI:
             (1000, 2, 500),  # оно стоит 1000 scraps, 2 raw_gold и 1000 денег, тут не хватает money
         ),
     )
+    @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
     async def test_bonus_reward_craft_silk_insufficient_resources(
         self,
@@ -675,8 +659,6 @@ class TestManageResourcesTransitionAPI:
         starting_raw_gold,
         starting_money,
         client: AsyncClient,
-        db_connection,
-        init_db_cards,
         user_login_fixture,
         user_resource_factory,
         game_constants_factory,
@@ -728,6 +710,7 @@ class TestManageResourcesTransitionAPI:
             (3, 2, 0, 0, 300, 300, 270),
         ),
     )
+    @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
     async def test_bonus_reward_craft_kegs_success(
         self,
@@ -739,8 +722,6 @@ class TestManageResourcesTransitionAPI:
         expected_raw_bronze_left,
         expected_bronze_ingots_left,
         client: AsyncClient,
-        db_connection,
-        init_db_cards,
         user_login_fixture,
         user_resource_factory,
         game_constants_factory,

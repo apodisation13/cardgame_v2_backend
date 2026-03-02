@@ -7,13 +7,13 @@ class TestOpenRelatedLevelsAPI:
     endpoint = "user-progress/{user_id}/open-related-levels/{user_level_id}"
 
     @pytest.mark.parametrize("level_finished", [True, False])
+    @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
     async def test_open_open_level_without_related_levels(
         self,
         level_finished: bool,
         client: AsyncClient,
         db_connection,
-        init_db_cards,
         level_factory,
         level_enemy_factory,
         user_login_fixture,
@@ -71,12 +71,12 @@ class TestOpenRelatedLevelsAPI:
         assert len(user_levels) == 1
         assert user_levels[0]["finished"] is True  # вот это самое главное - уровню поставилось что он пройден
 
+    @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
     async def test_open_open_level_with_related_levels(
         self,
         client: AsyncClient,
         db_connection,
-        init_db_cards,
         user_login_fixture,
         user_level_factory,
     ):
@@ -179,12 +179,12 @@ class TestOpenRelatedLevelsAPI:
         assert user_levels[2]["id"] == 3
         assert user_levels[2]["finished"] is False
 
+    @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
     async def test_open_open_level_related_levels_already_open(
         self,
         client: AsyncClient,
         db_connection,
-        init_db_cards,
         user_login_fixture,
         user_level_factory,
     ):
