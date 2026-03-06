@@ -1,6 +1,8 @@
 import pytest
 
 from httpx import AsyncClient
+
+from lib.tests.fixtures import db_connection
 from lib.utils.schemas.game import (
     DEFAULT_RESOURCES_TRANSITIONS,
     ResourceActionSubtype,
@@ -69,6 +71,7 @@ class TestManageResourcesAPI:
     async def test_start_season_level_fails(
         self,
         client: AsyncClient,
+        db_connection,
         user_login_fixture,
         user_resource_factory,
     ):
@@ -80,6 +83,8 @@ class TestManageResourcesAPI:
         await user_resource_factory(
             id=user_id,
             money=200,
+            crops=500,
+            wood=500,
         )
 
         # кейс 1 - не хватает ресурсов для начала уровня
@@ -119,6 +124,11 @@ class TestManageResourcesAPI:
         response_json = response.json()
         message = response_json["error"]["message"]
         assert message == f"Can not process subtype {subtype} for user {user_id}, wrong value: {300} money"
+
+        resources_left = await db_connection.fetchrow("""SELECT * FROM user_resources WHERE id = $1""", user_id)
+        assert resources_left["crops"] == 500
+        assert resources_left["wood"] == 500
+        assert resources_left["money"] == 200
 
     @pytest.mark.parametrize(
         "subtype",
