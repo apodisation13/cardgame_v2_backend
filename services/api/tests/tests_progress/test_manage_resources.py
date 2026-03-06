@@ -1,8 +1,6 @@
 import pytest
 
 from httpx import AsyncClient
-
-from lib.tests.fixtures import db_connection
 from lib.utils.schemas.game import (
     DEFAULT_RESOURCES_TRANSITIONS,
     ResourceActionSubtype,
