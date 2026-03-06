@@ -342,12 +342,12 @@ class UserProgressService:
                         resources_to_change=resource_request.data,
                     )
 
-                for resource in resource_request.data:
-                    actual_resource: int = getattr(user_resources, resource)
-                    if actual_resource < 0:
-                        msg = "Can not process subtype %s for user %s, negative value: %s %s"
-                        logger.error(msg, subtype, user_id, actual_resource, resource)
-                        raise ManageResourcesProcessError(msg % (subtype, user_id, actual_resource, resource))
+                    for resource in resource_request.data:
+                        actual_resource: int = getattr(user_resources, resource)
+                        if actual_resource < 0:
+                            msg = "Can not process subtype %s for user %s, negative value: %s %s"
+                            logger.error(msg, subtype, user_id, actual_resource, resource)
+                            raise ManageResourcesProcessError(msg % (subtype, user_id, actual_resource, resource))
 
                 return user_resources
 
