@@ -761,7 +761,6 @@ class UserProgressService:
                 user_id,
                 user_level_id,
             )
-            print(season_id)
 
             # TODO: если тут что-то хотя бы открылось, значит сезон еще точно НЕ пройден
             # если не открылось - ничего не значит, надо проверять тогда все остальные уровни сезона
@@ -781,10 +780,77 @@ class UserProgressService:
                 user_level_id,
             )
             logger.info(
-                "Successfully opened related levels: %s for user %s",
+                "Successfully opened related levels: %s for user %s of season %s",
                 [row["level_id"] for row in level_related_levels],
                 user_id,
+                season_id,
             )
+
+            # вот здесь надо проверять количество пройденных уровней сезона и количество всего уровней
+            if not level_related_levels:
+                all_levels_completed: bool = await connection.fetchval(
+                    """
+                        SELECT
+                            COUNT(levels.id) = COUNT(user_levels.level_id) AS all_completed
+                        FROM
+                            levels
+                        LEFT JOIN user_levels ON user_levels.level_id = levels.id
+                            AND user_levels.user_id = $1
+                            AND user_levels.finished is true
+                        WHERE
+                            levels.season_id = $2;
+                    """,
+                    user_id,
+                    season_id,
+                )
+
+                if all_levels_completed:
+                    logger.info("All levels finished for user %s, season %s", user_id, season_id)
+                    # помечаем текущий сезон как завершённый
+                    await connection.execute(
+                        """
+                        UPDATE user_seasons
+                        SET
+                            finished = true,
+                            updated_at = NOW()
+                        WHERE
+                            user_id = $1
+                            AND season_id = $2;
+                        """,
+                        user_id,
+                        season_id,
+                    )
+                    # инзертим юзеру сезоны, которые идут вслед за пройденным сезоном
+                    await connection.execute(
+                        """
+                        INSERT INTO user_seasons (user_id, season_id, finished)
+                        SELECT
+                            $1, related_season_id, false
+                        FROM
+                            season_related_seasons
+                        WHERE
+                            season_id = $2
+                        ON CONFLICT DO NOTHING;
+                        """,
+                        user_id,
+                        season_id,
+                    )
+                    # инзертим теперь юзеру все unlocked=true уровни для каждого из открытых сезонов
+                    await connection.execute(
+                        """
+                        INSERT INTO user_levels (user_id, level_id, finished)
+                        SELECT $1, levels.id, false
+                        FROM
+                            levels
+                        JOIN season_related_seasons ON season_related_seasons.related_season_id = levels.season_id
+                        WHERE
+                            season_related_seasons.season_id = $2
+                            AND levels.unlocked IS TRUE
+                        ON CONFLICT DO NOTHING;
+                        """,
+                        user_id,
+                        season_id,
+                    )
 
             _, _, user_seasons = await logic.process_enemies(
                 connection=connection,

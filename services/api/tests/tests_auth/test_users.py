@@ -30,12 +30,13 @@ class TestUserRegisterAPI:
     #
     #     print(event_sender_mock.call_args_list)
 
+    @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
     async def test_register_user_success(
         self,
+        # service fixtures
         client: AsyncClient,
         db_connection,
-        init_db_cards,
     ):
         users_before: list = await db_connection.fetch("""SELECT * FROM users""")
         assert len(users_before) == 0
@@ -74,7 +75,7 @@ class TestUserRegisterAPI:
         assert user_decks == 1
 
         user_levels: int = await db_connection.fetchval("""SELECT COUNT(*) FROM user_levels""")
-        assert user_levels == 1
+        assert user_levels == 2
 
         user_seasons: int = await db_connection.fetchval("""SELECT COUNT(*) FROM user_seasons""")
         assert user_seasons == 1
@@ -228,7 +229,9 @@ class TestUserRegisterAPI:
     @pytest.mark.asyncio
     async def test_register_user_already_exists(
         self,
+        # service fixtures
         client: AsyncClient,
+        # fixtures for test
         user_factory,
     ):
         await user_factory(
@@ -264,8 +267,10 @@ class TestUserLoginAPI:
     @pytest.mark.asyncio
     async def test_user_login_success(
         self,
+        # service fixtures
         client: AsyncClient,
         db_connection,
+        # fixtures for test
         user_factory,
     ) -> None:
         user = await user_factory(
@@ -299,8 +304,10 @@ class TestUserLoginAPI:
     @pytest.mark.asyncio
     async def test_user_login_incorrect_data(
         self,
+        # service fixtures
         client: AsyncClient,
         db_connection,
+        # fixtures for test
         user_factory,
     ) -> None:
         await user_factory(
@@ -378,8 +385,10 @@ class TestUserLoginAPI:
     @pytest.mark.asyncio
     async def test_user_inactive_login(
         self,
+        # service fixtures
         client: AsyncClient,
         db_connection,
+        # fixtures for test
         user_factory,
     ) -> None:
         await user_factory(
@@ -411,8 +420,10 @@ class TestUserLoginAPI:
     @pytest.mark.asyncio
     async def test_wrong_user_access(
         self,
+        # service fixtures
         client: AsyncClient,
         db_connection,
+        # fixtures for test
         user_factory,
     ) -> None:
         user_1 = await user_factory(
@@ -472,8 +483,10 @@ class TestUserLoginAPI:
     @pytest.mark.asyncio
     async def test_user_login_empty_data(
         self,
+        # service fixtures
         client: AsyncClient,
         db_connection,
+        # fixtures for test
         user_factory,
     ) -> None:
         response = await client.post(
@@ -493,9 +506,11 @@ class TestRefreshAccessTokenAPI:
     @pytest.mark.asyncio
     async def test_user_refresh_token_success(
         self,
+        # service fixtures
         app_config,
         client: AsyncClient,
         db_connection,
+        # fixtures for test
         user_factory,
     ) -> None:
         user = await user_factory(
@@ -546,9 +561,11 @@ class TestRefreshAccessTokenAPI:
         self,
         expires_in,
         expected_status,
+        # service fixtures
         app_config,
         client: AsyncClient,
         db_connection,
+        # fixtures for test
         user_factory,
     ) -> None:
         app_config.ACCESS_TOKEN_EXPIRE_MINUTES = 1

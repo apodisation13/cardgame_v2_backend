@@ -17,8 +17,10 @@ class TestManageResourcesLevelStartWinAPI:
     @pytest.mark.asyncio
     async def test_start_season_level_success(
         self,
+        # service fixtures
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
     ):
         user_id = user_login_fixture["id"]
@@ -68,9 +70,11 @@ class TestManageResourcesLevelStartWinAPI:
     @pytest.mark.asyncio
     async def test_start_season_level_fails(
         self,
+        # service fixtures
         client: AsyncClient,
         db_connection,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
     ):
         subtype = ResourceActionSubtype.START_SEASON_LEVEL
@@ -140,9 +144,10 @@ class TestManageResourcesLevelStartWinAPI:
     async def test_win_season_level_or_accept_key_reward(
         self,
         subtype: ResourceActionSubtype,
-        # fixtures
+        # service fixtures
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
     ):
         user_id = user_login_fixture["id"]
@@ -206,9 +211,10 @@ class TestManageResourcesOpenResourceAPI:
     async def test_open_resource_success(
         self,
         resource_type: ResourceType,
-        # fixtures
+        # service fixtures
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
     ):
         user_id = user_login_fixture["id"]
@@ -264,10 +270,11 @@ class TestManageResourcesOpenResourceAPI:
     async def test_open_resource_insufficient_resource(
         self,
         resource_type: ResourceType,
-        # fixtures
+        # service fixtures
         db_connection,
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
     ):
         user_id = user_login_fixture["id"]
@@ -303,10 +310,11 @@ class TestManageResourcesOpenResourceAPI:
     async def test_open_resource_cheat_with_positive_resource(
         self,
         resource_type: ResourceType,
-        # fixtures
+        # service fixtures
         db_connection,
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
     ):
         user_id = user_login_fixture["id"]
@@ -354,9 +362,10 @@ class TestManageResourcesTransitionAPI:
         quantity,
         expected_result_money,
         expected_result_resource,
-        # fixtures
+        # service fixtures
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
         game_constants_factory,
     ):
@@ -422,10 +431,11 @@ class TestManageResourcesTransitionAPI:
         action: ResourceTransitionActionType,
         resource: ResourceType,
         quantity,
-        # fixtures
+        # service fixtures
         db_connection,
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
         game_constants_factory,
     ):
@@ -475,9 +485,10 @@ class TestManageResourcesTransitionAPI:
         self,
         action: ResourceTransitionActionType,
         resource: ResourceType,
-        # fixtures
+        # service fixtures
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
         game_constants_factory,
     ):
@@ -517,9 +528,10 @@ class TestManageResourcesTransitionAPI:
         quantity,
         expected_result_money,
         expected_raw_bronze_left,
-        # fixtures
+        # service fixtures
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
         game_constants_factory,
     ):
@@ -591,9 +603,10 @@ class TestManageResourcesTransitionAPI:
         expected_result_money,
         expected_raw_gold_left,
         expected_scraps_left,
-        # fixtures
+        # service fixtures
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
         game_constants_factory,
     ):
@@ -664,9 +677,10 @@ class TestManageResourcesTransitionAPI:
         expected_result_money,
         expected_raw_gold_left,
         expected_scraps_left,
-        # fixtures
+        # service fixtures
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
         game_constants_factory,
     ):
@@ -738,10 +752,11 @@ class TestManageResourcesTransitionAPI:
         starting_scraps,
         starting_raw_gold,
         starting_money,
-        # fixtures
+        # service fixtures
         db_connection,
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
         game_constants_factory,
     ):
@@ -809,9 +824,10 @@ class TestManageResourcesTransitionAPI:
         expected_wood_left,
         expected_raw_bronze_left,
         expected_bronze_ingots_left,
-        # fixtures
+        # service fixtures
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
         game_constants_factory,
     ):

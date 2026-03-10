@@ -330,7 +330,7 @@ async def init_db_cards(
     - 3 врага
     - 2 сезона (1 открытый, 2 закрытый + у него нет связей)
     - 1 связь между сезонами (сезон 1 открывает сезон 2)
-    - 4 уровня (1 открыт, 3 нет) (3 для сезона 1, 1 для сезона 2)
+    - 4 уровня (2 открыты, 2 нет) (3 для сезона 1, 1 для сезона 2)
     - связи между сезоном и уровнем, уровнем и его детьми, уровнем и врагами
     """
     f1 = await faction_factory(name="Neutrals")
@@ -455,6 +455,7 @@ async def init_db_cards(
         name="Level 4",
         season_id=s2.id,
         enemy_leader_id=enemy_leader.id,
+        unlocked=True,
     )
 
     await level_related_levels_factory(

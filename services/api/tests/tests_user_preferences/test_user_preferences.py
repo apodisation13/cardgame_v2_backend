@@ -10,6 +10,7 @@ class TestUserPreferencesAPI:
     @pytest.mark.asyncio
     async def test_get_non_existing_preferences(
         self,
+        # service fixtures
         client: AsyncClient,
         user_login_fixture,
     ):
@@ -31,8 +32,10 @@ class TestUserPreferencesAPI:
     @pytest.mark.asyncio
     async def test_get_already_existing_preferences(
         self,
+        # service fixtures
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_preferences_factory,
     ):
         """
@@ -66,8 +69,10 @@ class TestUserPreferencesAPI:
     @pytest.mark.asyncio
     async def test_update_already_existing_preferences(
         self,
+        # service fixtures
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_preferences_factory,
     ):
         """

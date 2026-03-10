@@ -9,14 +9,16 @@ class TestOpenRelatedLevelsAPI:
     @pytest.mark.parametrize("level_finished", [True, False])
     @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
-    async def test_open_open_level_without_related_levels(
+    async def test_open_level_without_related_levels(
         self,
         level_finished: bool,
-        client: AsyncClient,
+        # service fixtures
         db_connection,
+        client: AsyncClient,
+        user_login_fixture,
+        # fixtures for test
         level_factory,
         level_enemy_factory,
-        user_login_fixture,
         user_level_factory,
         user_season_factory,
     ):
@@ -73,11 +75,13 @@ class TestOpenRelatedLevelsAPI:
 
     @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
-    async def test_open_open_level_with_related_levels(
+    async def test_open_level_with_related_levels(
         self,
-        client: AsyncClient,
+        # service fixtures
         db_connection,
+        client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_level_factory,
     ):
         """
@@ -181,11 +185,13 @@ class TestOpenRelatedLevelsAPI:
 
     @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
-    async def test_open_open_level_related_levels_already_open(
+    async def test_open_level_related_levels_already_open(
         self,
-        client: AsyncClient,
+        # service fixtures
         db_connection,
+        client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_level_factory,
     ):
         """
@@ -235,3 +241,185 @@ class TestOpenRelatedLevelsAPI:
         assert user_levels[1]["finished"] is True  # это 3й уровень, который не изменился
 
         assert user_levels[2]["finished"] is True  # 1му уровню поставилось что он пройден
+
+    @pytest.mark.usefixtures("init_db_cards")
+    @pytest.mark.asyncio
+    async def test_open_related_season(
+        self,
+        # service fixtures
+        db_connection,
+        client: AsyncClient,
+        user_login_fixture,
+        # fixtures for test
+        user_level_factory,
+        user_season_factory,
+        season_factory,
+        level_factory,
+        level_enemy_factory,
+        season_related_seasons_factory,
+    ):
+        """
+        Базовая фикстура добавила уже 4 разных уровня
+
+        И всё, открывать новые не надо, их ведь нет
+        Если уровень УЖЕ пройден, ничего страшного, так и останется
+        """
+        user_id = user_login_fixture["id"]
+        access_token = user_login_fixture["token"]["access_token"]
+
+        # у юзера открыт первый уровень первого сезона
+        user_level = await user_level_factory(
+            user_id=user_id,
+            level_id=1,
+        )
+        await user_season_factory(
+            user_id=user_id,
+            season_id=1,
+            finished=True,
+        )
+
+        user_levels: list[dict] = await db_connection.fetch("""SELECT * FROM user_levels""")
+        assert len(user_levels) == 1
+
+        # --------------- проходим 1й уровень ---------------
+        response = await client.patch(
+            self.endpoint.format(user_id=user_id, user_level_id=user_level.id),
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+        assert response.status_code == 200
+
+        # открылись уровни 2 и 3
+        user_levels: list[dict] = await db_connection.fetch("""SELECT * FROM user_levels""")
+        assert len(user_levels) == 3
+
+        # --------------- проходим уровень 2 ---------------
+        response = await client.patch(
+            self.endpoint.format(user_id=user_id, user_level_id=2),
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+        assert response.status_code == 200
+
+        # новых уровней пока не добавилось
+        user_levels: list[dict] = await db_connection.fetch("""SELECT * FROM user_levels""")
+        assert len(user_levels) == 3
+
+        # в этом тесте создаем третий сезон, который так же связан с первым:
+        season_3 = await season_factory(
+            name="Season 3",
+            description="Season 3",
+            unlocked=False,
+        )
+        # два уровня для сезона 3 - только один открыт
+        level_of_season_3 = await level_factory(
+            season_id=season_3.id,
+            enemy_leader_id=1,
+            unlocked=True,
+        )
+        await level_factory(
+            season_id=season_3.id,
+            enemy_leader_id=1,
+            unlocked=False,
+        )
+        # чтобы ручка корректно вернула, что этот уровень есть вообще, по коду стоит JOIN level_enemies
+        await level_enemy_factory(
+            level_id=level_of_season_3.id,
+            enemy_id=1,
+        )
+        # связь сезона 1 с новым сезоном 3
+        await season_related_seasons_factory(
+            season_id=1,
+            related_season_id=season_3.id,
+        )
+
+        # --------------- вот теперь проходим уровень 3 ---------------
+        response = await client.patch(
+            self.endpoint.format(user_id=user_id, user_level_id=3),
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+        assert response.status_code == 200
+
+        # и вот тут открылись 2 новых сезона, а текущему проставилось finished = true
+        user_seasons: list[dict] = await db_connection.fetch("""SELECT * FROM user_seasons ORDER BY updated_at""")
+        assert len(user_seasons) == 3  # вот тут и добавились новый сезоны
+
+        assert user_seasons[0]["finished"] is True  # это для первого сезона юзера
+        assert user_seasons[0]["season_id"] == 1
+        assert user_seasons[1]["finished"] is False  # это новый сезон!
+        assert user_seasons[2]["finished"] is False  # это новый сезон!
+
+        # добавилось 2 новых уровня! один из сезона 2 (по умолчанию) и один из сезона 3
+        user_levels: list[dict] = await db_connection.fetch("""SELECT * FROM user_levels ORDER BY updated_at DESC""")
+        assert len(user_levels) == 5
+
+        # --------------- вот теперь проходим уровень 4 из сезона 2 ---------------
+        # только надо найти его id
+        user_level_id: int = await db_connection.fetchval(
+            """
+                SELECT user_levels.id FROM user_levels
+                JOIN levels ON user_levels.level_id = levels.id
+                WHERE levels.season_id = 2
+            """,
+        )
+
+        response = await client.patch(
+            self.endpoint.format(user_id=user_id, user_level_id=user_level_id),
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+        assert response.status_code == 200
+
+        # у 2 сезона нет связей, поэтому ему просто проставилось finished = true
+        user_seasons: list[dict] = await db_connection.fetch("""SELECT * FROM user_seasons ORDER BY updated_at DESC""")
+        assert len(user_seasons) == 3  # вот тут и добавился новый сезон
+
+        assert user_seasons[0]["finished"] is True  # обновленный сезон 2
+        assert user_seasons[0]["season_id"] == 2
+
+        # и тут без изменений
+        user_levels: list[dict] = await db_connection.fetch("""SELECT * FROM user_levels ORDER BY updated_at DESC""")
+        assert len(user_levels) == 5
+
+        # ИТОГО: 4 пройденных уровня (3 из сезона 1, 1 из сезона 2), 1 не пройден (из сезона 3)
+        finished_levels: int = await db_connection.fetchval(
+            """SELECT COUNT(*) FROM user_levels WHERE finished IS TRUE""",
+        )
+        assert finished_levels == 4
+
+        # --------------- и наконец проходим уровень 5 из сезона 3 ---------------
+        # только надо найти его id
+        user_level_id: int = await db_connection.fetchval(
+            """
+                SELECT user_levels.id FROM user_levels
+                JOIN levels ON user_levels.level_id = levels.id
+                WHERE levels.season_id = 3
+            """,
+        )
+
+        response = await client.patch(
+            self.endpoint.format(user_id=user_id, user_level_id=user_level_id),
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+        assert response.status_code == 200
+
+        # у 3 сезона нет связей, и еще один уровень висит у него без связей
+        user_seasons: list[dict] = await db_connection.fetch("""SELECT * FROM user_seasons ORDER BY updated_at DESC""")
+        assert len(user_seasons) == 3
+
+        # в сезоне 3 по тесту есть уровень, но он не связан никак с другим, поэтому без изменений
+        user_levels: list[dict] = await db_connection.fetch("""SELECT * FROM user_levels ORDER BY updated_at DESC""")
+        assert len(user_levels) == 5
+
+        # но уровень-то прошли, и ему поставим finished = true
+        assert user_levels[0]["finished"] is True
+        assert user_levels[0]["level_id"] == 5
+        assert user_levels[0]["id"] == user_level_id
+
+        # ИТОГО: 5 пройденных уровня (3 из сезона 1, 1 из сезона 2, 1 из сезона 3)
+        finished_levels: int = await db_connection.fetchval(
+            """SELECT COUNT(*) FROM user_levels WHERE finished IS TRUE""",
+        )
+        assert finished_levels == 5
