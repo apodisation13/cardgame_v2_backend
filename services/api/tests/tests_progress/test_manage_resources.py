@@ -10,15 +10,17 @@ from lib.utils.schemas.game import (
 from services.api.app.apps.progress.schemas import UserResources
 
 
-class TestManageResourcesAPI:
+class TestManageResourcesLevelStartWinAPI:
     endpoint = "user-progress/{user_id}/resource"
 
     @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
     async def test_start_season_level_success(
         self,
+        # service fixtures
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
     ):
         user_id = user_login_fixture["id"]
@@ -68,9 +70,11 @@ class TestManageResourcesAPI:
     @pytest.mark.asyncio
     async def test_start_season_level_fails(
         self,
+        # service fixtures
         client: AsyncClient,
         db_connection,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
     ):
         subtype = ResourceActionSubtype.START_SEASON_LEVEL
@@ -140,8 +144,10 @@ class TestManageResourcesAPI:
     async def test_win_season_level_or_accept_key_reward(
         self,
         subtype: ResourceActionSubtype,
+        # service fixtures
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
     ):
         user_id = user_login_fixture["id"]
@@ -205,8 +211,10 @@ class TestManageResourcesOpenResourceAPI:
     async def test_open_resource_success(
         self,
         resource_type: ResourceType,
+        # service fixtures
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
     ):
         user_id = user_login_fixture["id"]
@@ -262,8 +270,11 @@ class TestManageResourcesOpenResourceAPI:
     async def test_open_resource_insufficient_resource(
         self,
         resource_type: ResourceType,
+        # service fixtures
+        db_connection,
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
     ):
         user_id = user_login_fixture["id"]
@@ -288,14 +299,22 @@ class TestManageResourcesOpenResourceAPI:
 
         assert response.status_code == 400
 
+        # ресурсы реально не списались
+        resources_left = await db_connection.fetchrow("""SELECT * FROM user_resources WHERE id = $1""", user_id)
+        assert resources_left["keys"] == 0
+        assert resources_left["kegs"] == 0
+
     @pytest.mark.parametrize("resource_type", (ResourceType.KEYS, ResourceType.KEGS))
     @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
     async def test_open_resource_cheat_with_positive_resource(
         self,
         resource_type: ResourceType,
+        # service fixtures
+        db_connection,
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
     ):
         user_id = user_login_fixture["id"]
@@ -315,6 +334,11 @@ class TestManageResourcesOpenResourceAPI:
         )
 
         assert response.status_code == 400
+
+        # ресурсы реально не изменились
+        resources_left = await db_connection.fetchrow("""SELECT * FROM user_resources WHERE id = $1""", user_id)
+        assert resources_left["keys"] == 3
+        assert resources_left["kegs"] == 3
 
 
 class TestManageResourcesTransitionAPI:
@@ -338,8 +362,10 @@ class TestManageResourcesTransitionAPI:
         quantity,
         expected_result_money,
         expected_result_resource,
+        # service fixtures
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
         game_constants_factory,
     ):
@@ -405,8 +431,11 @@ class TestManageResourcesTransitionAPI:
         action: ResourceTransitionActionType,
         resource: ResourceType,
         quantity,
+        # service fixtures
+        db_connection,
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
         game_constants_factory,
     ):
@@ -433,6 +462,12 @@ class TestManageResourcesTransitionAPI:
 
         assert response.status_code == 400
 
+        # ресурсы реально не списались
+        resources_left = await db_connection.fetchrow("""SELECT * FROM user_resources WHERE id = $1""", user_id)
+        assert resources_left["money"] == 2000
+        assert resources_left["gold_ingots"] == 0
+        assert resources_left["kegs"] == 3
+
     @pytest.mark.parametrize(
         "action, resource",
         (
@@ -450,8 +485,10 @@ class TestManageResourcesTransitionAPI:
         self,
         action: ResourceTransitionActionType,
         resource: ResourceType,
+        # service fixtures
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
         game_constants_factory,
     ):
@@ -491,8 +528,10 @@ class TestManageResourcesTransitionAPI:
         quantity,
         expected_result_money,
         expected_raw_bronze_left,
+        # service fixtures
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
         game_constants_factory,
     ):
@@ -564,8 +603,10 @@ class TestManageResourcesTransitionAPI:
         expected_result_money,
         expected_raw_gold_left,
         expected_scraps_left,
+        # service fixtures
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
         game_constants_factory,
     ):
@@ -636,8 +677,10 @@ class TestManageResourcesTransitionAPI:
         expected_result_money,
         expected_raw_gold_left,
         expected_scraps_left,
+        # service fixtures
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
         game_constants_factory,
     ):
@@ -709,8 +752,11 @@ class TestManageResourcesTransitionAPI:
         starting_scraps,
         starting_raw_gold,
         starting_money,
+        # service fixtures
+        db_connection,
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
         game_constants_factory,
     ):
@@ -742,6 +788,12 @@ class TestManageResourcesTransitionAPI:
 
         assert response.status_code == 400
 
+        # ресурсы реально не списались
+        resources_left = await db_connection.fetchrow("""SELECT * FROM user_resources WHERE id = $1""", user_id)
+        assert resources_left["scraps"] == starting_scraps
+        assert resources_left["raw_gold"] == starting_raw_gold
+        assert resources_left["money"] == starting_money
+
     @pytest.mark.parametrize(
         (
             "quantity",
@@ -772,8 +824,10 @@ class TestManageResourcesTransitionAPI:
         expected_wood_left,
         expected_raw_bronze_left,
         expected_bronze_ingots_left,
+        # service fixtures
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
         game_constants_factory,
     ):

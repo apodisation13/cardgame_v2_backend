@@ -11,9 +11,11 @@ class TestManageMillProcesAPI:
     @pytest.mark.asyncio
     async def test_mill_leader_fails(
         self,
+        # service fixtures
         client: AsyncClient,
-        game_constants_factory,
         user_login_fixture,
+        # fixtures for test
+        game_constants_factory,
         user_resource_factory,
         user_leader_factory,
         leader_factory,
@@ -101,10 +103,12 @@ class TestManageMillProcesAPI:
     @pytest.mark.asyncio
     async def test_mill_leader_success(
         self,
+        # service fixtures
         client: AsyncClient,
         db_connection,
-        game_constants_factory,
         user_login_fixture,
+        # fixtures for test
+        game_constants_factory,
         user_resource_factory,
         user_leader_factory,
         leader_factory,
@@ -178,9 +182,11 @@ class TestManageMillProcesAPI:
     @pytest.mark.asyncio
     async def test_mill_card_fails(
         self,
+        # service fixtures
         client: AsyncClient,
-        game_constants_factory,
         user_login_fixture,
+        # fixtures for test
+        game_constants_factory,
         user_resource_factory,
         user_card_factory,
         card_factory,
@@ -276,10 +282,12 @@ class TestManageMillProcesAPI:
         card_color,
         expected_resource_type,
         expected_scarps_add,
+        # service fixtures
         client: AsyncClient,
         db_connection,
-        game_constants_factory,
         user_login_fixture,
+        # fixtures for test
+        game_constants_factory,
         user_resource_factory,
         user_card_factory,
         card_factory,
@@ -364,9 +372,11 @@ class TestManageCraftProcesAPI:
     @pytest.mark.asyncio
     async def test_craft_leader_fails(
         self,
+        # service fixtures
         client: AsyncClient,
-        game_constants_factory,
         user_login_fixture,
+        # fixtures for test
+        game_constants_factory,
         user_resource_factory,
     ):
         user_id = user_login_fixture["id"]
@@ -431,10 +441,12 @@ class TestManageCraftProcesAPI:
     @pytest.mark.asyncio
     async def test_craft_leader_success(
         self,
+        # service fixtures
         client: AsyncClient,
         db_connection,
-        game_constants_factory,
         user_login_fixture,
+        # fixtures for test
+        game_constants_factory,
         user_resource_factory,
         user_leader_factory,
         leader_factory,
@@ -569,9 +581,11 @@ class TestManageCraftProcesAPI:
     @pytest.mark.asyncio
     async def test_craft_card_fails(
         self,
+        # service fixtures
         client: AsyncClient,
-        game_constants_factory,
         user_login_fixture,
+        # fixtures for test
+        game_constants_factory,
         user_resource_factory,
     ):
         user_id = user_login_fixture["id"]
@@ -677,10 +691,12 @@ class TestManageCraftProcesAPI:
         self,
         card_color,
         recipe,
+        # service fixtures
         client: AsyncClient,
         db_connection,
-        game_constants_factory,
         user_login_fixture,
+        # fixtures for test
+        game_constants_factory,
         user_resource_factory,
         user_card_factory,
         card_factory,

@@ -10,8 +10,10 @@ class TestGetUserProgressAPI:
     @pytest.mark.asyncio
     async def test_get_user_progress(
         self,
+        # service fixtures
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         user_resource_factory,
         game_constants_factory,
         user_level_factory,
