@@ -14,6 +14,7 @@ from lib.utils.models import (
     Faction,
     GameConstants,
     Leader,
+    Leaderboard,
     Level,
     LevelEnemy,
     LevelRelatedLevels,
@@ -28,7 +29,8 @@ from lib.utils.models import (
     UserLevel,
     UserPreferences,
     UserResource,
-    UserSeason, Leaderboard, UserStats,
+    UserSeason,
+    UserStats,
 )
 from lib.utils.schemas.game import (
     DEFAULT_CARDS_PRICES,
@@ -36,7 +38,9 @@ from lib.utils.schemas.game import (
     DEFAULT_RESOURCES_TRANSITIONS,
     DEFAULT_START_LEVEL_PRICES,
     DEFAULT_WIN_LEVEL_REWARDS,
-    LevelDifficulty, LeaderboardGameMode, UserStatsRecordType,
+    LeaderboardGameMode,
+    LevelDifficulty,
+    UserStatsRecordType,
 )
 from services.api.app.apps.preferences.schemas import DEFAULT_PREFERENCES
 

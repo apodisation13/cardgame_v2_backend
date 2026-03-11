@@ -12,6 +12,7 @@ from lib.utils.models import (
     Faction,
     GameConstants,
     Leader,
+    Leaderboard,
     Level,
     LevelEnemy,
     LevelRelatedLevels,
@@ -26,7 +27,8 @@ from lib.utils.models import (
     UserLevel,
     UserPreferences,
     UserResource,
-    UserSeason, Leaderboard, UserStats,
+    UserSeason,
+    UserStats,
 )
 from lib.utils.schemas.game import LevelDifficulty
 import pytest_asyncio
@@ -44,6 +46,7 @@ from services.api.tests.factories.factories import (
     FactionFactory,
     GameConstantsFactory,
     LeaderFactory,
+    LeaderboardFactory,
     LevelEnemyFactory,
     LevelFactory,
     LevelRelatedLevelsFactory,
@@ -58,7 +61,8 @@ from services.api.tests.factories.factories import (
     UserLevelFactory,
     UserPreferenceFactory,
     UserResourceFactory,
-    UserSeasonFactory, LeaderboardFactory, UserStatsFactory,
+    UserSeasonFactory,
+    UserStatsFactory,
 )
 
 

@@ -1,5 +1,5 @@
 from lib.utils.models import BaseModel, TimestampMixin
-from sqlalchemy import Boolean, ForeignKey, Integer, UniqueConstraint, String
+from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 

@@ -5,8 +5,12 @@ from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from services.api.app.exceptions import UserAlreadyExistsError
-from services.api.app.exceptions.exceptions import CraftMillCardProcessError, ManageResourcesProcessError, \
-    UserNotFoundError
+from services.api.app.exceptions.exceptions import (
+    CraftMillCardProcessError,
+    ManageResourcesProcessError,
+    UserNotFoundError,
+)
+
 
 logger = logging.getLogger(__name__)
 

@@ -1,7 +1,6 @@
 import pytest
 
 from httpx import AsyncClient
-
 from lib.utils.schemas.game import UserStatsRecordType
 
 
@@ -37,13 +36,13 @@ class TestGetUserStatsAPI:
         assert response.status_code == 200
 
         assert response_json == {
-            'stats': {
-                'Soldiers': {'play': 0, 'win': 0, 'winrate': 0},
+            "stats": {
+                "Soldiers": {"play": 0, "win": 0, "winrate": 0},
             },
-            'cards': {'total': 3, 'open': 0},
-            'leaders': {'total': 1, 'open': 0},
-            'seasons': {'total': 2, 'finished': 0},
-            'levels': {'total': 4, 'finished': 0},
+            "cards": {"total": 3, "open": 0},
+            "leaders": {"total": 1, "open": 0},
+            "seasons": {"total": 2, "finished": 0},
+            "levels": {"total": 4, "finished": 0},
         }
 
         await user_stats_factory(
@@ -75,13 +74,13 @@ class TestGetUserStatsAPI:
         assert response.status_code == 200
 
         assert response_json == {
-            'stats': {
-                'Soldiers': {'play': 2, 'win': 1, 'winrate': 50},
+            "stats": {
+                "Soldiers": {"play": 2, "win": 1, "winrate": 50},
             },
-            'cards': {'total': 3, 'open': 0},
-            'leaders': {'total': 1, 'open': 0},
-            'seasons': {'total': 2, 'finished': 0},
-            'levels': {'total': 4, 'finished': 0},
+            "cards": {"total": 3, "open": 0},
+            "leaders": {"total": 1, "open": 0},
+            "seasons": {"total": 2, "finished": 0},
+            "levels": {"total": 4, "finished": 0},
         }
 
         # -------------- 3й запрос - юзер сыграл новой фракцией --------------
@@ -110,14 +109,14 @@ class TestGetUserStatsAPI:
         assert response.status_code == 200
 
         assert response_json == {
-            'stats': {
-                'Soldiers': {'play': 2, 'win': 1, 'winrate': 50},
-                'Monsters': {'play': 3, 'win': 2, 'winrate': 66.7},
+            "stats": {
+                "Soldiers": {"play": 2, "win": 1, "winrate": 50},
+                "Monsters": {"play": 3, "win": 2, "winrate": 66.7},
             },
-            'cards': {'total': 3, 'open': 0},
-            'leaders': {'total': 1, 'open': 0},
-            'seasons': {'total': 2, 'finished': 0},
-            'levels': {'total': 4, 'finished': 0},
+            "cards": {"total": 3, "open": 0},
+            "leaders": {"total": 1, "open": 0},
+            "seasons": {"total": 2, "finished": 0},
+            "levels": {"total": 4, "finished": 0},
         }
 
     @pytest.mark.usefixtures("init_db_cards")
@@ -146,10 +145,10 @@ class TestGetUserStatsAPI:
         assert response.status_code == 400
 
         assert response_json == {
-            'error': {
-                'code': 'BAD_REQUEST',
-                'details': 'UserNotFoundError()',
-                'message': '',
+            "error": {
+                "code": "BAD_REQUEST",
+                "details": "UserNotFoundError()",
+                "message": "",
             },
         }
 
@@ -165,13 +164,13 @@ class TestGetUserStatsAPI:
         assert response.status_code == 200
 
         assert response_json == {
-            'stats': {
-                'Soldiers': {'play': 0, 'win': 0, 'winrate': 0}
+            "stats": {
+                "Soldiers": {"play": 0, "win": 0, "winrate": 0},
             },
-            'cards': {'total': 3, 'open': 0},
-            'leaders': {'total': 1, 'open': 0},
-            'seasons': {'total': 2, 'finished': 0},
-            'levels': {'total': 4, 'finished': 0},
+            "cards": {"total": 3, "open": 0},
+            "leaders": {"total": 1, "open": 0},
+            "seasons": {"total": 2, "finished": 0},
+            "levels": {"total": 4, "finished": 0},
         }
 
         # а тут у юзера появилась одна карта и один уровень пройден
@@ -195,11 +194,11 @@ class TestGetUserStatsAPI:
         assert response.status_code == 200
 
         assert response_json == {
-            'stats': {
-                'Soldiers': {'play': 0, 'win': 0, 'winrate': 0}
+            "stats": {
+                "Soldiers": {"play": 0, "win": 0, "winrate": 0},
             },
-            'cards': {'total': 3, 'open': 1},
-            'leaders': {'total': 1, 'open': 0},
-            'seasons': {'total': 2, 'finished': 0},
-            'levels': {'total': 4, 'finished': 1},
+            "cards": {"total": 3, "open": 1},
+            "leaders": {"total": 1, "open": 0},
+            "seasons": {"total": 2, "finished": 0},
+            "levels": {"total": 4, "finished": 1},
         }

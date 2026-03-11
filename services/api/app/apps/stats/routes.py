@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Request, Path, Query
+from fastapi import APIRouter, Depends, Path, Query
 from services.api.app.apps.auth import dependencies as auth_dependencies
 from services.api.app.apps.stats.schemas import GetStatsResponse
 from services.api.app.apps.stats.service import StatsService

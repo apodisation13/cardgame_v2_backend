@@ -1,4 +1,4 @@
-from typing import Dict, TypedDict
+from typing import TypedDict
 
 from lib.utils.schemas import Base
 
@@ -30,7 +30,7 @@ class LevelsStats(TypedDict):
 
 
 class GetStatsResponse(Base):
-    stats: Dict[str, GameStats]
+    stats: dict[str, GameStats]
     cards: CardsStats
     leaders: LeadersStats
     seasons: SeasonsStats
