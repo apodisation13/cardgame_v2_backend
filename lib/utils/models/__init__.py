@@ -6,6 +6,7 @@ from .game.enemies import Deathwish, Enemy, EnemyLeader, EnemyLeaderAbility, Ene
 from .game.preferences import UserPreferences
 from .game.progress import UserCard, UserDeck, UserLeader, UserLevel, UserResource, UserSeason
 from .game.seasons import Level, LevelEnemy, LevelRelatedLevels, Season, SeasonRelatedSeasons
+from .game.stats import Leaderboard, UserStats
 from .news import News
 from .tasks import CronTask
 from .users import User
@@ -30,6 +31,7 @@ __all__ = [
     "Faction",
     "GameConstants",
     "Leader",
+    "Leaderboard",
     "Level",
     "LevelEnemy",
     "LevelRelatedLevels",
@@ -48,4 +50,5 @@ __all__ = [
     "UserPreferences",
     "UserResource",
     "UserSeason",
+    "UserStats",
 ]

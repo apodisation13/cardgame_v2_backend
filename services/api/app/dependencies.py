@@ -4,6 +4,7 @@ from services.api.app.apps.auth.service import AuthService
 from services.api.app.apps.news.service import NewsService
 from services.api.app.apps.preferences.service import PreferencesService
 from services.api.app.apps.progress.service import UserProgressService
+from services.api.app.apps.stats.service import StatsService
 from services.api.app.config import Config
 
 
@@ -61,6 +62,16 @@ async def get_user_progress_service(
     config: Config = Depends(get_config),
 ) -> UserProgressService:
     return UserProgressService(
+        db_pool=db_pool,
+        config=config,
+    )
+
+
+async def get_stats_service(
+    db_pool: Database = Depends(get_db),
+    config: Config = Depends(get_config),
+) -> StatsService:
+    return StatsService(
         db_pool=db_pool,
         config=config,
     )

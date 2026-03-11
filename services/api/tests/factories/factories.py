@@ -28,7 +28,7 @@ from lib.utils.models import (
     UserLevel,
     UserPreferences,
     UserResource,
-    UserSeason,
+    UserSeason, Leaderboard, UserStats,
 )
 from lib.utils.schemas.game import (
     DEFAULT_CARDS_PRICES,
@@ -36,7 +36,7 @@ from lib.utils.schemas.game import (
     DEFAULT_RESOURCES_TRANSITIONS,
     DEFAULT_START_LEVEL_PRICES,
     DEFAULT_WIN_LEVEL_REWARDS,
-    LevelDifficulty,
+    LevelDifficulty, LeaderboardGameMode, UserStatsRecordType,
 )
 from services.api.app.apps.preferences.schemas import DEFAULT_PREFERENCES
 
@@ -370,3 +370,23 @@ class UserPreferenceFactory(BaseModelFactory):
 
     id = factory.SubFactory(UserFactory)
     data = DEFAULT_PREFERENCES
+
+
+class LeaderboardFactory(BaseModelFactory, TimeStampMixinFactory):
+    class Meta:
+        model = Leaderboard
+
+    user_id = factory.SubFactory(UserFactory)
+    leader_id = factory.SubFactory(LeaderFactory)
+    mode = LeaderboardGameMode.SEASON
+    max_kills = 1
+
+
+class UserStatsFactory(BaseModelFactory, TimeStampMixinFactory):
+    class Meta:
+        model = UserStats
+
+    user_id = factory.SubFactory(UserFactory)
+    faction_id = factory.SubFactory(FactionFactory)
+    type = UserStatsRecordType.PLAY
+    count = 1

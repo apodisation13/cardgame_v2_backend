@@ -506,3 +506,14 @@ DEFAULT_CARDS_PRICES = {
         ],
     },
 }
+
+
+class LeaderboardGameMode(StrEnum):
+    RANDOM = "random"
+    SEASON = "season"
+    ARENA = "arena"
+
+
+class UserStatsRecordType(StrEnum):
+    PLAY = "play"
+    WIN = "win"

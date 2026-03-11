@@ -26,7 +26,7 @@ from lib.utils.models import (
     UserLevel,
     UserPreferences,
     UserResource,
-    UserSeason,
+    UserSeason, Leaderboard, UserStats,
 )
 from lib.utils.schemas.game import LevelDifficulty
 import pytest_asyncio
@@ -58,7 +58,7 @@ from services.api.tests.factories.factories import (
     UserLevelFactory,
     UserPreferenceFactory,
     UserResourceFactory,
-    UserSeasonFactory,
+    UserSeasonFactory, LeaderboardFactory, UserStatsFactory,
 )
 
 
@@ -292,6 +292,22 @@ def user_preferences_factory(db_connection):
 
 
 @pytest_asyncio.fixture
+def leaderboard_factory(db_connection):
+    async def factory(**kwargs) -> Leaderboard:
+        return await LeaderboardFactory.create_in_db(conn=db_connection, **kwargs)
+
+    return factory
+
+
+@pytest_asyncio.fixture
+def user_stats_factory(db_connection):
+    async def factory(**kwargs) -> UserStats:
+        return await UserStatsFactory.create_in_db(conn=db_connection, **kwargs)
+
+    return factory
+
+
+@pytest_asyncio.fixture
 async def init_db_cards(
     faction_factory,
     color_factory,
@@ -333,7 +349,7 @@ async def init_db_cards(
     - 4 уровня (2 открыты, 2 нет) (3 для сезона 1, 1 для сезона 2)
     - связи между сезоном и уровнем, уровнем и его детьми, уровнем и врагами
     """
-    f1 = await faction_factory(name="Neutrals")
+    f1 = await faction_factory(name="Neutral")
     f2 = await faction_factory(name="Soldiers")
     c1 = await color_factory(name="Bronze")
     c2 = await color_factory(name="Silver")
