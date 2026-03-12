@@ -12,6 +12,7 @@ from services.api.app.apps.stats.schemas import (
 )
 from services.api.app.config import Config
 from services.api.app.exceptions import UserNotFoundError
+from services.api.app.exceptions.exceptions import PostStatsError
 
 
 logger = logging.getLogger(__name__)
@@ -175,3 +176,49 @@ class StatsService:
             seasons=seasons_stats,
             levels=levels_stats,
         )
+
+    async def post_user_stats(
+        self,
+        user_id: int,
+        user_deck_id: int,
+        game_type: UserStatsRecordType,
+    ) -> dict:
+        async with self.db_pool.connection() as connection:
+            leader_faction_id: int | None = await connection.fetchval(
+                """
+                SELECT
+                    leaders.faction_id
+                FROM
+                    user_decks
+                JOIN decks ON decks.id = user_decks.deck_id
+                JOIN leaders ON decks.leader_id = leaders.id
+                WHERE
+                    user_decks.id = $1
+                    AND user_decks.user_id = $2;
+                """,
+                user_deck_id,
+                user_id,
+            )
+
+            if not leader_faction_id:
+                msg = "Can not find such user_deck (%s) for user %s"
+                logger.warning(msg, user_deck_id, user_id)
+                raise PostStatsError(msg % (user_deck_id, user_id))
+
+            await connection.fetchrow(
+                """
+                    INSERT INTO user_stats
+                    (user_id, faction_id, count, type)
+                    VALUES ($1, $2, 1, $3)
+                    ON CONFLICT (user_id, faction_id, type)
+                    DO UPDATE
+                    SET
+                        count = user_stats.count + 1,
+                        updated_at = NOW()
+                """,
+                user_id,
+                leader_faction_id,
+                game_type,
+            )
+
+        return {"200": "OK"}

@@ -1,6 +1,7 @@
 from typing import TypedDict
 
 from lib.utils.schemas import Base
+from lib.utils.schemas.game import UserStatsRecordType
 
 
 class GameStats(Base):
@@ -35,3 +36,8 @@ class GetStatsResponse(Base):
     leaders: LeadersStats
     seasons: SeasonsStats
     levels: LevelsStats
+
+
+class PostStatsRequest(Base):
+    user_deck_id: int
+    type: UserStatsRecordType

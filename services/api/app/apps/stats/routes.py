@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Path, Query
 from services.api.app.apps.auth import dependencies as auth_dependencies
-from services.api.app.apps.stats.schemas import GetStatsResponse
+from services.api.app.apps.stats.schemas import GetStatsResponse, PostStatsRequest
 from services.api.app.apps.stats.service import StatsService
 from services.api.app.dependencies import get_stats_service
 
@@ -11,7 +11,7 @@ router = APIRouter()
 
 
 @router.get("/{user_id}/stats")
-async def open_user_related_levels(
+async def get_user_stats(
     _=Depends(auth_dependencies.validate_user),
     stats_service: StatsService = Depends(get_stats_service),
     user_id: int = Path(..., gt=0),
@@ -20,4 +20,18 @@ async def open_user_related_levels(
     return await stats_service.get_user_stats(
         user_id=user_id,
         for_user=int(for_user) if for_user else None,
+    )
+
+
+@router.post("/{user_id}/stats")
+async def post_user_stats(
+    post_stats_request: PostStatsRequest,
+    _=Depends(auth_dependencies.validate_user),
+    stats_service: StatsService = Depends(get_stats_service),
+    user_id: int = Path(..., gt=0),
+) -> dict:
+    return await stats_service.post_user_stats(
+        user_id=user_id,
+        user_deck_id=post_stats_request.user_deck_id,
+        game_type=post_stats_request.type,
     )

@@ -364,7 +364,7 @@ async def init_db_cards(
     pa = await passive_ability_factory(name="Passive ability", description="Passive ability")
 
     leader_1 = await leader_factory(
-        faction_id=f1.id,
+        faction_id=f2.id,
         ability_id=a.id,
         unlocked=True,
     )

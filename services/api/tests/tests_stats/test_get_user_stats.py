@@ -12,7 +12,6 @@ class TestGetUserStatsAPI:
     async def test_get_self_stats(
         self,
         # service fixtures
-        db_connection,
         client: AsyncClient,
         user_login_fixture,
         # fixtures for test
@@ -124,7 +123,6 @@ class TestGetUserStatsAPI:
     async def test_get_stats_for_another_user(
         self,
         # service fixtures
-        db_connection,
         client: AsyncClient,
         user_login_fixture,
         # fixtures for test
@@ -201,4 +199,121 @@ class TestGetUserStatsAPI:
             "leaders": {"total": 1, "open": 0},
             "seasons": {"total": 2, "finished": 0},
             "levels": {"total": 4, "finished": 1},
+        }
+
+
+class TestPostUserStatsAPI:
+    endpoint = "statistics/{user_id}/stats"
+
+    @pytest.mark.usefixtures("init_db_cards")
+    @pytest.mark.asyncio
+    async def test_post_stats(
+        self,
+        # service fixtures
+        db_connection,
+        client: AsyncClient,
+        user_login_fixture,
+        # fixtures for test
+        user_deck_factory,
+    ):
+        user_id = user_login_fixture["id"]
+        access_token = user_login_fixture["token"]["access_token"]
+
+        # базовая колода фракции 1
+        user_deck = await user_deck_factory(
+            user_id=user_id,
+            deck_id=1,
+        )
+
+        # -------------- 1й запрос - юзер еще не играл ранее --------------
+        response = await client.post(
+            self.endpoint.format(user_id=user_id),
+            headers={"Authorization": f"Bearer {access_token}"},
+            json={
+                "user_deck_id": user_deck.id,
+                "type": UserStatsRecordType.PLAY,
+            },
+        )
+
+        response_json = response.json()
+        assert response.status_code == 200
+
+        assert response_json == {"200": "OK"}
+
+        user_stats = await db_connection.fetch("SELECT * FROM user_stats")
+
+        assert len(user_stats) == 1
+
+        assert user_stats[0]["user_id"] == user_id
+        assert user_stats[0]["faction_id"] == 2
+        assert user_stats[0]["count"] == 1
+        assert user_stats[0]["type"] == UserStatsRecordType.PLAY
+
+        # -------------- 2й запрос - еще раз играет --------------
+        response = await client.post(
+            self.endpoint.format(user_id=user_id),
+            headers={"Authorization": f"Bearer {access_token}"},
+            json={
+                "user_deck_id": user_deck.id,
+                "type": UserStatsRecordType.PLAY,
+            },
+        )
+
+        response_json = response.json()
+        assert response.status_code == 200
+
+        assert response_json == {"200": "OK"}
+
+        # тут не добавилось новых записей, так как там ON CONFLICT
+        user_stats = await db_connection.fetch("SELECT * FROM user_stats")
+
+        assert len(user_stats) == 1
+
+        assert user_stats[0]["user_id"] == user_id
+        assert user_stats[0]["faction_id"] == 2
+        assert user_stats[0]["count"] == 2
+        assert user_stats[0]["type"] == UserStatsRecordType.PLAY
+
+        # -------------- 3й запрос - он выиграл --------------
+        response = await client.post(
+            self.endpoint.format(user_id=user_id),
+            headers={"Authorization": f"Bearer {access_token}"},
+            json={
+                "user_deck_id": user_deck.id,
+                "type": UserStatsRecordType.WIN,
+            },
+        )
+
+        response_json = response.json()
+        assert response.status_code == 200
+
+        assert response_json == {"200": "OK"}
+
+        # а вот тут добавилась новая запись, с новым типом
+        user_stats = await db_connection.fetch("SELECT * FROM user_stats ORDER BY updated_at DESC")
+
+        assert len(user_stats) == 2
+
+        assert user_stats[0]["count"] == 1
+        assert user_stats[0]["type"] == UserStatsRecordType.WIN
+        assert user_stats[1]["count"] == 2
+        assert user_stats[1]["type"] == UserStatsRecordType.PLAY
+
+        # -------------- проверяем расчет статистики --------------
+        response = await client.get(
+            self.endpoint.format(user_id=user_id),
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+        response_json = response.json()
+        assert response.status_code == 200
+
+        assert response_json == {
+            "stats": {
+                "Soldiers": {"play": 2, "win": 1, "winrate": 50},
+            },
+            "cards": {"total": 3, "open": 0},
+            "leaders": {"total": 1, "open": 0},
+            "seasons": {"total": 2, "finished": 0},
+            "levels": {"total": 4, "finished": 0},
         }

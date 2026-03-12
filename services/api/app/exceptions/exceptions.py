@@ -16,3 +16,7 @@ class ManageResourcesProcessError(Exception):
 
 class CraftMillCardProcessError(Exception):
     pass
+
+
+class PostStatsError(Exception):
+    pass
