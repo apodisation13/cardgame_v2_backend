@@ -8,7 +8,7 @@ from services.api.app.apps.stats.schemas import (
     GetStatsResponse,
     LeadersStats,
     LevelsStats,
-    SeasonsStats,
+    SeasonsStats, GetLeaderboardResponse, PostLeaderboardRequest,
 )
 from services.api.app.config import Config
 from services.api.app.exceptions import UserNotFoundError
@@ -219,6 +219,105 @@ class StatsService:
                 user_id,
                 leader_faction_id,
                 game_type,
+            )
+
+        return {"200": "OK"}
+
+    async def get_user_leaderboard(
+        self,
+        user_id: int,
+    ) -> list[GetLeaderboardResponse]:
+        async with self.db_pool.connection() as connection:
+            leaderboards: list[dict] = await connection.fetch(
+                """
+                SELECT
+                    users.username,
+                    user_preferences.data ->> 'avatar' AS user_avatar,
+                    leaders.id AS leader_id,
+                    factions.name AS faction_name,
+                    leaderboard.max_kills AS max_kills,
+                    leaderboard.mode AS mode
+                FROM
+                    users
+                JOIN leaderboard ON users.id = leaderboard.user_id
+                JOIN leaders ON leaderboard.leader_id = leaders.id
+                JOIN factions ON leaders.faction_id = factions.id
+                LEFT JOIN user_preferences ON users.id = user_preferences.id
+                WHERE 
+                    users.id = $1
+                ORDER BY 
+                    leaderboard.max_kills DESC, 
+                    leaderboard.updated_at DESC
+                """,
+                user_id,
+            )
+
+        if not leaderboards:
+            return []
+
+        leaderboards_response = []
+        for row in leaderboards:
+            leaderboards_response.append(
+                GetLeaderboardResponse(
+                    username=row["username"],
+                    user_avatar=row["user_avatar"],
+                    leader_id=row["leader_id"],
+                    faction_name=row["faction_name"],
+                    max_kills=row["max_kills"],
+                    mode=row["mode"],
+                )
+            )
+
+        return leaderboards_response
+
+    async def post_user_leaderboard(
+        self,
+        user_id: int,
+        post_leaderboard_request: PostLeaderboardRequest,
+    ) -> dict:
+        user_deck_id = post_leaderboard_request.user_deck_id
+        mode = post_leaderboard_request.mode
+        max_kills = post_leaderboard_request.max_kills
+
+        async with self.db_pool.connection() as connection:
+            leader_id: int | None = await connection.fetchval(
+                """
+                SELECT
+                    leaders.id
+                FROM
+                    user_decks
+                JOIN decks ON decks.id = user_decks.deck_id
+                JOIN leaders ON decks.leader_id = leaders.id
+                WHERE
+                    user_decks.id = $1
+                    AND user_decks.user_id = $2;
+                """,
+                user_deck_id,
+                user_id,
+            )
+
+            if not leader_id:
+                msg = "Can not find such user_deck (%s) for user %s"
+                logger.warning(msg, user_deck_id, user_id)
+                raise PostStatsError(msg % (user_deck_id, user_id))
+
+            await connection.fetchrow(
+                """
+                    INSERT INTO leaderboard
+                    (user_id, leader_id, max_kills, mode)
+                    VALUES ($1, $2, $3, $4)
+                    ON CONFLICT (user_id, leader_id, mode)
+                    DO UPDATE
+                    SET
+                        max_kills = EXCLUDED.max_kills,
+                        updated_at = NOW()
+                    WHERE 
+                        leaderboard.max_kills < EXCLUDED.max_kills
+                """,
+                user_id,
+                leader_id,
+                max_kills,
+                mode,
             )
 
         return {"200": "OK"}

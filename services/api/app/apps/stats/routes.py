@@ -2,7 +2,8 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Path, Query
 from services.api.app.apps.auth import dependencies as auth_dependencies
-from services.api.app.apps.stats.schemas import GetStatsResponse, PostStatsRequest
+from services.api.app.apps.stats.schemas import GetStatsResponse, PostStatsRequest, GetLeaderboardResponse, \
+    PostLeaderboardRequest
 from services.api.app.apps.stats.service import StatsService
 from services.api.app.dependencies import get_stats_service
 
@@ -34,4 +35,28 @@ async def post_user_stats(
         user_id=user_id,
         user_deck_id=post_stats_request.user_deck_id,
         game_type=post_stats_request.type,
+    )
+
+
+@router.get("/{user_id}/leaderboard")
+async def get_user_leaderboard(
+    _=Depends(auth_dependencies.validate_user),
+    stats_service: StatsService = Depends(get_stats_service),
+    user_id: int = Path(..., gt=0),
+) -> list[GetLeaderboardResponse]:
+    return await stats_service.get_user_leaderboard(
+        user_id=user_id,
+    )
+
+
+@router.post("/{user_id}/leaderboard")
+async def post_user_leaderboard(
+    post_leaderboard_request: PostLeaderboardRequest,
+    _=Depends(auth_dependencies.validate_user),
+    stats_service: StatsService = Depends(get_stats_service),
+    user_id: int = Path(..., gt=0),
+) -> dict:
+    return await stats_service.post_user_leaderboard(
+        user_id=user_id,
+        post_leaderboard_request=post_leaderboard_request,
     )

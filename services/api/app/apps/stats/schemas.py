@@ -1,7 +1,7 @@
 from typing import TypedDict
 
 from lib.utils.schemas import Base
-from lib.utils.schemas.game import UserStatsRecordType
+from lib.utils.schemas.game import UserStatsRecordType, LeaderboardGameMode
 
 
 class GameStats(Base):
@@ -41,3 +41,18 @@ class GetStatsResponse(Base):
 class PostStatsRequest(Base):
     user_deck_id: int
     type: UserStatsRecordType
+
+
+class GetLeaderboardResponse(Base):
+    username: str
+    user_avatar: str | None
+    faction_name: str
+    leader_id: int
+    max_kills: int
+    mode: LeaderboardGameMode
+
+
+class PostLeaderboardRequest(Base):
+    user_deck_id: int
+    mode: LeaderboardGameMode
+    max_kills: int
