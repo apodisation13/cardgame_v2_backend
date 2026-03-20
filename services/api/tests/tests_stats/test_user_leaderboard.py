@@ -1,7 +1,9 @@
+from datetime import datetime, timedelta
+
 import pytest
 
 from httpx import AsyncClient
-from lib.utils.schemas.game import UserStatsRecordType, LeaderboardGameMode
+from lib.utils.schemas.game import LeaderboardGameMode
 
 
 class TestGetUserLeaderboardAPI:
@@ -121,7 +123,7 @@ class TestGetUserLeaderboardAPI:
                 "user_deck_id": user_deck.id,
                 "max_kills": 21,
                 "mode": LeaderboardGameMode.RANDOM,
-            }
+            },
         )
 
         response_json = response.json()
@@ -137,7 +139,7 @@ class TestGetUserLeaderboardAPI:
                 "user_deck_id": user_deck.id,
                 "max_kills": 17,
                 "mode": LeaderboardGameMode.RANDOM,
-            }
+            },
         )
 
         response_json = response.json()
@@ -153,7 +155,7 @@ class TestGetUserLeaderboardAPI:
                 "user_deck_id": user_deck.id,
                 "max_kills": 27,
                 "mode": LeaderboardGameMode.RANDOM,
-            }
+            },
         )
 
         response_json = response.json()
@@ -169,7 +171,7 @@ class TestGetUserLeaderboardAPI:
                 "user_deck_id": user_deck.id,
                 "max_kills": 8,
                 "mode": LeaderboardGameMode.SEASON,
-            }
+            },
         )
 
         response_json = response.json()
@@ -199,7 +201,7 @@ class TestGetUserLeaderboardAPI:
                 "user_deck_id": new_user_deck.id,
                 "max_kills": 12,
                 "mode": LeaderboardGameMode.RANDOM,
-            }
+            },
         )
 
         response_json = response.json()
@@ -237,6 +239,134 @@ class TestGetUserLeaderboardAPI:
                 "username": "username",
                 "user_avatar": None,
                 "max_kills": 8,
+                "mode": LeaderboardGameMode.SEASON,
+                "leader_id": 1,
+                "faction_name": "Soldiers",
+            },
+        ]
+
+
+class TestGetWorldLeaderboardAPI:
+    endpoint = "statistics/{user_id}/leaderboard-world"
+
+    @pytest.mark.usefixtures("init_db_cards")
+    @pytest.mark.asyncio
+    async def test_get_leaderboard_world(
+        self,
+        # service fixtures
+        client: AsyncClient,
+        user_login_fixture,
+        # fixtures for test
+        leaderboard_factory,
+        user_factory,
+        user_preferences_factory,
+    ):
+        user_id = user_login_fixture["id"]
+        access_token = user_login_fixture["token"]["access_token"]
+
+        time_now = datetime.now()
+
+        # -------------- 1й запрос - юзер еще не играл --------------
+        response = await client.get(
+            self.endpoint.format(user_id=user_id),
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+        assert response.status_code == 200
+        assert response.json() == []
+
+        # сыграли несколько игр
+        await leaderboard_factory(
+            user_id=user_id,
+            leader_id=1,
+            max_kills=7,
+            mode=LeaderboardGameMode.SEASON,
+            updated_at=time_now - timedelta(hours=11),
+        )
+        await leaderboard_factory(
+            user_id=user_id,
+            leader_id=1,
+            max_kills=17,
+            mode=LeaderboardGameMode.RANDOM,
+            updated_at=time_now - timedelta(hours=10),
+        )
+
+        user_2 = await user_factory(username="user_2")
+        await leaderboard_factory(
+            user_id=user_2.id,
+            leader_id=1,
+            max_kills=17,
+            mode=LeaderboardGameMode.SEASON,
+            updated_at=time_now - timedelta(hours=9),
+        )
+
+        user_3 = await user_factory(username="user_3")
+        await user_preferences_factory(
+            id=user_3.id,
+            data={"avatar": "some_avatar"},
+        )
+        await leaderboard_factory(
+            user_id=user_3.id,
+            leader_id=1,
+            max_kills=7,
+            mode=LeaderboardGameMode.SEASON,
+            updated_at=time_now - timedelta(hours=3),
+        )
+        await leaderboard_factory(
+            user_id=user_3.id,
+            leader_id=1,
+            max_kills=16,
+            mode=LeaderboardGameMode.RANDOM_N,
+        )
+
+        # -------------- 2й запрос - после нескольких игр --------------
+        response = await client.get(
+            self.endpoint.format(user_id=user_id),
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+        response_json = response.json()
+        assert response.status_code == 200
+
+        assert len(response_json) == 5
+
+        assert response_json == [
+            {
+                "username": "user_2",
+                "user_avatar": None,
+                "max_kills": 17,
+                "mode": LeaderboardGameMode.SEASON,
+                "leader_id": 1,
+                "faction_name": "Soldiers",
+            },
+            {
+                "username": "username",
+                "user_avatar": None,
+                "max_kills": 17,
+                "mode": LeaderboardGameMode.RANDOM,
+                "leader_id": 1,
+                "faction_name": "Soldiers",
+            },
+            {
+                "username": "user_3",
+                "user_avatar": "some_avatar",
+                "max_kills": 16,
+                "mode": LeaderboardGameMode.RANDOM_N,
+                "leader_id": 1,
+                "faction_name": "Soldiers",
+            },
+            {
+                "username": "user_3",
+                "user_avatar": "some_avatar",
+                "max_kills": 7,
+                "mode": LeaderboardGameMode.SEASON,
+                "leader_id": 1,
+                "faction_name": "Soldiers",
+            },
+            {
+                "username": "username",
+                "user_avatar": None,
+                "max_kills": 7,
                 "mode": LeaderboardGameMode.SEASON,
                 "leader_id": 1,
                 "faction_name": "Soldiers",

@@ -1,7 +1,7 @@
 from typing import TypedDict
 
 from lib.utils.schemas import Base
-from lib.utils.schemas.game import UserStatsRecordType, LeaderboardGameMode
+from lib.utils.schemas.game import LeaderboardGameMode, UserStatsRecordType
 
 
 class GameStats(Base):

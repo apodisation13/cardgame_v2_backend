@@ -2,8 +2,12 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Path, Query
 from services.api.app.apps.auth import dependencies as auth_dependencies
-from services.api.app.apps.stats.schemas import GetStatsResponse, PostStatsRequest, GetLeaderboardResponse, \
-    PostLeaderboardRequest
+from services.api.app.apps.stats.schemas import (
+    GetLeaderboardResponse,
+    GetStatsResponse,
+    PostLeaderboardRequest,
+    PostStatsRequest,
+)
 from services.api.app.apps.stats.service import StatsService
 from services.api.app.dependencies import get_stats_service
 
@@ -59,4 +63,15 @@ async def post_user_leaderboard(
     return await stats_service.post_user_leaderboard(
         user_id=user_id,
         post_leaderboard_request=post_leaderboard_request,
+    )
+
+
+@router.get("/{user_id}/leaderboard-world")
+async def get_world_leaderboard(
+    _=Depends(auth_dependencies.validate_user),
+    stats_service: StatsService = Depends(get_stats_service),
+    user_id: int = Path(..., gt=0),
+) -> list[GetLeaderboardResponse]:
+    return await stats_service.get_world_leaderboard(
+        user_id=user_id,
     )

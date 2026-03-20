@@ -5,10 +5,12 @@ from lib.utils.schemas.game import UserStatsRecordType
 from services.api.app.apps.stats.schemas import (
     CardsStats,
     GameStats,
+    GetLeaderboardResponse,
     GetStatsResponse,
     LeadersStats,
     LevelsStats,
-    SeasonsStats, GetLeaderboardResponse, PostLeaderboardRequest,
+    PostLeaderboardRequest,
+    SeasonsStats,
 )
 from services.api.app.config import Config
 from services.api.app.exceptions import UserNotFoundError
@@ -243,10 +245,10 @@ class StatsService:
                 JOIN leaders ON leaderboard.leader_id = leaders.id
                 JOIN factions ON leaders.faction_id = factions.id
                 LEFT JOIN user_preferences ON users.id = user_preferences.id
-                WHERE 
+                WHERE
                     users.id = $1
-                ORDER BY 
-                    leaderboard.max_kills DESC, 
+                ORDER BY
+                    leaderboard.max_kills DESC,
                     leaderboard.updated_at DESC
                 """,
                 user_id,
@@ -255,18 +257,17 @@ class StatsService:
         if not leaderboards:
             return []
 
-        leaderboards_response = []
-        for row in leaderboards:
-            leaderboards_response.append(
-                GetLeaderboardResponse(
-                    username=row["username"],
-                    user_avatar=row["user_avatar"],
-                    leader_id=row["leader_id"],
-                    faction_name=row["faction_name"],
-                    max_kills=row["max_kills"],
-                    mode=row["mode"],
-                )
+        leaderboards_response = [
+            GetLeaderboardResponse(
+                username=row["username"],
+                user_avatar=row["user_avatar"],
+                leader_id=row["leader_id"],
+                faction_name=row["faction_name"],
+                max_kills=row["max_kills"],
+                mode=row["mode"],
             )
+            for row in leaderboards
+        ]
 
         return leaderboards_response
 
@@ -311,7 +312,7 @@ class StatsService:
                     SET
                         max_kills = EXCLUDED.max_kills,
                         updated_at = NOW()
-                    WHERE 
+                    WHERE
                         leaderboard.max_kills < EXCLUDED.max_kills
                 """,
                 user_id,
@@ -321,3 +322,44 @@ class StatsService:
             )
 
         return {"200": "OK"}
+
+    async def get_world_leaderboard(
+        self,
+        user_id: int,
+    ) -> list[GetLeaderboardResponse]:
+        logger.info("User %s requesting world leaderboard", user_id)
+        async with self.db_pool.connection() as connection:
+            leaderboards: list[dict] = await connection.fetch(
+                """
+                SELECT
+                    users.username,
+                    user_preferences.data ->> 'avatar' AS user_avatar,
+                    leaders.id AS leader_id,
+                    factions.name AS faction_name,
+                    leaderboard.max_kills AS max_kills,
+                    leaderboard.mode AS mode
+                FROM
+                    users
+                JOIN leaderboard ON users.id = leaderboard.user_id
+                JOIN leaders ON leaderboard.leader_id = leaders.id
+                JOIN factions ON leaders.faction_id = factions.id
+                LEFT JOIN user_preferences ON users.id = user_preferences.id
+                ORDER BY
+                    leaderboard.max_kills DESC,
+                    leaderboard.updated_at DESC
+                """,
+            )
+
+        leaderboards_response = [
+            GetLeaderboardResponse(
+                username=row["username"],
+                user_avatar=row["user_avatar"],
+                leader_id=row["leader_id"],
+                faction_name=row["faction_name"],
+                max_kills=row["max_kills"],
+                mode=row["mode"],
+            )
+            for row in leaderboards
+        ]
+
+        return leaderboards_response
