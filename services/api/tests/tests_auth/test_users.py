@@ -354,14 +354,8 @@ class TestUserLoginAPI:
 
         response_json = response.json()
 
-        assert response.status_code == 500
-        assert response_json == {
-            "error": {
-                "code": "INTERNAL_SERVER_ERROR",
-                "message": "UserNotFoundError",
-                "details": "UserNotFoundError()",
-            },
-        }
+        assert response.status_code == 400
+        assert response_json == {"error": {"code": "BAD_REQUEST", "details": "UserNotFoundError()", "message": ""}}
 
         response = await client.post(
             self.endpoint,
@@ -408,14 +402,8 @@ class TestUserLoginAPI:
 
         response_json = response.json()
 
-        assert response.status_code == 500
-        assert response_json == {
-            "error": {
-                "code": "INTERNAL_SERVER_ERROR",
-                "message": "UserNotFoundError",
-                "details": "UserNotFoundError()",
-            },
-        }
+        assert response.status_code == 400
+        assert response_json == {"error": {"code": "BAD_REQUEST", "details": "UserNotFoundError()", "message": ""}}
 
     @pytest.mark.asyncio
     async def test_wrong_user_access(
