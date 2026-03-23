@@ -44,6 +44,7 @@ class PostStatsRequest(Base):
 
 
 class GetLeaderboardResponse(Base):
+    user_id: int
     username: str
     user_avatar: str | None
     faction_name: str

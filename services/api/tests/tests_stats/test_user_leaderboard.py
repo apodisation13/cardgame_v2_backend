@@ -70,6 +70,7 @@ class TestGetUserLeaderboardAPI:
 
         assert response_json == [
             {
+                "user_id": user_id,
                 "username": "username",
                 "user_avatar": None,
                 "max_kills": 17,
@@ -78,6 +79,7 @@ class TestGetUserLeaderboardAPI:
                 "faction_name": "Neutral",
             },
             {
+                "user_id": user_id,
                 "username": "username",
                 "user_avatar": None,
                 "max_kills": 17,
@@ -86,6 +88,7 @@ class TestGetUserLeaderboardAPI:
                 "faction_name": "Soldiers",
             },
             {
+                "user_id": user_id,
                 "username": "username",
                 "user_avatar": None,
                 "max_kills": 7,
@@ -220,6 +223,7 @@ class TestGetUserLeaderboardAPI:
 
         assert response_json == [
             {
+                "user_id": user_id,
                 "username": "username",
                 "user_avatar": None,
                 "max_kills": 27,
@@ -228,6 +232,7 @@ class TestGetUserLeaderboardAPI:
                 "faction_name": "Soldiers",
             },
             {
+                "user_id": user_id,
                 "username": "username",
                 "user_avatar": None,
                 "max_kills": 12,
@@ -236,6 +241,7 @@ class TestGetUserLeaderboardAPI:
                 "faction_name": "Neutral",
             },
             {
+                "user_id": user_id,
                 "username": "username",
                 "user_avatar": None,
                 "max_kills": 8,
@@ -332,6 +338,7 @@ class TestGetWorldLeaderboardAPI:
 
         assert response_json == [
             {
+                "user_id": user_2.id,
                 "username": "user_2",
                 "user_avatar": None,
                 "max_kills": 17,
@@ -340,6 +347,7 @@ class TestGetWorldLeaderboardAPI:
                 "faction_name": "Soldiers",
             },
             {
+                "user_id": user_id,
                 "username": "username",
                 "user_avatar": None,
                 "max_kills": 17,
@@ -348,6 +356,7 @@ class TestGetWorldLeaderboardAPI:
                 "faction_name": "Soldiers",
             },
             {
+                "user_id": user_3.id,
                 "username": "user_3",
                 "user_avatar": "some_avatar",
                 "max_kills": 16,
@@ -356,6 +365,7 @@ class TestGetWorldLeaderboardAPI:
                 "faction_name": "Soldiers",
             },
             {
+                "user_id": user_3.id,
                 "username": "user_3",
                 "user_avatar": "some_avatar",
                 "max_kills": 7,
@@ -364,6 +374,7 @@ class TestGetWorldLeaderboardAPI:
                 "faction_name": "Soldiers",
             },
             {
+                "user_id": user_id,
                 "username": "username",
                 "user_avatar": None,
                 "max_kills": 7,

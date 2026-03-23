@@ -259,6 +259,7 @@ class StatsService:
 
         leaderboards_response = [
             GetLeaderboardResponse(
+                user_id=user_id,
                 username=row["username"],
                 user_avatar=row["user_avatar"],
                 leader_id=row["leader_id"],
@@ -332,6 +333,7 @@ class StatsService:
             leaderboards: list[dict] = await connection.fetch(
                 """
                 SELECT
+                    users.id AS user_id,
                     users.username,
                     user_preferences.data ->> 'avatar' AS user_avatar,
                     leaders.id AS leader_id,
@@ -352,6 +354,7 @@ class StatsService:
 
         leaderboards_response = [
             GetLeaderboardResponse(
+                user_id=row["user_id"],
                 username=row["username"],
                 user_avatar=row["user_avatar"],
                 leader_id=row["leader_id"],
