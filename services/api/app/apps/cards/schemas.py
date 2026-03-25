@@ -36,6 +36,8 @@ class Card(Base):
     default_timer: int
     reset_timer: bool
     each_tick: bool
+    newly_added: bool
+    data: dict
 
     @staticmethod
     def get_one(
@@ -72,6 +74,8 @@ class Card(Base):
             default_timer=row["default_timer"],
             reset_timer=row["reset_timer"],
             each_tick=row["each_tick"],
+            newly_added=row["newly_added"],
+            data=row["data"],
         )
 
 
@@ -93,6 +97,8 @@ class Leader(Base):
     timer: int
     default_timer: int
     reset_timer: bool
+    newly_added: bool
+    data: dict
 
     @staticmethod
     def get_one(
@@ -123,6 +129,8 @@ class Leader(Base):
             timer=row["timer"],
             default_timer=row["default_timer"],
             reset_timer=row["reset_timer"],
+            newly_added=row["newly_added"],
+            data=row["data"],
         )
 
 
@@ -164,6 +172,7 @@ class EnemyLeader(Base):
     default_timer: int
     reset_timer: bool
     each_tick: bool
+    data: dict
 
     @staticmethod
     def get_one(
@@ -191,6 +200,7 @@ class EnemyLeader(Base):
             default_timer=row["default_timer"],
             reset_timer=row["reset_timer"],
             each_tick=row["each_tick"],
+            data=row["data"],
         )
 
 
@@ -228,6 +238,7 @@ class Enemy(Base):
     has_deathwish: bool
     deathwish: Deathwish
     deathwish_value: int
+    data: dict
 
     @staticmethod
     def get_one(
@@ -267,4 +278,5 @@ class Enemy(Base):
                 description=row["deathwish_description"],
             ),
             deathwish_value=row["deathwish_value"],
+            data=row["data"],
         )

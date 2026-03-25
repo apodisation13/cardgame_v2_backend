@@ -119,6 +119,8 @@ class LeaderFactory(BaseModelFactory):
     timer = 0
     default_timer = 0
     reset_timer = False
+    newly_added = False
+    data = {}
 
 
 class CardFactory(BaseModelFactory):
@@ -149,6 +151,8 @@ class CardFactory(BaseModelFactory):
     default_timer = 0
     reset_timer = False
     each_tick = False
+    newly_added = False
+    data = {}
 
 
 class DeckFactory(BaseModelFactory, TimeStampMixinFactory):
@@ -227,6 +231,7 @@ class EnemyFactory(BaseModelFactory):
     has_deathwish = False
     deathwish_id = None
     deathwish_value = 0
+    data = {}
 
 
 class EnemyLeaderFactory(BaseModelFactory):
@@ -248,6 +253,7 @@ class EnemyLeaderFactory(BaseModelFactory):
     default_timer = 0
     reset_timer = False
     each_tick = False
+    data = {}
 
 
 class SeasonFactory(BaseModelFactory):
