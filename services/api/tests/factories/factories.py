@@ -112,6 +112,7 @@ class LeaderFactory(BaseModelFactory):
     damage = 0
     charges = 1
     heal = 0
+    armor = 0
     has_passive = False
     passive_ability_id = None
     value = 0
@@ -137,6 +138,7 @@ class CardFactory(BaseModelFactory):
     charges = 1
     hp = 0
     heal = 0
+    armor = 0
     has_passive = False
     has_passive_in_hand = False
     has_passive_in_deck = False

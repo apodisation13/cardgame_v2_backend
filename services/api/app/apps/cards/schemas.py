@@ -25,6 +25,7 @@ class Card(Base):
     charges: int
     hp: int
     heal: int
+    armor: int
     has_passive: bool
     has_passive_in_hand: bool
     has_passive_in_deck: bool
@@ -57,6 +58,7 @@ class Card(Base):
             charges=row["charges"],
             hp=row["hp"],
             heal=row["heal"],
+            armor=row["armor"],
             has_passive=row["has_passive"],
             has_passive_in_hand=row["has_passive_in_hand"],
             has_passive_in_deck=row["has_passive_in_deck"],
@@ -84,6 +86,7 @@ class Leader(Base):
     damage: int
     charges: int
     heal: int
+    armor: int
     has_passive: bool
     passive_ability: PassiveAbility
     value: int
@@ -110,6 +113,7 @@ class Leader(Base):
             damage=row["damage"],
             charges=row["charges"],
             heal=row["heal"],
+            armor=row["armor"],
             has_passive=row["has_passive"],
             passive_ability=PassiveAbility(
                 name=row["passive_ability_name"],

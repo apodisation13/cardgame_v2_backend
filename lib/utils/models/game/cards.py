@@ -1,4 +1,6 @@
-from typing import Optional
+from typing import Optional, Any
+
+from sqlalchemy.dialects.postgresql import JSONB
 
 from lib.utils.models import BaseModel, TimestampMixin
 from sqlalchemy import Boolean, ForeignKey, Integer, String, Text, UniqueConstraint
@@ -118,6 +120,11 @@ class Leader(BaseModel, TimestampMixin):
         nullable=False,
         server_default="0",
     )
+    armor: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="0",
+    )
     has_passive: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
@@ -147,6 +154,16 @@ class Leader(BaseModel, TimestampMixin):
         Boolean,
         nullable=False,
         server_default="false",
+    )
+    newly_added: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        server_default="false",
+    )
+    data: Mapped[dict[str, Any]] = mapped_column(
+        JSONB,
+        server_default="{}",
+        nullable=False,
     )
 
 
@@ -220,6 +237,11 @@ class Card(BaseModel, TimestampMixin):
         nullable=False,
         server_default="0",
     )
+    armor: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="0",
+    )
     has_passive: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
@@ -269,6 +291,16 @@ class Card(BaseModel, TimestampMixin):
         Boolean,
         nullable=False,
         server_default="false",
+    )
+    newly_added: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        server_default="false",
+    )
+    data: Mapped[dict[str, Any]] = mapped_column(
+        JSONB,
+        server_default="{}",
+        nullable=False,
     )
 
 
