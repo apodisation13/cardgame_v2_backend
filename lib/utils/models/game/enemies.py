@@ -1,9 +1,8 @@
-from typing import Optional, Any
-
-from sqlalchemy.dialects.postgresql import JSONB
+from typing import Any, Optional
 
 from lib.utils.models import BaseModel, TimestampMixin
 from sqlalchemy import Boolean, ForeignKey, Integer, String, Text
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 
