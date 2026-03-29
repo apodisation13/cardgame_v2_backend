@@ -1,7 +1,8 @@
-from typing import Optional
+from typing import Any, Optional
 
 from lib.utils.models import BaseModel, TimestampMixin
 from sqlalchemy import Boolean, ForeignKey, Integer, String, Text
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 
@@ -206,6 +207,11 @@ class Enemy(BaseModel, TimestampMixin):
         nullable=False,
         server_default="0",
     )
+    data: Mapped[dict[str, Any]] = mapped_column(
+        JSONB,
+        server_default="{}",
+        nullable=False,
+    )
 
 
 class EnemyLeader(BaseModel, TimestampMixin):
@@ -287,4 +293,9 @@ class EnemyLeader(BaseModel, TimestampMixin):
         Boolean,
         nullable=False,
         server_default="false",
+    )
+    data: Mapped[dict[str, Any]] = mapped_column(
+        JSONB,
+        server_default="{}",
+        nullable=False,
     )

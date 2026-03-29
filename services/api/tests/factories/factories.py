@@ -112,12 +112,15 @@ class LeaderFactory(BaseModelFactory):
     damage = 0
     charges = 1
     heal = 0
+    armor = 0
     has_passive = False
     passive_ability_id = None
     value = 0
     timer = 0
     default_timer = 0
     reset_timer = False
+    newly_added = False
+    data = {}
 
 
 class CardFactory(BaseModelFactory):
@@ -137,6 +140,7 @@ class CardFactory(BaseModelFactory):
     charges = 1
     hp = 0
     heal = 0
+    armor = 0
     has_passive = False
     has_passive_in_hand = False
     has_passive_in_deck = False
@@ -147,6 +151,8 @@ class CardFactory(BaseModelFactory):
     default_timer = 0
     reset_timer = False
     each_tick = False
+    newly_added = False
+    data = {}
 
 
 class DeckFactory(BaseModelFactory, TimeStampMixinFactory):
@@ -225,6 +231,7 @@ class EnemyFactory(BaseModelFactory):
     has_deathwish = False
     deathwish_id = None
     deathwish_value = 0
+    data = {}
 
 
 class EnemyLeaderFactory(BaseModelFactory):
@@ -246,6 +253,7 @@ class EnemyLeaderFactory(BaseModelFactory):
     default_timer = 0
     reset_timer = False
     each_tick = False
+    data = {}
 
 
 class SeasonFactory(BaseModelFactory):

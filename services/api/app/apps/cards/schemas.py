@@ -25,6 +25,7 @@ class Card(Base):
     charges: int
     hp: int
     heal: int
+    armor: int
     has_passive: bool
     has_passive_in_hand: bool
     has_passive_in_deck: bool
@@ -35,6 +36,8 @@ class Card(Base):
     default_timer: int
     reset_timer: bool
     each_tick: bool
+    newly_added: bool
+    data: dict
 
     @staticmethod
     def get_one(
@@ -57,6 +60,7 @@ class Card(Base):
             charges=row["charges"],
             hp=row["hp"],
             heal=row["heal"],
+            armor=row["armor"],
             has_passive=row["has_passive"],
             has_passive_in_hand=row["has_passive_in_hand"],
             has_passive_in_deck=row["has_passive_in_deck"],
@@ -70,6 +74,8 @@ class Card(Base):
             default_timer=row["default_timer"],
             reset_timer=row["reset_timer"],
             each_tick=row["each_tick"],
+            newly_added=row["newly_added"],
+            data=row["data"],
         )
 
 
@@ -84,12 +90,15 @@ class Leader(Base):
     damage: int
     charges: int
     heal: int
+    armor: int
     has_passive: bool
     passive_ability: PassiveAbility
     value: int
     timer: int
     default_timer: int
     reset_timer: bool
+    newly_added: bool
+    data: dict
 
     @staticmethod
     def get_one(
@@ -110,6 +119,7 @@ class Leader(Base):
             damage=row["damage"],
             charges=row["charges"],
             heal=row["heal"],
+            armor=row["armor"],
             has_passive=row["has_passive"],
             passive_ability=PassiveAbility(
                 name=row["passive_ability_name"],
@@ -119,6 +129,8 @@ class Leader(Base):
             timer=row["timer"],
             default_timer=row["default_timer"],
             reset_timer=row["reset_timer"],
+            newly_added=row["newly_added"],
+            data=row["data"],
         )
 
 
@@ -160,6 +172,7 @@ class EnemyLeader(Base):
     default_timer: int
     reset_timer: bool
     each_tick: bool
+    data: dict
 
     @staticmethod
     def get_one(
@@ -187,6 +200,7 @@ class EnemyLeader(Base):
             default_timer=row["default_timer"],
             reset_timer=row["reset_timer"],
             each_tick=row["each_tick"],
+            data=row["data"],
         )
 
 
@@ -224,6 +238,7 @@ class Enemy(Base):
     has_deathwish: bool
     deathwish: Deathwish
     deathwish_value: int
+    data: dict
 
     @staticmethod
     def get_one(
@@ -263,4 +278,5 @@ class Enemy(Base):
                 description=row["deathwish_description"],
             ),
             deathwish_value=row["deathwish_value"],
+            data=row["data"],
         )

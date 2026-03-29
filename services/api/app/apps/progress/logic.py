@@ -119,7 +119,8 @@ async def get_enemies(
                 enemies.has_deathwish,
                 deathwishes.name AS deathwish_name,
                 deathwishes.description AS deathwish_description,
-                enemies.deathwish_value
+                enemies.deathwish_value,
+                enemies.data
             FROM
                 enemies
             JOIN
@@ -159,7 +160,8 @@ async def get_enemy_leaders(
                 enemy_leaders.timer,
                 enemy_leaders.default_timer,
                 enemy_leaders.reset_timer,
-                enemy_leaders.each_tick
+                enemy_leaders.each_tick,
+                enemy_leaders.data
             FROM
                 enemy_leaders
             JOIN
@@ -438,6 +440,7 @@ async def get_user_cards(
                 cards.charges,
                 cards.hp,
                 cards.heal,
+                cards.armor,
                 cards.has_passive,
                 cards.has_passive_in_hand,
                 cards.has_passive_in_deck,
@@ -449,6 +452,8 @@ async def get_user_cards(
                 cards.default_timer,
                 cards.reset_timer,
                 cards.each_tick,
+                cards.newly_added,
+                cards.data,
                 COALESCE(user_cards.count, 0) AS user_card_count,
                 user_cards.id AS user_card_id
             FROM
@@ -503,6 +508,7 @@ async def get_user_leaders(
                 leaders.damage,
                 leaders.charges,
                 leaders.heal,
+                leaders.armor,
                 leaders.has_passive,
                 passive_abilities.name AS passive_ability_name,
                 passive_abilities.description AS passive_ability_description,
@@ -510,6 +516,8 @@ async def get_user_leaders(
                 leaders.timer,
                 leaders.default_timer,
                 leaders.reset_timer,
+                leaders.newly_added,
+                leaders.data,
                 COALESCE(user_leaders.count, 0) AS user_leader_count,
                 user_leaders.id AS user_leader_id
             FROM
