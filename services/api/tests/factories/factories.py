@@ -101,10 +101,10 @@ class LeaderFactory(BaseModelFactory):
     class Meta:
         model = Leader
 
-    name = factory.Sequence(lambda n: f"Leader {n}")
-    image_original = factory.Faker("image_url")
-    image_tablet = factory.Faker("image_url")
-    image_phone = factory.Faker("image_url")
+    name = factory.Sequence(lambda n: f"Leader {n + 1}")
+    image_original = "image_url"
+    image_tablet = "image_url"
+    image_phone = "image_url"
     unlocked = False
     faction_id = factory.SubFactory(FactionFactory)
     ability_id = factory.SubFactory(AbilityFactory)
@@ -127,10 +127,10 @@ class CardFactory(BaseModelFactory):
     class Meta:
         model = Card
 
-    name = factory.Sequence(lambda n: f"Card {n}")
-    image_original = factory.Faker("image_url")
-    image_tablet = factory.Faker("image_url")
-    image_phone = factory.Faker("image_url")
+    name = factory.Sequence(lambda n: f"Card {n + 1}")
+    image_original = "image_url"
+    image_tablet = "image_url"
+    image_phone = "image_url"
     unlocked = False
     faction_id = factory.SubFactory(FactionFactory)
     color_id = factory.SubFactory(ColorFactory)
@@ -207,10 +207,10 @@ class EnemyFactory(BaseModelFactory):
     class Meta:
         model = Enemy
 
-    name = factory.Sequence(lambda n: f"Enemy {n}")
-    image_original = factory.Faker("image_url")
-    image_tablet = factory.Faker("image_url")
-    image_phone = factory.Faker("image_url")
+    name = factory.Sequence(lambda n: f"Enemy {n + 1}")
+    image_original = "image_url"
+    image_tablet = "image_url"
+    image_phone = "image_url"
     faction_id = factory.SubFactory(FactionFactory)
     color_id = factory.SubFactory(ColorFactory)
     move_id = factory.SubFactory(MoveFactory)
@@ -238,10 +238,10 @@ class EnemyLeaderFactory(BaseModelFactory):
     class Meta:
         model = EnemyLeader
 
-    name = factory.Sequence(lambda n: f"Enemy Leader {n}")
-    image_original = factory.Faker("image_url")
-    image_tablet = factory.Faker("image_url")
-    image_phone = factory.Faker("image_url")
+    name = factory.Sequence(lambda n: f"Enemy Leader {n + 1}")
+    image_original = "image_url"
+    image_tablet = "image_url"
+    image_phone = "image_url"
     faction_id = factory.SubFactory(FactionFactory)
     hp = 100
     base_hp = 100
