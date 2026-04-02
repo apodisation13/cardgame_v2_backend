@@ -86,7 +86,7 @@ async def get_enemy_leaders(
 async def get_leaders(
     connection: asyncpg.Connection,
     base_url: str,
-) -> dict[int, LeaderV2]:
+) -> list[LeaderV2]:
     leaders: list[dict] = await connection.fetch(
         """
             SELECT
@@ -120,13 +120,13 @@ async def get_leaders(
         """,
     )
 
-    return {row["id"]: LeaderV2.get_one(row, base_url) for row in leaders}
+    return [LeaderV2.get_one(row, base_url) for row in leaders]
 
 
 async def get_cards(
     connection: asyncpg.Connection,
     base_url: str,
-) -> dict[int, CardV2]:
+) -> list[CardV2]:
     cards: list[dict] = await connection.fetch(
         """
             SELECT
@@ -167,4 +167,4 @@ async def get_cards(
         """,
     )
 
-    return {row["id"]: CardV2.get_one(row, base_url) for row in cards}
+    return [CardV2.get_one(row, base_url) for row in cards]

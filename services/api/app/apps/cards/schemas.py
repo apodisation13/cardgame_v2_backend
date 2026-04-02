@@ -147,6 +147,14 @@ class Deck(Base):
     health: int
 
 
+class DeckV2(Base):
+    id: int
+    name: str
+    leader_id: int
+    cards: list[int]
+    health: int
+
+
 class EnemyLeaderAbility(Base):
     name: str | None
     description: str | None
@@ -426,7 +434,7 @@ class EnemyV2(Base):
 
 
 class CardsResponse(Base):
-    cards: dict[int, CardV2]
-    leaders: dict[int, LeaderV2]
+    cards: list[CardV2]
+    leaders: list[LeaderV2]
     enemy_leaders: dict[int, EnemyLeaderV2]
     enemies: dict[int, EnemyV2]
