@@ -1,6 +1,6 @@
 from lib.utils.schemas import Base
 from lib.utils.schemas.game import CardActionSubtype, LevelDifficulty, ResourceActionSubtype
-from services.api.app.apps.cards.schemas import Card, Deck, Enemy, EnemyLeader, Leader
+from services.api.app.apps.cards.schemas import Card, Deck, Enemy, EnemyLeader, Leader, DeckV2
 
 
 class UserResources(Base):
@@ -86,11 +86,30 @@ class Level(Base):
     children: list[LevelRelatedLevel]
 
 
+class LevelV2(Base):
+    id: int
+    name: str
+    starting_enemies_number: int
+    difficulty: LevelDifficulty
+    x: int
+    y: int
+    enemy_leader: int
+    enemies: list[int]
+    children: list[LevelRelatedLevel]
+
+
 class UserLevel(Base):
     id: int | None
     unlocked: bool
     finished: bool | None
     level: Level
+
+
+class UserLevelV2(Base):
+    id: int | None
+    unlocked: bool
+    finished: bool | None
+    level: LevelV2
 
 
 class SeasonRelatedSeason(Base):
@@ -106,6 +125,16 @@ class Season(Base):
     x: int
     y: int
     levels: list[UserLevel]
+    children: list[SeasonRelatedSeason]
+
+
+class SeasonV2(Base):
+    id: int
+    name: str
+    description: str
+    x: int
+    y: int
+    levels: list[UserLevelV2]
     children: list[SeasonRelatedSeason]
 
 
@@ -125,6 +154,13 @@ class UserSeason(Base):
     stats: Stats
 
 
+class UserSeasonV2(Base):
+    id: int | None
+    finished: bool | None
+    season: SeasonV2
+    stats: Stats
+
+
 class UserProgressResponse(Base):
     user_database: UserDatabase
     seasons: list[UserSeason]
@@ -132,6 +168,29 @@ class UserProgressResponse(Base):
     enemies: list[Enemy]
     enemy_leaders: list[EnemyLeader]
     game_const: dict
+
+
+class UserCardV2(Base):
+    user_card_id: int
+    count: int
+
+
+class UserLeaderV2(Base):
+    user_leader_id: int
+    count: int
+
+
+class UserDeckV2(Base):
+    user_deck_id: int
+    deck: DeckV2
+
+
+class UserProgressResponseV2(Base):
+    user_resources: UserResources
+    user_cards: dict[int, UserCardV2]
+    user_leaders: dict[int, UserLeaderV2]
+    user_decks: list[UserDeckV2]
+    user_seasons: list[UserSeasonV2]
 
 
 class CreateDeckRequest(Base):

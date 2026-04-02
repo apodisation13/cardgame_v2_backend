@@ -3,7 +3,7 @@ import logging
 import asyncpg
 
 from lib.utils.schemas.game import LevelDifficulty
-from services.api.app.apps.cards.schemas import Card, CardForDeck, Deck, Enemy, EnemyLeader, Leader
+from services.api.app.apps.cards.schemas import Card, CardForDeck, Deck, Enemy, EnemyLeader, Leader, DeckV2
 from services.api.app.apps.progress.schemas import (
     Level,
     LevelRelatedLevel,
@@ -15,7 +15,7 @@ from services.api.app.apps.progress.schemas import (
     UserLeader,
     UserLevel,
     UserResources,
-    UserSeason,
+    UserSeason, UserCardV2, UserLeaderV2, UserDeckV2, UserSeasonV2, LevelV2, UserLevelV2, SeasonV2,
 )
 
 
@@ -384,6 +384,129 @@ async def construct_seasons(
     return list(user_seasons_dict.values())
 
 
+async def construct_seasons_v2(
+    connection: asyncpg.Connection,
+    user_id: int,
+) -> list[UserSeasonV2]:
+    # 1. список всех сезонов с уровнями
+    seasons: list = await get_seasons(
+        connection=connection,
+        user_id=user_id,
+    )
+
+    # 2. из него выбираем список уникальных id уровней, множество id типа {1,2,3,4...etc}
+    level_ids = {row["level_id"] for row in seasons}
+
+    # 3. для всех уровней ищем всех их связи, даже если их нет
+    # на выходе словарь: {level_id: [список связей]}
+    level_related_levels: dict[int, list[LevelRelatedLevel]] = await get_level_related_levels(
+        connection=connection,
+        level_ids=level_ids,
+    )
+
+    # 4. из сезонов теперь так же выбираем уникальные id самих сезонов, множество id типа {1,2,3...}
+    season_ids = {row["season_id"] for row in seasons}
+
+    # 5. для всех сезонов ищем все их связи, даже если их нет
+    # на выходе словарь: {season_id: [список связей]}
+    season_related_seasons: dict[int, list[SeasonRelatedSeason]] = await get_season_related_seasons(
+        connection=connection,
+        season_ids=season_ids,
+    )
+
+    user_seasons_dict = {}
+    levels_dict = {}
+
+    # 6. тут мы идем по всем записям сезоны+уровни+враги и вначале набираем врагов в уровень!
+    for row in seasons:
+        enemy_id: int = row["enemy_id"]  # достаем только id врага
+        level_id = row["level_id"]  # достаем id уровня
+
+        # если уровня нет в суммарном словаре
+        if level_id not in levels_dict:
+            # лидера врага надо положить в принципе только 1 раз
+            enemy_leader_id: int = row["enemy_leader_id"]  # берем id лидера врагов
+
+            # собираем объект уровня, а в список его врагов кладем пока что первого по счету врага
+            # детей этого уровня - берем из словаря всех связей по id самогО уровня level_id
+            level = LevelV2(
+                id=row["level_id"],
+                name=row["level_name"],
+                difficulty=row["difficulty"],
+                starting_enemies_number=row["starting_enemies_number"],
+                x=row["x"],
+                y=row["y"],
+                enemy_leader=enemy_leader_id,
+                enemies=[enemy_id],
+                children=level_related_levels[level_id],
+            )
+            levels_dict[level_id] = level  # и так же положили в итоговый словарь весь объект уровня
+        else:
+            # попали в уровень, который уже есть в итоговом словаре, достаточно просто добавить туда нового врага
+            level: LevelV2 = levels_dict[level_id]
+            level.enemies.append(enemy_id)
+
+    # 7. а вот тут идем еще раз по общему списку и уже собираем сезоны+уровни, ведь враги и связи уровней уже собраны
+    for row in seasons:
+        season_id = row["season_id"]  # запоминаем id сезона
+
+        level_id = row["level_id"]  # берем id уровня
+        level: LevelV2 = levels_dict[level_id]  # и находим весь объект уровня в словаре, который выше собирали
+
+        # составляем нужную структуру
+        user_level = UserLevelV2(
+            id=row["user_level_id"],  # это id в таблице user_levels.id. есть - уровень открыт, нет - закрыт
+            level=level,
+            finished=row["user_level_finished"],  # уровень может быть пройден или нет
+            unlocked=True if row["user_level_id"] else False,
+        )
+
+        # тут мы берем какой-то сезон первый раз
+        if season_id not in user_seasons_dict:
+            # собираем статистику в зависимости от уровня и пройден ли он
+            stats = Stats(
+                total_levels=1,
+                finished_levels=1 if user_level.finished else 0,
+                unlocked_levels=1 if user_level.unlocked else 0,
+                easy_levels=1 if level.difficulty == LevelDifficulty.EASY else 0,
+                normal_levels=1 if level.difficulty == LevelDifficulty.NORMAL else 0,
+                hard_levels=1 if level.difficulty == LevelDifficulty.HARD else 0,
+            )
+            # собираем объект сезона, уровень сезона при первом заходе кладем в список, связи тоже для сезона нашли
+            season = SeasonV2(
+                id=season_id,
+                name=row["season_name"],
+                description=row["season_description"],
+                x=row["season_x"],
+                y=row["season_y"],
+                levels=[user_level],
+                children=season_related_seasons[season_id],
+            )
+            user_season = UserSeasonV2(
+                id=row["user_season_id"],
+                season=season,
+                finished=row["user_season_finished"],
+                stats=stats,
+            )
+            user_seasons_dict[season_id] = user_season
+        else:
+            # а здесь наполняем сезон разными уровнями и добавляем статистику
+            season: SeasonV2 = user_seasons_dict[season_id].season
+
+            if user_level not in season.levels:
+                stats: Stats = user_seasons_dict[season_id].stats
+                stats.total_levels += 1
+                stats.finished_levels += 1 if user_level.finished else 0
+                stats.unlocked_levels += 1 if user_level.unlocked else 0
+                stats.easy_levels += 1 if level.difficulty == LevelDifficulty.EASY else 0
+                stats.normal_levels += 1 if level.difficulty == LevelDifficulty.NORMAL else 0
+                stats.hard_levels += 1 if level.difficulty == LevelDifficulty.HARD else 0
+
+                season.levels.append(user_level)
+
+    return list(user_seasons_dict.values())
+
+
 async def process_cards(
     connection: asyncpg.Connection,
     user_id: int,
@@ -487,6 +610,54 @@ async def get_user_cards(
         )
         for user_card in user_cards
     ]
+
+
+async def get_user_cards_v2(
+    connection: asyncpg.Connection,
+    user_id: int,
+) -> dict[int, UserCardV2]:
+    user_cards: list[dict] = await connection.fetch(
+        """
+            SELECT
+                user_cards.id AS user_card_id,
+                user_cards.card_id,
+                user_cards.count
+            FROM
+                user_cards
+            WHERE
+                user_cards.user_id = $1
+        """,
+        user_id,
+    )
+
+    return {row["card_id"]: UserCardV2(
+        user_card_id=row["user_card_id"],
+        count=row["count"],
+    ) for row in user_cards}
+
+
+async def get_user_leaders_v2(
+    connection: asyncpg.Connection,
+    user_id: int,
+) -> dict[int, UserLeaderV2]:
+    user_leaders: list[dict] = await connection.fetch(
+        """
+            SELECT
+                user_leaders.id AS user_leader_id,
+                user_leaders.leader_id,
+                user_leaders.count
+            FROM
+                user_leaders
+            WHERE
+                user_leaders.user_id = $1
+        """,
+        user_id,
+    )
+
+    return {row["leader_id"]: UserLeaderV2(
+        user_leader_id=row["user_leader_id"],
+        count=row["count"],
+    ) for row in user_leaders}
 
 
 async def get_user_leaders(
@@ -603,11 +774,66 @@ async def construct_user_decks(
             user_deck.deck.cards.append(card_for_deck)
             user_deck.deck.health += hp
 
-    # user_decks_model = []
-    # for _, user_deck in user_decs_dict.items():
-    #     user_decks_model.append(user_deck)
-
     return list(user_decs_dict.values())
+
+
+async def construct_user_decks_v2(
+    connection: asyncpg.Connection,
+    user_id: int,
+) -> list[UserDeckV2]:
+    user_decks: list[dict] = await connection.fetch(
+        """
+            SELECT
+                user_decks.id AS user_deck_id,
+                decks.id AS deck_id,
+                decks.name AS deck_name,
+                decks.leader_id AS leader_id,
+                card_decks.card_id AS card_id,
+                cards.data -> 'hp' AS card_hp,
+                leaders.data -> 'hp' AS leader_hp
+            FROM
+                user_decks
+            JOIN decks ON user_decks.deck_id = decks.id
+            JOIN card_decks ON decks.id = card_decks.deck_id
+            JOIN cards ON card_decks.card_id = cards.id
+            JOIN leaders ON decks.leader_id = leaders.id
+            WHERE
+                user_decks.user_id = $1
+            ORDER BY decks.updated_at DESC;
+        """,
+        user_id,
+    )
+
+    user_decks_dict = {}
+
+    for row in user_decks:
+        user_deck_id = row["user_deck_id"]
+
+        card_id: int = row["card_id"]
+        card_hp = row["card_hp"]
+
+        if user_deck_id not in user_decks_dict:
+            deck_id: int = row["deck_id"]
+            deck_name: str = row["deck_name"]
+            leader_id: int = row["leader_id"]
+            leader_hp: int = row["leader_hp"]
+
+            user_decks_dict[user_deck_id] = UserDeckV2(
+                user_deck_id=user_deck_id,
+                deck=DeckV2(
+                    id=deck_id,
+                    name=deck_name,
+                    leader_id=leader_id,
+                    health=card_hp + leader_hp,  # при первом заходе сюда добавляем сразу и жизни лидера, и первой карты
+                    cards=[card_id],
+                ),
+            )
+        else:
+            user_deck: UserDeckV2 = user_decks_dict[user_deck_id]
+            user_deck.deck.cards.append(card_id)
+            user_deck.deck.health += card_hp
+
+    return list(user_decks_dict.values())
 
 
 async def get_user_resources(

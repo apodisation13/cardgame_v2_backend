@@ -23,7 +23,7 @@ from services.api.app.apps.progress.schemas import (
     UserDatabase,
     UserLeader,
     UserProgressResponse,
-    UserResources,
+    UserResources, UserProgressResponseV2,
 )
 from services.api.app.config import Config
 from services.api.app.exceptions.exceptions import CraftMillCardProcessError, ManageResourcesProcessError
@@ -84,6 +84,46 @@ class UserProgressService:
             game_const=game_constants,
             enemies=enemies,
             enemy_leaders=enemy_leaders,
+        )
+
+    async def get_user_progress_v2(
+        self,
+        user_id: int,
+    ) -> UserProgressResponseV2:
+        logger.info("Getting database for user %s", user_id)
+
+        async with self.db_pool.connection() as connection:
+            user_resources: UserResources = await logic.get_user_resources(
+                connection=connection,
+                user_id=user_id,
+            )
+
+            user_cards = await logic.get_user_cards_v2(
+                connection=connection,
+                user_id=user_id,
+            )
+
+            user_leaders = await logic.get_user_leaders_v2(
+                connection=connection,
+                user_id=user_id,
+            )
+
+            user_decks = await logic.construct_user_decks_v2(
+                connection=connection,
+                user_id=user_id,
+            )
+
+            user_seasons = await logic.construct_seasons_v2(
+                connection=connection,
+                user_id=user_id,
+            )
+
+        return UserProgressResponseV2(
+            user_cards=user_cards,
+            user_leaders=user_leaders,
+            user_decks=user_decks,
+            user_resources=user_resources,
+            user_seasons=user_seasons,
         )
 
     async def create_user_deck(

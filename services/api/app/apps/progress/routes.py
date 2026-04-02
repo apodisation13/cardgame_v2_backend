@@ -10,7 +10,7 @@ from services.api.app.apps.progress.schemas import (
     OpenRelatedLevelsResponse,
     ResourcesRequest,
     UserProgressResponse,
-    UserResources,
+    UserResources, UserProgressResponseV2,
 )
 from services.api.app.apps.progress.service import UserProgressService
 from services.api.app.dependencies import get_user_progress_service
@@ -29,6 +29,17 @@ async def get_user_progress(
     return await user_progress_service.get_user_progress(
         user_id=user_id,
         base_url=str(request.base_url),
+    )
+
+
+@router.get("/v2/{user_id}")
+async def get_user_progress_v2(
+    _=Depends(auth_dependencies.validate_user),
+    user_progress_service: UserProgressService = Depends(get_user_progress_service),
+    user_id: int = Path(..., gt=0),
+) -> UserProgressResponseV2:
+    return await user_progress_service.get_user_progress_v2(
+        user_id=user_id,
     )
 
 
