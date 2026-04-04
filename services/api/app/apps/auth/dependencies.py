@@ -48,3 +48,17 @@ async def validate_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Access denied",
         )
+
+
+async def is_user_authorized(
+    token: str = Depends(get_token_from_header),
+    auth_service: AuthService = Depends(get_auth_service),
+) -> None:
+    user: UserCheckTokenResponse = await auth_service.get_user_by_token(token=token)
+
+    if not user:
+        logger.error("User is not authorized")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Access denied",
+        )
