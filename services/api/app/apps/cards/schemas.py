@@ -12,7 +12,7 @@ class PassiveAbility(Base):
     description: str | None
 
 
-class DeckV2(Base):
+class Deck(Base):
     id: int
     name: str
     leader_id: int
@@ -40,7 +40,7 @@ class Deathwish(Base):
     description: str | None
 
 
-class LeaderV2(Base):
+class Leader(Base):
     id: int
     name: str
     unlocked: bool
@@ -55,8 +55,8 @@ class LeaderV2(Base):
     def get_one(
         row: dict,
         base_url: str,
-    ) -> "LeaderV2":
-        return LeaderV2(
+    ) -> "Leader":
+        return Leader(
             id=row["id"],
             name=row["name"],
             unlocked=row["unlocked"],
@@ -75,7 +75,7 @@ class LeaderV2(Base):
         )
 
 
-class CardV2(Base):
+class Card(Base):
     id: int
     name: str
     unlocked: bool
@@ -92,8 +92,8 @@ class CardV2(Base):
     def get_one(
         row: dict,
         base_url: str,
-    ) -> "CardV2":
-        return CardV2(
+    ) -> "Card":
+        return Card(
             id=row["id"],
             name=row["name"],
             unlocked=row["unlocked"],
@@ -114,7 +114,7 @@ class CardV2(Base):
         )
 
 
-class EnemyLeaderV2(Base):
+class EnemyLeader(Base):
     id: int
     name: str
     faction: str
@@ -127,8 +127,8 @@ class EnemyLeaderV2(Base):
     def get_one(
         row: dict,
         base_url: str,
-    ) -> "EnemyLeaderV2":
-        return EnemyLeaderV2(
+    ) -> "EnemyLeader":
+        return EnemyLeader(
             id=row["id"],
             name=row["name"],
             faction=row["faction_name"],
@@ -145,7 +145,7 @@ class EnemyLeaderV2(Base):
         )
 
 
-class EnemyV2(Base):
+class Enemy(Base):
     id: int
     name: str
     faction: str
@@ -160,8 +160,8 @@ class EnemyV2(Base):
     def get_one(
         row: dict,
         base_url: str,
-    ) -> "EnemyV2":
-        return EnemyV2(
+    ) -> "Enemy":
+        return Enemy(
             id=row["id"],
             name=row["name"],
             faction=row["faction_name"],
@@ -184,7 +184,7 @@ class EnemyV2(Base):
 
 
 class CardsResponse(Base):
-    cards: list[CardV2]
-    leaders: list[LeaderV2]
-    enemy_leaders: dict[int, EnemyLeaderV2]
-    enemies: dict[int, EnemyV2]
+    cards: list[Card]
+    leaders: list[Leader]
+    enemy_leaders: dict[int, EnemyLeader]
+    enemies: dict[int, Enemy]

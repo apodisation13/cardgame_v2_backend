@@ -1,6 +1,6 @@
 from lib.utils.schemas import Base
 from lib.utils.schemas.game import CardActionSubtype, LevelDifficulty, ResourceActionSubtype
-from services.api.app.apps.cards.schemas import DeckV2
+from services.api.app.apps.cards.schemas import Deck
 
 
 class UserResources(Base):
@@ -76,7 +76,7 @@ class SeasonRelatedSeason(Base):
     connection: str | None
 
 
-class SeasonV2(Base):
+class Season(Base):
     id: int
     name: str
     description: str
@@ -95,34 +95,34 @@ class Stats(Base):
     hard_levels: int = 0
 
 
-class UserSeasonV2(Base):
+class UserSeason(Base):
     id: int | None
     finished: bool | None
-    season: SeasonV2
+    season: Season
     stats: Stats
 
 
-class UserCardV2(Base):
+class UserCard(Base):
     user_card_id: int
     count: int
 
 
-class UserLeaderV2(Base):
+class UserLeader(Base):
     user_leader_id: int
     count: int
 
 
-class UserDeckV2(Base):
+class UserDeck(Base):
     user_deck_id: int
-    deck: DeckV2
+    deck: Deck
 
 
 class UserProgressResponse(Base):
     user_resources: UserResources
-    user_cards: dict[int, UserCardV2]
-    user_leaders: dict[int, UserLeaderV2]
-    user_decks: list[UserDeckV2]
-    user_seasons: list[UserSeasonV2]
+    user_cards: dict[int, UserCard]
+    user_leaders: dict[int, UserLeader]
+    user_decks: list[UserDeck]
+    user_seasons: list[UserSeason]
 
 
 class CreateDeckRequest(Base):
@@ -132,7 +132,7 @@ class CreateDeckRequest(Base):
 
 
 class ListDecksResponse(Base):
-    decks: list[UserDeckV2]
+    decks: list[UserDeck]
 
 
 class ResourcesRequest(Base):
@@ -146,12 +146,12 @@ class CardCraftMillRequest(Base):
 
 
 class CardCraftMillResponse(Base):
-    cards: dict[int, UserCardV2] | dict[int, UserLeaderV2]
+    cards: dict[int, UserCard] | dict[int, UserLeader]
     resources: UserResources
 
 
 class OpenRelatedLevelsResponse(Base):
-    seasons: list[UserSeasonV2]
+    seasons: list[UserSeason]
 
 
 class CardCraftBonusRequest(Base):
@@ -159,4 +159,4 @@ class CardCraftBonusRequest(Base):
 
 
 class CardCraftBonusResponse(Base):
-    cards: dict[int, UserCardV2]
+    cards: dict[int, UserCard]

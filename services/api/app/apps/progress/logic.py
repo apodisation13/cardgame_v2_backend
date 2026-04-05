@@ -3,19 +3,19 @@ import logging
 import asyncpg
 
 from lib.utils.schemas.game import LevelDifficulty
-from services.api.app.apps.cards.schemas import DeckV2
+from services.api.app.apps.cards.schemas import Deck
 from services.api.app.apps.progress.schemas import (
-    LevelRelatedLevel,
     Level,
+    LevelRelatedLevel,
+    Season,
     SeasonRelatedSeason,
-    SeasonV2,
     Stats,
-    UserCardV2,
-    UserDeckV2,
-    UserLeaderV2,
+    UserCard,
+    UserDeck,
+    UserLeader,
     UserLevel,
     UserResources,
-    UserSeasonV2,
+    UserSeason,
 )
 
 
@@ -131,7 +131,7 @@ async def get_season_related_seasons(
 async def construct_seasons_v2(
     connection: asyncpg.Connection,
     user_id: int,
-) -> list[UserSeasonV2]:
+) -> list[UserSeason]:
     # 1. список всех сезонов с уровнями
     seasons: list = await get_seasons(
         connection=connection,
@@ -217,7 +217,7 @@ async def construct_seasons_v2(
                 hard_levels=1 if level.difficulty == LevelDifficulty.HARD else 0,
             )
             # собираем объект сезона, уровень сезона при первом заходе кладем в список, связи тоже для сезона нашли
-            season = SeasonV2(
+            season = Season(
                 id=season_id,
                 name=row["season_name"],
                 description=row["season_description"],
@@ -226,7 +226,7 @@ async def construct_seasons_v2(
                 levels=[user_level],
                 children=season_related_seasons[season_id],
             )
-            user_season = UserSeasonV2(
+            user_season = UserSeason(
                 id=row["user_season_id"],
                 season=season,
                 finished=row["user_season_finished"],
@@ -235,7 +235,7 @@ async def construct_seasons_v2(
             user_seasons_dict[season_id] = user_season
         else:
             # а здесь наполняем сезон разными уровнями и добавляем статистику
-            season: SeasonV2 = user_seasons_dict[season_id].season
+            season: Season = user_seasons_dict[season_id].season
 
             if user_level not in season.levels:
                 stats: Stats = user_seasons_dict[season_id].stats
@@ -254,7 +254,7 @@ async def construct_seasons_v2(
 async def get_user_cards_v2(
     connection: asyncpg.Connection,
     user_id: int,
-) -> dict[int, UserCardV2]:
+) -> dict[int, UserCard]:
     user_cards: list[dict] = await connection.fetch(
         """
             SELECT
@@ -270,7 +270,7 @@ async def get_user_cards_v2(
     )
 
     return {
-        row["card_id"]: UserCardV2(
+        row["card_id"]: UserCard(
             user_card_id=row["user_card_id"],
             count=row["count"],
         )
@@ -281,7 +281,7 @@ async def get_user_cards_v2(
 async def get_user_leaders_v2(
     connection: asyncpg.Connection,
     user_id: int,
-) -> dict[int, UserLeaderV2]:
+) -> dict[int, UserLeader]:
     user_leaders: list[dict] = await connection.fetch(
         """
             SELECT
@@ -297,7 +297,7 @@ async def get_user_leaders_v2(
     )
 
     return {
-        row["leader_id"]: UserLeaderV2(
+        row["leader_id"]: UserLeader(
             user_leader_id=row["user_leader_id"],
             count=row["count"],
         )
@@ -308,7 +308,7 @@ async def get_user_leaders_v2(
 async def construct_user_decks_v2(
     connection: asyncpg.Connection,
     user_id: int,
-) -> list[UserDeckV2]:
+) -> list[UserDeck]:
     user_decks: list[dict] = await connection.fetch(
         """
             SELECT
@@ -346,9 +346,9 @@ async def construct_user_decks_v2(
             leader_id: int = row["leader_id"]
             leader_hp: int = row["leader_hp"]
 
-            user_decks_dict[user_deck_id] = UserDeckV2(
+            user_decks_dict[user_deck_id] = UserDeck(
                 user_deck_id=user_deck_id,
-                deck=DeckV2(
+                deck=Deck(
                     id=deck_id,
                     name=deck_name,
                     leader_id=leader_id,
@@ -357,7 +357,7 @@ async def construct_user_decks_v2(
                 ),
             )
         else:
-            user_deck: UserDeckV2 = user_decks_dict[user_deck_id]
+            user_deck: UserDeck = user_decks_dict[user_deck_id]
             user_deck.deck.cards.append(card_id)
             user_deck.deck.health += card_hp
 

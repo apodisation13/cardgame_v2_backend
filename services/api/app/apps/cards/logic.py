@@ -1,12 +1,12 @@
 import asyncpg
 
-from services.api.app.apps.cards.schemas import CardV2, EnemyLeaderV2, EnemyV2, LeaderV2
+from services.api.app.apps.cards.schemas import Card, Enemy, EnemyLeader, Leader
 
 
 async def get_enemies(
     connection: asyncpg.Connection,
     base_url: str,
-) -> dict[int, EnemyV2]:
+) -> dict[int, Enemy]:
     enemies = await connection.fetch(
         """
             SELECT
@@ -46,13 +46,13 @@ async def get_enemies(
         """,
     )
 
-    return {row["id"]: EnemyV2.get_one(row, base_url) for row in enemies}
+    return {row["id"]: Enemy.get_one(row, base_url) for row in enemies}
 
 
 async def get_enemy_leaders(
     connection: asyncpg.Connection,
     base_url: str,
-) -> dict[int, EnemyLeaderV2]:
+) -> dict[int, EnemyLeader]:
     enemy_leaders = await connection.fetch(
         """
             SELECT
@@ -80,13 +80,13 @@ async def get_enemy_leaders(
         """,
     )
 
-    return {row["id"]: EnemyLeaderV2.get_one(row, base_url) for row in enemy_leaders}
+    return {row["id"]: EnemyLeader.get_one(row, base_url) for row in enemy_leaders}
 
 
 async def get_leaders(
     connection: asyncpg.Connection,
     base_url: str,
-) -> list[LeaderV2]:
+) -> list[Leader]:
     leaders: list[dict] = await connection.fetch(
         """
             SELECT
@@ -120,13 +120,13 @@ async def get_leaders(
         """,
     )
 
-    return [LeaderV2.get_one(row, base_url) for row in leaders]
+    return [Leader.get_one(row, base_url) for row in leaders]
 
 
 async def get_cards(
     connection: asyncpg.Connection,
     base_url: str,
-) -> list[CardV2]:
+) -> list[Card]:
     cards: list[dict] = await connection.fetch(
         """
             SELECT
@@ -167,4 +167,4 @@ async def get_cards(
         """,
     )
 
-    return [CardV2.get_one(row, base_url) for row in cards]
+    return [Card.get_one(row, base_url) for row in cards]

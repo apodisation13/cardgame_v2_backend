@@ -19,8 +19,8 @@ from services.api.app.apps.progress.schemas import (
     ListDecksResponse,
     OpenRelatedLevelsResponse,
     ResourcesRequest,
-    UserCardV2,
-    UserLeaderV2,
+    UserCard,
+    UserLeader,
     UserProgressResponse,
     UserResources,
 )
@@ -29,7 +29,7 @@ from services.api.app.exceptions.exceptions import CraftMillCardProcessError, Ma
 
 
 if TYPE_CHECKING:
-    from services.api.app.apps.cards.schemas import CardV2
+    from services.api.app.apps.cards.schemas import Card
 
 logger = logging.getLogger(__name__)
 
@@ -100,7 +100,7 @@ class UserProgressService:
                 deck.leader_id,
             )
 
-            card_decks: list[tuple[deck_id, CardV2.id]] = [(deck_id, card_id) for card_id in deck.cards]
+            card_decks: list[tuple[deck_id, Card.id]] = [(deck_id, card_id) for card_id in deck.cards]
 
             await connection.executemany(
                 """
@@ -202,7 +202,7 @@ class UserProgressService:
                 deck_id,
             )
 
-            card_decks: list[tuple[deck_id, CardV2.id]] = [(deck_id, card_id) for card_id in deck.cards]
+            card_decks: list[tuple[deck_id, Card.id]] = [(deck_id, card_id) for card_id in deck.cards]
 
             await connection.executemany(
                 """
@@ -447,7 +447,7 @@ class UserProgressService:
                     )
 
                     # 2.2. После создания возвращаем на фронт весь список UserCard, чтобы обновить там карты
-                    user_cards: dict[int, UserCardV2] = await logic.get_user_cards_v2(
+                    user_cards: dict[int, UserCard] = await logic.get_user_cards_v2(
                         connection=connection,
                         user_id=user_id,
                     )
@@ -515,7 +515,7 @@ class UserProgressService:
                     )
 
                     # 2.2. После создания возвращаем на фронт весь список UserLeader, чтобы обновить там лидеров
-                    user_leaders: dict[int, UserLeaderV2] = await logic.get_user_leaders_v2(
+                    user_leaders: dict[int, UserLeader] = await logic.get_user_leaders_v2(
                         connection=connection,
                         user_id=user_id,
                     )
@@ -620,7 +620,7 @@ class UserProgressService:
                             )
 
                     # 3. Карту уничтожили, ресурсы добавили, можем собирать все карты юзера для ответа
-                    user_cards: dict[int, UserCardV2] = await logic.get_user_cards_v2(
+                    user_cards: dict[int, UserCard] = await logic.get_user_cards_v2(
                         connection=connection,
                         user_id=user_id,
                     )
@@ -706,7 +706,7 @@ class UserProgressService:
                             )
 
                     # 3. Карту лидера уничтожили, ресурсы добавили, можем собирать все карты лидера юзера для ответа
-                    user_leaders: dict[int, UserLeaderV2] = await logic.get_user_leaders_v2(
+                    user_leaders: dict[int, UserLeader] = await logic.get_user_leaders_v2(
                         connection=connection,
                         user_id=user_id,
                     )
@@ -875,7 +875,7 @@ class UserProgressService:
                 cards_ids,
             )
 
-            user_cards: dict[int, UserCardV2] = await logic.get_user_cards_v2(
+            user_cards: dict[int, UserCard] = await logic.get_user_cards_v2(
                 connection=connection,
                 user_id=user_id,
             )
