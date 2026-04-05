@@ -3,6 +3,7 @@ from services.api.app.apps.auth import dependencies as auth_dependencies
 from services.api.app.apps.game_const.service import GameConstService
 from services.api.app.dependencies import get_game_const_service
 
+
 router = APIRouter()
 
 

@@ -5,6 +5,7 @@ from services.api.app.apps.cards import logic
 from services.api.app.apps.cards.schemas import CardsResponse
 from services.api.app.config import Config
 
+
 logger = logging.getLogger(__name__)
 
 

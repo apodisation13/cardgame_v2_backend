@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Request, Depends, Path
+from fastapi import APIRouter, Depends, Request
 from services.api.app.apps.auth import dependencies as auth_dependencies
 from services.api.app.apps.cards.schemas import CardsResponse
 from services.api.app.apps.cards.service import CardsService
 from services.api.app.dependencies import get_cards_service
+
 
 router = APIRouter()
 

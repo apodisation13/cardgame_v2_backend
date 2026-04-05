@@ -19,19 +19,17 @@ from services.api.app.apps.progress.schemas import (
     ListDecksResponse,
     OpenRelatedLevelsResponse,
     ResourcesRequest,
-    UserCard,
-    UserDatabase,
-    UserLeader,
+    UserCardV2,
+    UserLeaderV2,
     UserProgressResponse,
-    UserResources, UserProgressResponseV2,
+    UserResources,
 )
 from services.api.app.config import Config
 from services.api.app.exceptions.exceptions import CraftMillCardProcessError, ManageResourcesProcessError
 
 
 if TYPE_CHECKING:
-    from services.api.app.apps.cards.schemas import Card
-
+    from services.api.app.apps.cards.schemas import CardV2
 
 logger = logging.getLogger(__name__)
 
@@ -48,48 +46,7 @@ class UserProgressService:
     async def get_user_progress(
         self,
         user_id: int,
-        base_url: str,
     ) -> UserProgressResponse:
-        logger.info("Getting database for user %s", user_id)
-        async with self.db_pool.connection() as connection:
-            user_resources: UserResources = await logic.get_user_resources(
-                connection=connection,
-                user_id=user_id,
-            )
-
-            game_constants: dict = await logic.get_game_constants(
-                connection=connection,
-            )
-
-            enemies, enemy_leaders, user_seasons = await logic.process_enemies(
-                connection=connection,
-                user_id=user_id,
-                base_url=base_url,
-            )
-
-            user_cards, user_leaders, user_decks = await logic.process_cards(
-                connection=connection,
-                user_id=user_id,
-                base_url=base_url,
-            )
-
-        return UserProgressResponse(
-            user_database=UserDatabase(
-                cards=user_cards,
-                leaders=user_leaders,
-                decks=user_decks,
-            ),
-            resources=user_resources,
-            seasons=user_seasons,
-            game_const=game_constants,
-            enemies=enemies,
-            enemy_leaders=enemy_leaders,
-        )
-
-    async def get_user_progress_v2(
-        self,
-        user_id: int,
-    ) -> UserProgressResponseV2:
         logger.info("Getting database for user %s", user_id)
 
         async with self.db_pool.connection() as connection:
@@ -118,11 +75,11 @@ class UserProgressService:
                 user_id=user_id,
             )
 
-        return UserProgressResponseV2(
+        return UserProgressResponse(
+            user_resources=user_resources,
             user_cards=user_cards,
             user_leaders=user_leaders,
             user_decks=user_decks,
-            user_resources=user_resources,
             user_seasons=user_seasons,
         )
 
@@ -130,7 +87,6 @@ class UserProgressService:
         self,
         user_id: int,
         deck: CreateDeckRequest,
-        base_url: str,
     ) -> ListDecksResponse:
         async with self.db_pool.transaction() as connection:
             deck_id = await connection.fetchval(
@@ -144,7 +100,7 @@ class UserProgressService:
                 deck.leader_id,
             )
 
-            card_decks: list[tuple[deck_id, Card.id]] = [(deck_id, card_id) for card_id in deck.cards]
+            card_decks: list[tuple[deck_id, CardV2.id]] = [(deck_id, card_id) for card_id in deck.cards]
 
             await connection.executemany(
                 """
@@ -165,10 +121,9 @@ class UserProgressService:
                 deck_id,
             )
 
-            _, _, user_decks = await logic.process_cards(
+            user_decks = await logic.construct_user_decks_v2(
                 connection=connection,
                 user_id=user_id,
-                base_url=base_url,
             )
 
         return ListDecksResponse(
@@ -179,7 +134,6 @@ class UserProgressService:
         self,
         user_id: int,
         deck_id: int,
-        base_url: str,
     ) -> ListDecksResponse:
         async with self.db_pool.transaction() as connection:
             await connection.execute(
@@ -208,10 +162,10 @@ class UserProgressService:
                 """,
                 deck_id,
             )
-            _, _, user_decks = await logic.process_cards(
+
+            user_decks = await logic.construct_user_decks_v2(
                 connection=connection,
                 user_id=user_id,
-                base_url=base_url,
             )
 
         return ListDecksResponse(
@@ -223,7 +177,6 @@ class UserProgressService:
         user_id: int,
         deck_id: int,
         deck: CreateDeckRequest,
-        base_url: str,
     ) -> ListDecksResponse:
         async with self.db_pool.transaction() as connection:
             await connection.fetchrow(
@@ -249,7 +202,7 @@ class UserProgressService:
                 deck_id,
             )
 
-            card_decks: list[tuple[deck_id, Card.id]] = [(deck_id, card_id) for card_id in deck.cards]
+            card_decks: list[tuple[deck_id, CardV2.id]] = [(deck_id, card_id) for card_id in deck.cards]
 
             await connection.executemany(
                 """
@@ -260,10 +213,9 @@ class UserProgressService:
                 card_decks,
             )
 
-            _, _, user_decks = await logic.process_cards(
+            user_decks = await logic.construct_user_decks_v2(
                 connection=connection,
                 user_id=user_id,
-                base_url=base_url,
             )
 
         return ListDecksResponse(
@@ -424,7 +376,6 @@ class UserProgressService:
         user_id: int,
         card_id: int,
         subtype: CardActionSubtype,
-        base_url: str,
         recipe: dict | None = None,
     ) -> CardCraftMillResponse:
         logger.info("Got here for user %s trying (subtype %s) for card %s", user_id, subtype, card_id)
@@ -496,10 +447,9 @@ class UserProgressService:
                     )
 
                     # 2.2. После создания возвращаем на фронт весь список UserCard, чтобы обновить там карты
-                    user_cards: list[UserCard] = await logic.get_user_cards(
+                    user_cards: dict[int, UserCardV2] = await logic.get_user_cards_v2(
                         connection=connection,
                         user_id=user_id,
-                        base_url=base_url,
                     )
 
                     logger.info("Successfully crafted card %s for user %s", card_id, user_id)
@@ -565,10 +515,9 @@ class UserProgressService:
                     )
 
                     # 2.2. После создания возвращаем на фронт весь список UserLeader, чтобы обновить там лидеров
-                    user_leaders: list[UserLeader] = await logic.get_user_leaders(
+                    user_leaders: dict[int, UserLeaderV2] = await logic.get_user_leaders_v2(
                         connection=connection,
                         user_id=user_id,
-                        base_url=base_url,
                     )
 
                     logger.info("Successfully crafted leader card %s for user %s", card_id, user_id)
@@ -671,10 +620,9 @@ class UserProgressService:
                             )
 
                     # 3. Карту уничтожили, ресурсы добавили, можем собирать все карты юзера для ответа
-                    user_cards: list[UserCard] = await logic.get_user_cards(
+                    user_cards: dict[int, UserCardV2] = await logic.get_user_cards_v2(
                         connection=connection,
                         user_id=user_id,
-                        base_url=base_url,
                     )
 
                     logger.info("Successfully milled card %s for user %s", card_id, user_id)
@@ -758,11 +706,9 @@ class UserProgressService:
                             )
 
                     # 3. Карту лидера уничтожили, ресурсы добавили, можем собирать все карты лидера юзера для ответа
-
-                    user_leaders: list[UserLeader] = await logic.get_user_leaders(
+                    user_leaders: dict[int, UserLeaderV2] = await logic.get_user_leaders_v2(
                         connection=connection,
                         user_id=user_id,
-                        base_url=base_url,
                     )
 
                     logger.info("Successfully milled leader card %s for user %s", card_id, user_id)
@@ -780,7 +726,6 @@ class UserProgressService:
         self,
         user_id: int,
         user_level_id: int,
-        base_url: str,
     ) -> OpenRelatedLevelsResponse:
         logger.info("Opening related_levels for user_level %s and user %s", user_level_id, user_id)
 
@@ -892,10 +837,9 @@ class UserProgressService:
                         season_id,
                     )
 
-            _, _, user_seasons = await logic.process_enemies(
+            user_seasons = await logic.construct_seasons_v2(
                 connection=connection,
                 user_id=user_id,
-                base_url=base_url,
             )
 
         return OpenRelatedLevelsResponse(
@@ -906,7 +850,6 @@ class UserProgressService:
         self,
         user_id: int,
         cards_ids: list[int],
-        base_url: str,
     ) -> CardCraftBonusResponse:
         logger.info("Crafting bonus cards %s for user %s", cards_ids, user_id)
         async with self.db_pool.transaction() as connection:
@@ -932,10 +875,9 @@ class UserProgressService:
                 cards_ids,
             )
 
-            user_cards = await logic.get_user_cards(
+            user_cards: dict[int, UserCardV2] = await logic.get_user_cards_v2(
                 connection=connection,
                 user_id=user_id,
-                base_url=base_url,
             )
 
         return CardCraftBonusResponse(

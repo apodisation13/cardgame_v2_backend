@@ -1,4 +1,5 @@
 import pytest
+
 from httpx import AsyncClient
 
 
@@ -13,9 +14,7 @@ class TestGetCardsAPI:
         client: AsyncClient,
         user_login_fixture,
     ):
-        """
-
-        """
+        """ """
         user_id = user_login_fixture["id"]
         access_token = user_login_fixture["token"]["access_token"]
 
@@ -172,7 +171,6 @@ class TestGetCardsAPI:
                     },
                     "image": "http://test/media/enemy_cards/enemies/3.webp",
                 },
-
                 "2": {
                     "id": 2,
                     "name": "Enemy 2",

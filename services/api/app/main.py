@@ -7,11 +7,11 @@ from lib.utils.elk.elastic_logger import ElasticLoggerManager
 from lib.utils.elk.elastic_tracer import ElasticTracerManager
 from services.api.app.apps.api_docs.routes import router as swagger_router
 from services.api.app.apps.auth.routes import router as users_router
+from services.api.app.apps.cards.routes import router as cards_router
+from services.api.app.apps.game_const.routes import router as game_const_router
 from services.api.app.apps.news.routes import router as news_router
 from services.api.app.apps.preferences.routes import router as preferences_router
 from services.api.app.apps.progress.routes import router as progress_router
-from services.api.app.apps.cards.routes import router as cards_router
-from services.api.app.apps.game_const.routes import router as game_const_router
 from services.api.app.apps.stats.routes import router as stats_router
 from services.api.app.config import get_config as get_app_settings
 from services.api.app.dependencies import set_global_app

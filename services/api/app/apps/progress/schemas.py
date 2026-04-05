@@ -1,6 +1,6 @@
 from lib.utils.schemas import Base
 from lib.utils.schemas.game import CardActionSubtype, LevelDifficulty, ResourceActionSubtype
-from services.api.app.apps.cards.schemas import Card, Deck, Enemy, EnemyLeader, Leader, DeckV2
+from services.api.app.apps.cards.schemas import DeckV2
 
 
 class UserResources(Base):
@@ -45,29 +45,6 @@ class UserResources(Base):
         )
 
 
-class UserCard(Base):
-    id: int | None = None
-    count: int = 0
-    card: Card
-
-
-class UserLeader(Base):
-    id: int | None = None
-    count: int = 0
-    card: Leader
-
-
-class UserDeck(Base):
-    id: int
-    deck: Deck
-
-
-class UserDatabase(Base):
-    cards: list[UserCard]
-    leaders: list[UserLeader]
-    decks: list[UserDeck]
-
-
 class LevelRelatedLevel(Base):
     related_level_id: int | None
     line: str | None
@@ -75,18 +52,6 @@ class LevelRelatedLevel(Base):
 
 
 class Level(Base):
-    id: int
-    name: str
-    starting_enemies_number: int
-    difficulty: LevelDifficulty
-    x: int
-    y: int
-    enemy_leader: EnemyLeader
-    enemies: list[Enemy]
-    children: list[LevelRelatedLevel]
-
-
-class LevelV2(Base):
     id: int
     name: str
     starting_enemies_number: int
@@ -105,27 +70,10 @@ class UserLevel(Base):
     level: Level
 
 
-class UserLevelV2(Base):
-    id: int | None
-    unlocked: bool
-    finished: bool | None
-    level: LevelV2
-
-
 class SeasonRelatedSeason(Base):
     related_season_id: int | None
     line: str | None
     connection: str | None
-
-
-class Season(Base):
-    id: int
-    name: str
-    description: str
-    x: int
-    y: int
-    levels: list[UserLevel]
-    children: list[SeasonRelatedSeason]
 
 
 class SeasonV2(Base):
@@ -134,7 +82,7 @@ class SeasonV2(Base):
     description: str
     x: int
     y: int
-    levels: list[UserLevelV2]
+    levels: list[UserLevel]
     children: list[SeasonRelatedSeason]
 
 
@@ -147,27 +95,11 @@ class Stats(Base):
     hard_levels: int = 0
 
 
-class UserSeason(Base):
-    id: int | None
-    finished: bool | None
-    season: Season
-    stats: Stats
-
-
 class UserSeasonV2(Base):
     id: int | None
     finished: bool | None
     season: SeasonV2
     stats: Stats
-
-
-class UserProgressResponse(Base):
-    user_database: UserDatabase
-    seasons: list[UserSeason]
-    resources: UserResources
-    enemies: list[Enemy]
-    enemy_leaders: list[EnemyLeader]
-    game_const: dict
 
 
 class UserCardV2(Base):
@@ -185,7 +117,7 @@ class UserDeckV2(Base):
     deck: DeckV2
 
 
-class UserProgressResponseV2(Base):
+class UserProgressResponse(Base):
     user_resources: UserResources
     user_cards: dict[int, UserCardV2]
     user_leaders: dict[int, UserLeaderV2]
@@ -200,7 +132,7 @@ class CreateDeckRequest(Base):
 
 
 class ListDecksResponse(Base):
-    decks: list[UserDeck]
+    decks: list[UserDeckV2]
 
 
 class ResourcesRequest(Base):
@@ -214,12 +146,12 @@ class CardCraftMillRequest(Base):
 
 
 class CardCraftMillResponse(Base):
-    cards: list[UserCard] | list[UserLeader]
+    cards: dict[int, UserCardV2] | dict[int, UserLeaderV2]
     resources: UserResources
 
 
 class OpenRelatedLevelsResponse(Base):
-    seasons: list[UserSeason]
+    seasons: list[UserSeasonV2]
 
 
 class CardCraftBonusRequest(Base):
@@ -227,4 +159,4 @@ class CardCraftBonusRequest(Base):
 
 
 class CardCraftBonusResponse(Base):
-    cards: list[UserCard]
+    cards: dict[int, UserCardV2]

@@ -1,6 +1,6 @@
 import asyncpg
 
-from services.api.app.apps.cards.schemas import EnemyV2, EnemyLeaderV2, LeaderV2, CardV2
+from services.api.app.apps.cards.schemas import CardV2, EnemyLeaderV2, EnemyV2, LeaderV2
 
 
 async def get_enemies(
@@ -12,21 +12,21 @@ async def get_enemies(
             SELECT
                 enemies.id,
                 enemies.name,
-                
+
                 factions.name AS faction_name,
                 colors.name AS color_name,
-                
+
                 moves.name AS move_name,
                 moves.description AS move_description,
-                
+
                 enemy_passive_abilities.name AS passive_ability_name,
                 enemy_passive_abilities.description AS passive_ability_description,
-                
+
                 deathwishes.name AS deathwish_name,
                 deathwishes.description AS deathwish_description,
-                
+
                 enemies.data,
-                enemies.image_original AS image  
+                enemies.image_original AS image
             FROM
                 enemies
             JOIN
@@ -39,7 +39,7 @@ async def get_enemies(
                 deathwishes ON enemies.deathwish_id = deathwishes.id
             LEFT JOIN
                 enemy_passive_abilities ON enemies.passive_ability_id = enemy_passive_abilities.id
-            ORDER BY 
+            ORDER BY
                 enemies.faction_id,
                 enemies.data ->> 'hp' DESC,
                 enemies.data ->> 'damage' DESC
@@ -58,15 +58,15 @@ async def get_enemy_leaders(
             SELECT
                 enemy_leaders.id,
                 enemy_leaders.name,
-                
+
                 factions.name AS faction_name,
-                
+
                 enemy_leader_abilities.name AS ability_name,
                 enemy_leader_abilities.description AS ability_description,
-               
+
                 enemy_passive_abilities.name AS passive_ability_name,
                 enemy_passive_abilities.description AS passive_ability_description,
-                
+
                 enemy_leaders.data,
                 enemy_leaders.image_original AS image
             FROM
@@ -93,15 +93,15 @@ async def get_leaders(
                 leaders.id,
                 leaders.name,
                 leaders.unlocked,
-                
+
                 factions.name AS faction_name,
-                
+
                 abilities.name AS ability_name,
                 abilities.description AS ability_description,
-                
+
                 passive_abilities.name AS passive_ability_name,
                 passive_abilities.description AS passive_ability_description,
-                
+
                 leaders.data,
                 leaders.image_original AS image,
                 leaders.newly_added
@@ -133,17 +133,17 @@ async def get_cards(
                 cards.id,
                 cards.name,
                 cards.unlocked,
-                
+
                 factions.name AS faction_name,
                 colors.name AS color_name,
                 types.name AS type_name,
-                
+
                 abilities.name AS ability_name,
                 abilities.description AS ability_description,
-                
+
                 passive_abilities.name AS passive_ability_name,
                 passive_abilities.description AS passive_ability_description,
-    
+
                 cards.data,
                 cards.image_original AS image,
                 cards.newly_added
