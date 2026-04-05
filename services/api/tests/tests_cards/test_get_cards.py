@@ -4,7 +4,7 @@ from httpx import AsyncClient
 
 
 class TestGetCardsAPI:
-    endpoint = "cards/{user_id}"
+    endpoint = "cards"
 
     @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
@@ -14,12 +14,10 @@ class TestGetCardsAPI:
         client: AsyncClient,
         user_login_fixture,
     ):
-        """ """
-        user_id = user_login_fixture["id"]
         access_token = user_login_fixture["token"]["access_token"]
 
         response = await client.get(
-            self.endpoint.format(user_id=user_id),
+            self.endpoint,
             headers={"Authorization": f"Bearer {access_token}"},
         )
 
@@ -28,8 +26,54 @@ class TestGetCardsAPI:
         response_json = response.json()
 
         expected_result = {
-            "cards": {
-                "1": {
+            "cards": [
+                {
+                    "id": 3,
+                    "name": "Card 3",
+                    "unlocked": False,
+                    "faction": "Soldiers",
+                    "type": "Special",
+                    "color": "Gold",
+                    "ability": {
+                        "name": "Damage one",
+                        "description": "Damage one",
+                    },
+                    "passive_ability": {
+                        "name": "Passive ability",
+                        "description": "Passive ability",
+                    },
+                    "data": {
+                        "hp": 11,
+                        "damage": 6,
+                        "charges": 3,
+                    },
+                    "image": "http://test/media/player_cards/cards/3.webp",
+                    "newly_added": False,
+                },
+                {
+                    "id": 2,
+                    "name": "Card 2",
+                    "unlocked": True,
+                    "faction": "Soldiers",
+                    "type": "Special",
+                    "color": "Silver",
+                    "ability": {
+                        "name": "Damage one",
+                        "description": "Damage one",
+                    },
+                    "passive_ability": {
+                        "name": None,
+                        "description": None,
+                    },
+                    "data": {
+                        "hp": 11,
+                        "damage": 6,
+                        "charges": 1,
+                    },
+                    "image": "http://test/media/player_cards/cards/2.webp",
+                    "newly_added": False,
+                },
+                {
                     "id": 1,
                     "name": "Card 1",
                     "unlocked": True,
@@ -53,55 +97,9 @@ class TestGetCardsAPI:
                     "image": "http://test/media/player_cards/cards/1.webp",
                     "newly_added": False,
                 },
-                "3": {
-                    "id": 3,
-                    "name": "Card 3",
-                    "unlocked": False,
-                    "faction": "Soldiers",
-                    "type": "Special",
-                    "color": "Gold",
-                    "ability": {
-                        "name": "Damage one",
-                        "description": "Damage one",
-                    },
-                    "passive_ability": {
-                        "name": "Passive ability",
-                        "description": "Passive ability",
-                    },
-                    "data": {
-                        "hp": 11,
-                        "damage": 6,
-                        "charges": 3,
-                    },
-                    "image": "http://test/media/player_cards/cards/3.webp",
-                    "newly_added": False,
-                },
-                "2": {
-                    "id": 2,
-                    "name": "Card 2",
-                    "unlocked": True,
-                    "faction": "Soldiers",
-                    "type": "Special",
-                    "color": "Silver",
-                    "ability": {
-                        "name": "Damage one",
-                        "description": "Damage one",
-                    },
-                    "passive_ability": {
-                        "name": None,
-                        "description": None,
-                    },
-                    "data": {
-                        "hp": 11,
-                        "damage": 6,
-                        "charges": 1,
-                    },
-                    "image": "http://test/media/player_cards/cards/2.webp",
-                    "newly_added": False,
-                },
-            },
-            "leaders": {
-                "1": {
+            ],
+            "leaders": [
+                {
                     "id": 1,
                     "name": "Leader 1",
                     "unlocked": True,
@@ -122,7 +120,7 @@ class TestGetCardsAPI:
                     "image": "http://test/media/player_cards/leaders/1.webp",
                     "newly_added": False,
                 },
-            },
+            ],
             "enemies": {
                 "1": {
                     "id": 1,
@@ -217,4 +215,29 @@ class TestGetCardsAPI:
             },
         }
 
-        assert response_json == expected_result
+        assert response_json["enemies"] == expected_result["enemies"]
+        assert response_json["enemy_leaders"] == expected_result["enemy_leaders"]
+        assert response_json["cards"] == expected_result["cards"]
+        assert response_json["leaders"] == expected_result["leaders"]
+
+    @pytest.mark.usefixtures("init_db_cards")
+    @pytest.mark.asyncio
+    async def test_get_cards_unauthorized(
+        self,
+        # service fixtures
+        client: AsyncClient,
+    ):
+        response = await client.get(
+            self.endpoint,
+            headers={"Authorization": "Bearer some_token"},
+        )
+        assert response.status_code == 401
+        response_json = response.json()
+        assert response_json == {"detail": "Could not validate credentials"}
+
+        response = await client.get(
+            self.endpoint,
+        )
+        assert response.status_code == 401
+        response_json = response.json()
+        assert response_json == {"detail": "Missing authorization header"}

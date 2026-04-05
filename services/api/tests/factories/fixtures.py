@@ -364,6 +364,7 @@ async def init_db_cards(
     pa = await passive_ability_factory(name="Passive ability", description="Passive ability")
 
     leader_1 = await leader_factory(
+        name="Leader 1",
         faction_id=f2.id,
         ability_id=a.id,
         unlocked=True,
@@ -375,6 +376,7 @@ async def init_db_cards(
         image_original="player_cards/leaders/1.webp",
     )
     card_1 = await card_factory(
+        name="Card 1",
         faction_id=f1.id,
         ability_id=a.id,
         color_id=c1.id,
@@ -389,6 +391,7 @@ async def init_db_cards(
         image_original="player_cards/cards/1.webp",
     )
     card_2 = await card_factory(
+        name="Card 2",
         faction_id=f2.id,
         ability_id=a.id,
         color_id=c2.id,
@@ -402,6 +405,7 @@ async def init_db_cards(
         image_original="player_cards/cards/2.webp",
     )
     card_3 = await card_factory(
+        name="Card 3",
         faction_id=f2.id,
         ability_id=a.id,
         color_id=c3.id,
@@ -440,6 +444,7 @@ async def init_db_cards(
     deathwish = await deathwish_factory(name="Deathwish", description="Deathwish")
 
     enemy_leader = await enemy_leader_factory(
+        name="Enemy Leader 1",
         faction_id=f1.id,
         ability_id=ela.id,
         data={
@@ -449,6 +454,7 @@ async def init_db_cards(
         image_original="enemy_cards/enemy_leaders/1.webp",
     )
     enemy_1 = await enemy_factory(
+        name="Enemy 1",
         faction_id=f1.id,
         color_id=c1.id,
         move_id=m1.id,
@@ -464,6 +470,7 @@ async def init_db_cards(
         image_original="enemy_cards/enemies/1.webp",
     )
     enemy_2 = await enemy_factory(
+        name="Enemy 2",
         faction_id=f2.id,
         color_id=c2.id,
         move_id=m2.id,
@@ -474,6 +481,7 @@ async def init_db_cards(
         image_original="enemy_cards/enemies/2.webp",
     )
     enemy_3 = await enemy_factory(
+        name="Enemy 3",
         faction_id=f2.id,
         color_id=c3.id,
         move_id=m2.id,
