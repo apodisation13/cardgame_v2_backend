@@ -13,4 +13,8 @@ class GameConstService:
 
     async def get_game_const(self) -> dict:
         async with self.db_pool.connection() as connection:
-            return await connection.fetchval("""SELECT data::jsonb FROM game_constants""")
+            game_const: dict | None = await connection.fetchval("""SELECT data::jsonb FROM game_constants""")
+
+        if not game_const:
+            return {}
+        return game_const

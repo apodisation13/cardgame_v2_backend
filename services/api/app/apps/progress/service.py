@@ -55,22 +55,22 @@ class UserProgressService:
                 user_id=user_id,
             )
 
-            user_cards = await logic.get_user_cards_v2(
+            user_cards = await logic.get_user_cards(
                 connection=connection,
                 user_id=user_id,
             )
 
-            user_leaders = await logic.get_user_leaders_v2(
+            user_leaders = await logic.get_user_leaders(
                 connection=connection,
                 user_id=user_id,
             )
 
-            user_decks = await logic.construct_user_decks_v2(
+            user_decks = await logic.construct_user_decks(
                 connection=connection,
                 user_id=user_id,
             )
 
-            user_seasons = await logic.construct_seasons_v2(
+            user_seasons = await logic.construct_seasons(
                 connection=connection,
                 user_id=user_id,
             )
@@ -121,7 +121,7 @@ class UserProgressService:
                 deck_id,
             )
 
-            user_decks = await logic.construct_user_decks_v2(
+            user_decks = await logic.construct_user_decks(
                 connection=connection,
                 user_id=user_id,
             )
@@ -163,7 +163,7 @@ class UserProgressService:
                 deck_id,
             )
 
-            user_decks = await logic.construct_user_decks_v2(
+            user_decks = await logic.construct_user_decks(
                 connection=connection,
                 user_id=user_id,
             )
@@ -213,7 +213,7 @@ class UserProgressService:
                 card_decks,
             )
 
-            user_decks = await logic.construct_user_decks_v2(
+            user_decks = await logic.construct_user_decks(
                 connection=connection,
                 user_id=user_id,
             )
@@ -447,7 +447,7 @@ class UserProgressService:
                     )
 
                     # 2.2. После создания возвращаем на фронт весь список UserCard, чтобы обновить там карты
-                    user_cards: dict[int, UserCard] = await logic.get_user_cards_v2(
+                    user_cards: dict[int, UserCard] = await logic.get_user_cards(
                         connection=connection,
                         user_id=user_id,
                     )
@@ -515,7 +515,7 @@ class UserProgressService:
                     )
 
                     # 2.2. После создания возвращаем на фронт весь список UserLeader, чтобы обновить там лидеров
-                    user_leaders: dict[int, UserLeader] = await logic.get_user_leaders_v2(
+                    user_leaders: dict[int, UserLeader] = await logic.get_user_leaders(
                         connection=connection,
                         user_id=user_id,
                     )
@@ -620,7 +620,7 @@ class UserProgressService:
                             )
 
                     # 3. Карту уничтожили, ресурсы добавили, можем собирать все карты юзера для ответа
-                    user_cards: dict[int, UserCard] = await logic.get_user_cards_v2(
+                    user_cards: dict[int, UserCard] = await logic.get_user_cards(
                         connection=connection,
                         user_id=user_id,
                     )
@@ -706,7 +706,7 @@ class UserProgressService:
                             )
 
                     # 3. Карту лидера уничтожили, ресурсы добавили, можем собирать все карты лидера юзера для ответа
-                    user_leaders: dict[int, UserLeader] = await logic.get_user_leaders_v2(
+                    user_leaders: dict[int, UserLeader] = await logic.get_user_leaders(
                         connection=connection,
                         user_id=user_id,
                     )
@@ -837,7 +837,7 @@ class UserProgressService:
                         season_id,
                     )
 
-            user_seasons = await logic.construct_seasons_v2(
+            user_seasons = await logic.construct_seasons(
                 connection=connection,
                 user_id=user_id,
             )
@@ -875,7 +875,7 @@ class UserProgressService:
                 cards_ids,
             )
 
-            user_cards: dict[int, UserCard] = await logic.get_user_cards_v2(
+            user_cards: dict[int, UserCard] = await logic.get_user_cards(
                 connection=connection,
                 user_id=user_id,
             )

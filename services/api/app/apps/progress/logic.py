@@ -128,7 +128,7 @@ async def get_season_related_seasons(
     return season_ids_dict
 
 
-async def construct_seasons_v2(
+async def construct_seasons(
     connection: asyncpg.Connection,
     user_id: int,
 ) -> list[UserSeason]:
@@ -251,7 +251,7 @@ async def construct_seasons_v2(
     return list(user_seasons_dict.values())
 
 
-async def get_user_cards_v2(
+async def get_user_cards(
     connection: asyncpg.Connection,
     user_id: int,
 ) -> dict[int, UserCard]:
@@ -278,7 +278,7 @@ async def get_user_cards_v2(
     }
 
 
-async def get_user_leaders_v2(
+async def get_user_leaders(
     connection: asyncpg.Connection,
     user_id: int,
 ) -> dict[int, UserLeader]:
@@ -305,7 +305,7 @@ async def get_user_leaders_v2(
     }
 
 
-async def construct_user_decks_v2(
+async def construct_user_decks(
     connection: asyncpg.Connection,
     user_id: int,
 ) -> list[UserDeck]:
