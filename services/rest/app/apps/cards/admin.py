@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django import forms
+from django_json_widget.widgets import JSONEditorWidget
 
 from apps.cards.models import Ability, Card, CardDeck, Deck, Leader, PassiveAbility, Type
 
@@ -8,32 +10,129 @@ admin.site.register(Ability)
 admin.site.register(PassiveAbility)
 
 
+class LeaderForm(forms.ModelForm):
+    class Meta:
+        model = Leader
+
+        fields = (
+            "id",
+            "name",
+            "unlocked",
+            "image_original",
+            "faction",
+            "ability",
+            "passive_ability",
+            "data",
+        )
+        widgets = {"data": JSONEditorWidget}
+
+
+class CardForm(forms.ModelForm):
+    class Meta:
+        model = Card
+
+        fields = (
+            "id",
+            "name",
+            "unlocked",
+            "image_original",
+            "type",
+            "color",
+            "faction",
+            "ability",
+            "passive_ability",
+            "newly_added",
+            "data",
+        )
+        widgets = {"data": JSONEditorWidget}
+
+
 @admin.register(Leader)
 class LeaderAdmin(admin.ModelAdmin):
+    form = LeaderForm
     list_filter = (
         "faction_id",
         "ability_id",
-        "has_passive",
         "passive_ability_id",
     )
-    list_display = [field.name for field in Leader._meta.fields]
-    list_display_links = [field.name for field in Leader._meta.fields]
+    list_display = [
+        "id",
+        "name",
+        "get_damage",
+        "get_charges",
+        "get_hp",
+    ]
+    list_display_links = [
+        "id",
+        "name",
+        "get_damage",
+        "get_charges",
+        "get_hp",
+    ]
     search_fields = ("name",)
+
+    @admin.display(description="Урон")
+    def get_damage(self, obj):
+        return obj.data.get("damage")
+
+    @admin.display(description="Заряды")
+    def get_charges(self, obj):
+        return obj.data.get("charges")
+
+    @admin.display(description="ХП")
+    def get_hp(self, obj):
+        return obj.data.get("hp")
 
 
 @admin.register(Card)
 class CardAdmin(admin.ModelAdmin):
+    form = CardForm
     list_filter = (
         "faction_id",
         "color_id",
         "type_id",
         "ability_id",
-        "has_passive",
         "passive_ability_id",
     )
-    list_display = [field.name for field in Card._meta.fields]
-    list_display_links = [field.name for field in Card._meta.fields]
+    list_display = [
+        "id",
+        "name",
+        "get_color_name",
+        "get_type_name",
+        "get_damage",
+        "get_charges",
+        "get_hp",
+    ]
+    list_display_links = [
+        "id",
+        "name",
+        "get_color_name",
+        "get_type_name",
+        "get_damage",
+        "get_charges",
+        "get_hp",
+    ]
     search_fields = ("name",)
+
+    @admin.display(description="Цвет", ordering="color__name")
+    def get_color_name(self, obj):
+        return obj.color.name
+
+    @admin.display(description="Тип", ordering="type__name")
+    def get_type_name(self, obj):
+        return obj.type.name
+
+    @admin.display(description="Урон")
+    def get_damage(self, obj):
+        return obj.data.get("damage")
+
+    @admin.display(description="Заряды")
+    def get_charges(self, obj):
+        return obj.data.get("charges")
+
+    @admin.display(description="ХП")
+    def get_hp(self, obj):
+        return obj.data.get("hp")
 
 
 class CardDeckInLine(admin.TabularInline):
