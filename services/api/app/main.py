@@ -7,6 +7,8 @@ from lib.utils.elk.elastic_logger import ElasticLoggerManager
 from lib.utils.elk.elastic_tracer import ElasticTracerManager
 from services.api.app.apps.api_docs.routes import router as swagger_router
 from services.api.app.apps.auth.routes import router as users_router
+from services.api.app.apps.cards.routes import router as cards_router
+from services.api.app.apps.game_const.routes import router as game_const_router
 from services.api.app.apps.news.routes import router as news_router
 from services.api.app.apps.preferences.routes import router as preferences_router
 from services.api.app.apps.progress.routes import router as progress_router
@@ -71,6 +73,8 @@ api_v1_router = APIRouter(prefix="/api/v1")
 api_v1_router.include_router(swagger_router, prefix="", tags=["swagger"])
 api_v1_router.include_router(users_router, prefix="/users", tags=["accounts"])
 api_v1_router.include_router(news_router, prefix="/news", tags=["news"])
+api_v1_router.include_router(cards_router, prefix="/cards", tags=["cards"])
+api_v1_router.include_router(game_const_router, prefix="/game_const", tags=["game_const"])
 api_v1_router.include_router(progress_router, prefix="/user-progress", tags=["progress"])
 api_v1_router.include_router(preferences_router, prefix="/preferences", tags=["preferences"])
 api_v1_router.include_router(stats_router, prefix="/statistics", tags=["statistics"])

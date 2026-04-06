@@ -1,6 +1,6 @@
 from lib.utils.schemas import Base
 from lib.utils.schemas.game import CardActionSubtype, LevelDifficulty, ResourceActionSubtype
-from services.api.app.apps.cards.schemas import Card, Deck, Enemy, EnemyLeader, Leader
+from services.api.app.apps.cards.schemas import Deck
 
 
 class UserResources(Base):
@@ -45,29 +45,6 @@ class UserResources(Base):
         )
 
 
-class UserCard(Base):
-    id: int | None = None
-    count: int = 0
-    card: Card
-
-
-class UserLeader(Base):
-    id: int | None = None
-    count: int = 0
-    card: Leader
-
-
-class UserDeck(Base):
-    id: int
-    deck: Deck
-
-
-class UserDatabase(Base):
-    cards: list[UserCard]
-    leaders: list[UserLeader]
-    decks: list[UserDeck]
-
-
 class LevelRelatedLevel(Base):
     related_level_id: int | None
     line: str | None
@@ -81,8 +58,8 @@ class Level(Base):
     difficulty: LevelDifficulty
     x: int
     y: int
-    enemy_leader: EnemyLeader
-    enemies: list[Enemy]
+    enemy_leader: int
+    enemies: list[int]
     children: list[LevelRelatedLevel]
 
 
@@ -125,13 +102,27 @@ class UserSeason(Base):
     stats: Stats
 
 
+class UserCard(Base):
+    user_card_id: int
+    count: int
+
+
+class UserLeader(Base):
+    user_leader_id: int
+    count: int
+
+
+class UserDeck(Base):
+    user_deck_id: int
+    deck: Deck
+
+
 class UserProgressResponse(Base):
-    user_database: UserDatabase
-    seasons: list[UserSeason]
-    resources: UserResources
-    enemies: list[Enemy]
-    enemy_leaders: list[EnemyLeader]
-    game_const: dict
+    user_resources: UserResources
+    user_cards: dict[int, UserCard]
+    user_leaders: dict[int, UserLeader]
+    user_decks: list[UserDeck]
+    user_seasons: list[UserSeason]
 
 
 class CreateDeckRequest(Base):
@@ -155,7 +146,7 @@ class CardCraftMillRequest(Base):
 
 
 class CardCraftMillResponse(Base):
-    cards: list[UserCard] | list[UserLeader]
+    cards: dict[int, UserCard] | dict[int, UserLeader]
     resources: UserResources
 
 
@@ -168,4 +159,4 @@ class CardCraftBonusRequest(Base):
 
 
 class CardCraftBonusResponse(Base):
-    cards: list[UserCard]
+    cards: dict[int, UserCard]

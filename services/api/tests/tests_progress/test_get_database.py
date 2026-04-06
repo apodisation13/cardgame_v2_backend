@@ -4,11 +4,11 @@ from httpx import AsyncClient
 
 
 class TestGetUserProgressAPI:
-    endpoint = "user-progress/{user_id}"
+    endpoint = "user-progress{user_id}"
 
     @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
-    async def test_get_user_progress(
+    async def test_get_user_progress_v2(
         self,
         # service fixtures
         client: AsyncClient,
@@ -18,6 +18,9 @@ class TestGetUserProgressAPI:
         game_constants_factory,
         user_level_factory,
         user_season_factory,
+        user_deck_factory,
+        user_card_factory,
+        user_leader_factory,
     ):
         """
         Базовая фикстура добавила уже 3 разных уровня
@@ -36,20 +39,24 @@ class TestGetUserProgressAPI:
         await user_level_factory(user_id=user_id, level_id=1)
         await user_season_factory(user_id=user_id, season_id=1)
 
+        await user_card_factory(
+            user_id=user_id,
+            card_id=1,
+        )
+        await user_leader_factory(
+            leader_id=1,
+            user_id=user_id,
+        )
+
+        await user_deck_factory(
+            user_id=user_id,
+            deck_id=1,
+        )
+
         response = await client.get(
             self.endpoint.format(user_id=user_id),
             headers={"Authorization": f"Bearer {access_token}"},
         )
 
         response_json = response.json()
-        seasons = response_json["seasons"]
-        # print(seasons)
-
-        for season in seasons:
-            # season.pop("levels")
-            print(season)
-
-            for level in season["season"]["levels"]:
-                print(level)
-
-            print()
+        print(response_json)
