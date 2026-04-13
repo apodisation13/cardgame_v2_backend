@@ -1,8 +1,8 @@
-from django.contrib import admin
 from django import forms
-from django_json_widget.widgets import JSONEditorWidget
+from django.contrib import admin
 
 from apps.cards.models import Ability, Card, CardDeck, Deck, Leader, PassiveAbility, Type
+from django_json_widget.widgets import JSONEditorWidget
 
 
 admin.site.register(Type)
@@ -72,15 +72,15 @@ class LeaderAdmin(admin.ModelAdmin):
     search_fields = ("name",)
 
     @admin.display(description="Урон")
-    def get_damage(self, obj):
+    def get_damage(self, obj: Leader) -> int:
         return obj.data.get("damage")
 
     @admin.display(description="Заряды")
-    def get_charges(self, obj):
+    def get_charges(self, obj: Leader) -> int:
         return obj.data.get("charges")
 
     @admin.display(description="ХП")
-    def get_hp(self, obj):
+    def get_hp(self, obj: Leader) -> int:
         return obj.data.get("hp")
 
 
@@ -115,23 +115,23 @@ class CardAdmin(admin.ModelAdmin):
     search_fields = ("name",)
 
     @admin.display(description="Цвет", ordering="color__name")
-    def get_color_name(self, obj):
+    def get_color_name(self, obj: Card) -> str:
         return obj.color.name
 
     @admin.display(description="Тип", ordering="type__name")
-    def get_type_name(self, obj):
+    def get_type_name(self, obj: Card) -> str:
         return obj.type.name
 
     @admin.display(description="Урон")
-    def get_damage(self, obj):
+    def get_damage(self, obj: Card) -> int:
         return obj.data.get("damage")
 
     @admin.display(description="Заряды")
-    def get_charges(self, obj):
+    def get_charges(self, obj: Card) -> int:
         return obj.data.get("charges")
 
     @admin.display(description="ХП")
-    def get_hp(self, obj):
+    def get_hp(self, obj: Card) -> int:
         return obj.data.get("hp")
 
 

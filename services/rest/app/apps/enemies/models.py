@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import OrderBy, IntegerField
+from django.db.models import IntegerField, OrderBy
 from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast
 

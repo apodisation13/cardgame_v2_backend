@@ -1,8 +1,8 @@
 from django import forms
 from django.contrib import admin
-from django_json_widget.widgets import JSONEditorWidget
 
 from apps.enemies.models import Deathwish, Enemy, EnemyLeader, EnemyLeaderAbility, EnemyPassiveAbility, Move
+from django_json_widget.widgets import JSONEditorWidget
 
 
 admin.site.register(Move)
@@ -43,6 +43,7 @@ class EnemyForm(forms.ModelForm):
         )
         widgets = {"data": JSONEditorWidget}
 
+
 @admin.register(EnemyLeader)
 class EnemyLeaderAdmin(admin.ModelAdmin):
     form = EnemyLeaderForm
@@ -64,7 +65,7 @@ class EnemyLeaderAdmin(admin.ModelAdmin):
     search_fields = ("name",)
 
     @admin.display(description="ХП")
-    def get_hp(self, obj):
+    def get_hp(self, obj: EnemyLeader) -> int:
         return obj.data.get("hp")
 
 
@@ -93,9 +94,9 @@ class EnemyAdmin(admin.ModelAdmin):
     search_fields = ("name",)
 
     @admin.display(description="Урон")
-    def get_damage(self, obj):
+    def get_damage(self, obj: Enemy) -> int:
         return obj.data.get("damage")
 
     @admin.display(description="ХП")
-    def get_hp(self, obj):
+    def get_hp(self, obj: Enemy) -> int:
         return obj.data.get("hp")
