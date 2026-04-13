@@ -14,19 +14,35 @@ from lib.utils.models import (
     Faction,
     GameConstants,
     Leader,
+    Leaderboard,
     Level,
     LevelEnemy,
     LevelRelatedLevels,
     Move,
     PassiveAbility,
     Season,
+    SeasonRelatedSeasons,
     Type,
     UserCard,
     UserDeck,
     UserLeader,
     UserLevel,
+    UserPreferences,
     UserResource,
+    UserSeason,
+    UserStats,
 )
+from lib.utils.schemas.game import (
+    DEFAULT_CARDS_PRICES,
+    DEFAULT_KEY_REWARDS,
+    DEFAULT_RESOURCES_TRANSITIONS,
+    DEFAULT_START_LEVEL_PRICES,
+    DEFAULT_WIN_LEVEL_REWARDS,
+    LeaderboardGameMode,
+    LevelDifficulty,
+    UserStatsRecordType,
+)
+from services.api.app.apps.preferences.schemas import DEFAULT_PREFERENCES
 
 
 class FactionFactory(BaseModelFactory):
@@ -47,29 +63,15 @@ class GameConstantsFactory(BaseModelFactory):
     class Meta:
         model = GameConstants
 
-    data = factory.LazyFunction(
-        lambda: {
-            "hand_size": 6,
-            "mill_gold": 200,
-            "craft_gold": -2000,
-            "mill_bronze": 20,
-            "mill_leader": 300,
-            "mill_silver": 100,
-            "craft_bronze": -200,
-            "craft_leader": -3000,
-            "craft_silver": -1000,
-            "pay_for_kegs": -200,
-            "pay_for_chests": -2000,
-            "win_level_easy": 125,
-            "win_level_hard": 500,
-            "play_level_easy": -50,
-            "play_level_hard": -200,
-            "pay_for_big_kegs": -400,
-            "win_level_normal": 275,
-            "play_level_normal": -100,
-            "number_of_cards_in_deck": 12,
-        },
-    )
+    data = {
+        "hand_size": 6,
+        "number_of_cards_in_deck": 12,
+        "resources_transitions": DEFAULT_RESOURCES_TRANSITIONS,
+        "key_rewards": DEFAULT_KEY_REWARDS,
+        "win_level_rewards": DEFAULT_WIN_LEVEL_REWARDS,
+        "start_level_prices": DEFAULT_START_LEVEL_PRICES,
+        "cards_resources_prices": DEFAULT_CARDS_PRICES,
+    }
 
 
 class TypeFactory(BaseModelFactory):
@@ -99,51 +101,30 @@ class LeaderFactory(BaseModelFactory):
     class Meta:
         model = Leader
 
-    name = factory.Sequence(lambda n: f"Leader {n}")
-    image_original = factory.Faker("image_url")
-    image_tablet = factory.Faker("image_url")
-    image_phone = factory.Faker("image_url")
+    name = factory.Sequence(lambda n: f"Leader {n + 1}")
+    image_original = "image_url"
     unlocked = False
     faction_id = factory.SubFactory(FactionFactory)
     ability_id = factory.SubFactory(AbilityFactory)
-    damage = 0
-    charges = 1
-    heal = 0
-    has_passive = False
     passive_ability_id = None
-    value = 0
-    timer = 0
-    default_timer = 0
-    reset_timer = False
+    newly_added = False
+    data = {}
 
 
 class CardFactory(BaseModelFactory):
     class Meta:
         model = Card
 
-    name = factory.Sequence(lambda n: f"Card {n}")
-    image_original = factory.Faker("image_url")
-    image_tablet = factory.Faker("image_url")
-    image_phone = factory.Faker("image_url")
+    name = factory.Sequence(lambda n: f"Card {n + 1}")
+    image_original = "image_url"
     unlocked = False
     faction_id = factory.SubFactory(FactionFactory)
     color_id = factory.SubFactory(ColorFactory)
     type_id = factory.SubFactory(TypeFactory)
     ability_id = factory.SubFactory(AbilityFactory)
-    damage = 0
-    charges = 1
-    hp = 0
-    heal = 0
-    has_passive = False
-    has_passive_in_hand = False
-    has_passive_in_deck = False
-    has_passive_in_grave = False
     passive_ability_id = None
-    value = 0
-    timer = 0
-    default_timer = 0
-    reset_timer = False
-    each_tick = False
+    newly_added = False
+    data = {}
 
 
 class DeckFactory(BaseModelFactory, TimeStampMixinFactory):
@@ -198,51 +179,26 @@ class EnemyFactory(BaseModelFactory):
     class Meta:
         model = Enemy
 
-    name = factory.Sequence(lambda n: f"Enemy {n}")
-    image_original = factory.Faker("image_url")
-    image_tablet = factory.Faker("image_url")
-    image_phone = factory.Faker("image_url")
+    name = factory.Sequence(lambda n: f"Enemy {n + 1}")
+    image_original = "image_url"
     faction_id = factory.SubFactory(FactionFactory)
     color_id = factory.SubFactory(ColorFactory)
     move_id = factory.SubFactory(MoveFactory)
-    damage = 0
-    hp = 10
-    base_hp = 10
-    shield = False
-    has_passive = False
-    has_passive_in_field = False
-    has_passive_in_deck = False
-    has_passive_in_grave = False
     passive_ability_id = None
-    value = 0
-    timer = 0
-    default_timer = 0
-    reset_timer = False
-    each_tick = False
-    has_deathwish = False
     deathwish_id = None
-    deathwish_value = 0
+    data = {}
 
 
 class EnemyLeaderFactory(BaseModelFactory):
     class Meta:
         model = EnemyLeader
 
-    name = factory.Sequence(lambda n: f"Enemy Leader {n}")
-    image_original = factory.Faker("image_url")
-    image_tablet = factory.Faker("image_url")
-    image_phone = factory.Faker("image_url")
+    name = factory.Sequence(lambda n: f"Enemy Leader {n + 1}")
+    image_original = "image_url"
     faction_id = factory.SubFactory(FactionFactory)
-    hp = 100
-    base_hp = 100
     ability_id = factory.SubFactory(EnemyLeaderAbilityFactory)
-    has_passive = False
     passive_ability_id = None
-    value = 0
-    timer = 0
-    default_timer = 0
-    reset_timer = False
-    each_tick = False
+    data = {}
 
 
 class SeasonFactory(BaseModelFactory):
@@ -252,6 +208,8 @@ class SeasonFactory(BaseModelFactory):
     name = factory.Sequence(lambda n: f"Season {n}")
     description = factory.Faker("paragraph")
     unlocked = False
+    x = 0
+    y = 0
 
 
 class LevelFactory(BaseModelFactory):
@@ -260,7 +218,7 @@ class LevelFactory(BaseModelFactory):
 
     name = factory.Sequence(lambda n: f"Level {n}")
     starting_enemies_number = 3
-    difficulty = "NORMAL"
+    difficulty = LevelDifficulty.EASY
     unlocked = False
     x = 0
     y = 0
@@ -274,6 +232,16 @@ class LevelRelatedLevelsFactory(BaseModelFactory):
 
     level_id = factory.SubFactory(LevelFactory)
     related_level_id = factory.SubFactory(LevelFactory)
+    line = "right"
+    connection = "1-2"
+
+
+class SeasonRelatedSeasonsFactory(BaseModelFactory):
+    class Meta:
+        model = SeasonRelatedSeasons
+
+    season_id = factory.SubFactory(SeasonFactory)
+    related_season_id = factory.SubFactory(SeasonFactory)
     line = "right"
     connection = "1-2"
 
@@ -292,11 +260,21 @@ class UserResourceFactory(BaseModelFactory):
 
     id = factory.SubFactory(UserFactory)
     scraps = 1000
+    raw_bronze = 0
+    raw_silver = 0
+    raw_gold = 0
+    bronze_ingots = 0
+    silver_ingots = 0
+    gold_ingots = 0
+    crops = 1000
     wood = 1000
+    silk = 0
     kegs = 3
     big_kegs = 1
     chests = 0
     keys = 3
+    rare_gem = 0
+    money = 2000
 
 
 class UserCardFactory(BaseModelFactory):
@@ -332,3 +310,40 @@ class UserLevelFactory(BaseModelFactory):
     user_id = factory.SubFactory(UserFactory)
     level_id = factory.SubFactory(LevelFactory)
     finished = False
+
+
+class UserSeasonFactory(BaseModelFactory):
+    class Meta:
+        model = UserSeason
+
+    user_id = factory.SubFactory(UserFactory)
+    season_id = factory.SubFactory(SeasonFactory)
+    finished = False
+
+
+class UserPreferenceFactory(BaseModelFactory):
+    class Meta:
+        model = UserPreferences
+
+    id = factory.SubFactory(UserFactory)
+    data = DEFAULT_PREFERENCES
+
+
+class LeaderboardFactory(BaseModelFactory, TimeStampMixinFactory):
+    class Meta:
+        model = Leaderboard
+
+    user_id = factory.SubFactory(UserFactory)
+    leader_id = factory.SubFactory(LeaderFactory)
+    mode = LeaderboardGameMode.SEASON
+    max_kills = 1
+
+
+class UserStatsFactory(BaseModelFactory, TimeStampMixinFactory):
+    class Meta:
+        model = UserStats
+
+    user_id = factory.SubFactory(UserFactory)
+    faction_id = factory.SubFactory(FactionFactory)
+    type = UserStatsRecordType.PLAY
+    count = 1

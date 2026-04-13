@@ -12,19 +12,25 @@ from lib.utils.models import (
     Faction,
     GameConstants,
     Leader,
+    Leaderboard,
     Level,
     LevelEnemy,
     LevelRelatedLevels,
     Move,
     PassiveAbility,
     Season,
+    SeasonRelatedSeasons,
     Type,
     UserCard,
     UserDeck,
     UserLeader,
     UserLevel,
+    UserPreferences,
     UserResource,
+    UserSeason,
+    UserStats,
 )
+from lib.utils.schemas.game import LevelDifficulty
 import pytest_asyncio
 from services.api.tests.factories.factories import (
     AbilityFactory,
@@ -40,18 +46,23 @@ from services.api.tests.factories.factories import (
     FactionFactory,
     GameConstantsFactory,
     LeaderFactory,
+    LeaderboardFactory,
     LevelEnemyFactory,
     LevelFactory,
     LevelRelatedLevelsFactory,
     MoveFactory,
     PassiveAbilityFactory,
     SeasonFactory,
+    SeasonRelatedSeasonsFactory,
     TypeFactory,
     UserCardFactory,
     UserDeckFactory,
     UserLeaderFactory,
     UserLevelFactory,
+    UserPreferenceFactory,
     UserResourceFactory,
+    UserSeasonFactory,
+    UserStatsFactory,
 )
 
 
@@ -212,6 +223,14 @@ def level_related_levels_factory(db_connection):
 
 
 @pytest_asyncio.fixture
+def season_related_seasons_factory(db_connection):
+    async def factory(**kwargs) -> SeasonRelatedSeasons:
+        return await SeasonRelatedSeasonsFactory.create_in_db(conn=db_connection, **kwargs)
+
+    return factory
+
+
+@pytest_asyncio.fixture
 def level_enemy_factory(db_connection):
     async def factory(**kwargs) -> LevelEnemy:
         return await LevelEnemyFactory.create_in_db(conn=db_connection, **kwargs)
@@ -261,6 +280,38 @@ def user_level_factory(db_connection):
 
 
 @pytest_asyncio.fixture
+def user_season_factory(db_connection):
+    async def factory(**kwargs) -> UserSeason:
+        return await UserSeasonFactory.create_in_db(conn=db_connection, **kwargs)
+
+    return factory
+
+
+@pytest_asyncio.fixture
+def user_preferences_factory(db_connection):
+    async def factory(**kwargs) -> UserPreferences:
+        return await UserPreferenceFactory.create_in_db(conn=db_connection, **kwargs)
+
+    return factory
+
+
+@pytest_asyncio.fixture
+def leaderboard_factory(db_connection):
+    async def factory(**kwargs) -> Leaderboard:
+        return await LeaderboardFactory.create_in_db(conn=db_connection, **kwargs)
+
+    return factory
+
+
+@pytest_asyncio.fixture
+def user_stats_factory(db_connection):
+    async def factory(**kwargs) -> UserStats:
+        return await UserStatsFactory.create_in_db(conn=db_connection, **kwargs)
+
+    return factory
+
+
+@pytest_asyncio.fixture
 async def init_db_cards(
     faction_factory,
     color_factory,
@@ -278,6 +329,7 @@ async def init_db_cards(
     enemy_factory,
     enemy_leader_factory,
     season_factory,
+    season_related_seasons_factory,
     level_factory,
     level_related_levels_factory,
     level_enemy_factory,
@@ -296,11 +348,12 @@ async def init_db_cards(
     - 1 пассивка лидера врагов, 1 пассивка врагов, 1 завещание
     - 1 лидер врагов
     - 3 врага
-    - 1 сезон
-    - 3 уровня (1 открыт, 2 нет)
+    - 2 сезона (1 открытый, 2 закрытый + у него нет связей)
+    - 1 связь между сезонами (сезон 1 открывает сезон 2)
+    - 4 уровня (2 открыты, 2 нет) (3 для сезона 1, 1 для сезона 2)
     - связи между сезоном и уровнем, уровнем и его детьми, уровнем и врагами
     """
-    f1 = await faction_factory(name="Neutrals")
+    f1 = await faction_factory(name="Neutral")
     f2 = await faction_factory(name="Soldiers")
     c1 = await color_factory(name="Bronze")
     c2 = await color_factory(name="Silver")
@@ -311,31 +364,59 @@ async def init_db_cards(
     pa = await passive_ability_factory(name="Passive ability", description="Passive ability")
 
     leader_1 = await leader_factory(
-        faction_id=f1.id,
+        name="Leader 1",
+        faction_id=f2.id,
         ability_id=a.id,
         unlocked=True,
+        data={
+            "hp": 10,
+            "damage": 5,
+            "passive": {"value": 10, "each_tick": True},
+        },
+        image_original="player_cards/leaders/1.webp",
     )
     card_1 = await card_factory(
+        name="Card 1",
         faction_id=f1.id,
         ability_id=a.id,
         color_id=c1.id,
         type_id=t1.id,
         unlocked=True,
+        data={
+            "hp": 10,
+            "damage": 5,
+            "charges": 2,
+            "passive": {"value": 10},
+        },
+        image_original="player_cards/cards/1.webp",
     )
     card_2 = await card_factory(
+        name="Card 2",
         faction_id=f2.id,
         ability_id=a.id,
         color_id=c2.id,
         type_id=t2.id,
         unlocked=True,
+        data={
+            "hp": 11,
+            "damage": 6,
+            "charges": 1,
+        },
+        image_original="player_cards/cards/2.webp",
     )
     card_3 = await card_factory(
+        name="Card 3",
         faction_id=f2.id,
         ability_id=a.id,
         color_id=c3.id,
         type_id=t2.id,
-        has_passive=True,
         passive_ability_id=pa.id,
+        data={
+            "hp": 11,
+            "damage": 6,
+            "charges": 3,
+        },
+        image_original="player_cards/cards/3.webp",
     )
 
     base_deck = await deck_factory(
@@ -355,34 +436,57 @@ async def init_db_cards(
         card_id=card_3.id,
     )
 
-    m1 = await move_factory(name="Down")
-    m2 = await move_factory(name="Right")
+    m1 = await move_factory(name="Down", description="Down")
+    m2 = await move_factory(name="Right", description="Right")
     ela = await enemy_leader_ability_factory(name="Enemy leader ability", description="Enemy leader ability")
-    epa = await enemy_passive_ability_factory(name="Passive passive ability", description="Passive passive ability")
+    epa = await enemy_passive_ability_factory(name="Enemy passive ability", description="Enemy passive ability")
     deathwish = await deathwish_factory(name="Deathwish", description="Deathwish")
 
     enemy_leader = await enemy_leader_factory(
+        name="Enemy Leader 1",
         faction_id=f1.id,
         ability_id=ela.id,
+        data={
+            "hp": 10,
+            "passive": {"value": 10},
+        },
+        image_original="enemy_cards/enemy_leaders/1.webp",
     )
     enemy_1 = await enemy_factory(
+        name="Enemy 1",
         faction_id=f1.id,
         color_id=c1.id,
         move_id=m1.id,
-        has_passive=True,
         passive_ability_id=epa.id,
-        has_deathwish=True,
         deathwish_id=deathwish.id,
+        data={
+            "hp": 10,
+            "damage": 5,
+            "passive": {"value": 10},
+        },
+        image_original="enemy_cards/enemies/1.webp",
     )
     enemy_2 = await enemy_factory(
+        name="Enemy 2",
         faction_id=f2.id,
         color_id=c2.id,
         move_id=m2.id,
+        data={
+            "hp": 10,
+            "damage": 3,
+        },
+        image_original="enemy_cards/enemies/2.webp",
     )
     enemy_3 = await enemy_factory(
+        name="Enemy 3",
         faction_id=f2.id,
         color_id=c3.id,
         move_id=m2.id,
+        data={
+            "hp": 10,
+            "damage": 13,
+        },
+        image_original="enemy_cards/enemies/3.webp",
     )
 
     s1 = await season_factory(
@@ -390,6 +494,16 @@ async def init_db_cards(
         description="Season 1",
         unlocked=True,
     )
+    s2 = await season_factory(
+        name="Season 2",
+        description="Season 2",
+        unlocked=False,
+    )
+    await season_related_seasons_factory(
+        season_id=s1.id,
+        related_season_id=s2.id,
+    )
+
     l1 = await level_factory(
         name="Level 1",
         season_id=s1.id,
@@ -400,11 +514,19 @@ async def init_db_cards(
         name="Level 2",
         season_id=s1.id,
         enemy_leader_id=enemy_leader.id,
+        difficulty=LevelDifficulty.NORMAL,
     )
     l3 = await level_factory(
         name="Level 3",
         season_id=s1.id,
         enemy_leader_id=enemy_leader.id,
+        difficulty=LevelDifficulty.HARD,
+    )
+    l4 = await level_factory(
+        name="Level 4",
+        season_id=s2.id,
+        enemy_leader_id=enemy_leader.id,
+        unlocked=True,
     )
 
     await level_related_levels_factory(
@@ -442,5 +564,9 @@ async def init_db_cards(
     )
     await level_enemy_factory(
         level_id=l3.id,
+        enemy_id=enemy_3.id,
+    )
+    await level_enemy_factory(
+        level_id=l4.id,
         enemy_id=enemy_3.id,
     )

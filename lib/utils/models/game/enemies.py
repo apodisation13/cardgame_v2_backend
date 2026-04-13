@@ -1,7 +1,8 @@
-from typing import Optional
+from typing import Any, Optional
 
 from lib.utils.models import BaseModel, TimestampMixin
-from sqlalchemy import Boolean, ForeignKey, Integer, String, Text
+from sqlalchemy import ForeignKey, Integer, String, Text
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 
@@ -98,14 +99,6 @@ class Enemy(BaseModel, TimestampMixin):
         String(255),
         nullable=False,
     )
-    image_tablet: Mapped[str] = mapped_column(
-        String(255),
-        nullable=False,
-    )
-    image_phone: Mapped[str] = mapped_column(
-        String(255),
-        nullable=False,
-    )
     faction_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("factions.id", ondelete="RESTRICT"),
@@ -121,90 +114,20 @@ class Enemy(BaseModel, TimestampMixin):
         ForeignKey("moves.id", ondelete="RESTRICT"),
         nullable=False,
     )
-    damage: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        server_default="0",
-    )
-    hp: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        server_default="0",
-    )
-    base_hp: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        server_default="0",
-    )
-    shield: Mapped[bool] = mapped_column(
-        Boolean,
-        nullable=False,
-        server_default="false",
-    )
-    has_passive: Mapped[bool] = mapped_column(
-        Boolean,
-        nullable=False,
-        server_default="false",
-    )
-    has_passive_in_field: Mapped[bool] = mapped_column(
-        Boolean,
-        nullable=False,
-        server_default="false",
-    )
-    has_passive_in_deck: Mapped[bool] = mapped_column(
-        Boolean,
-        nullable=False,
-        server_default="false",
-    )
-    has_passive_in_grave: Mapped[bool] = mapped_column(
-        Boolean,
-        nullable=False,
-        server_default="false",
-    )
     passive_ability_id: Mapped[Optional[int]] = mapped_column(
         Integer,
         ForeignKey("enemy_passive_abilities.id", ondelete="RESTRICT"),
         nullable=True,
-    )
-    value: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        server_default="0",
-    )
-    timer: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        server_default="0",
-    )
-    default_timer: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        server_default="0",
-    )
-    reset_timer: Mapped[bool] = mapped_column(
-        Boolean,
-        nullable=False,
-        server_default="false",
-    )
-    each_tick: Mapped[bool] = mapped_column(
-        Boolean,
-        nullable=False,
-        server_default="false",
-    )
-    has_deathwish: Mapped[bool] = mapped_column(
-        Boolean,
-        nullable=False,
-        server_default="false",
     )
     deathwish_id: Mapped[Optional[int]] = mapped_column(
         Integer,
         ForeignKey("deathwishes.id", ondelete="RESTRICT"),
         nullable=True,
     )
-    deathwish_value: Mapped[int] = mapped_column(
-        Integer,
+    data: Mapped[dict[str, Any]] = mapped_column(
+        JSONB,
+        server_default="{}",
         nullable=False,
-        server_default="0",
     )
 
 
@@ -225,66 +148,23 @@ class EnemyLeader(BaseModel, TimestampMixin):
         String(255),
         nullable=False,
     )
-    image_tablet: Mapped[str] = mapped_column(
-        String(255),
-        nullable=False,
-    )
-    image_phone: Mapped[str] = mapped_column(
-        String(255),
-        nullable=False,
-    )
     faction_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("factions.id", ondelete="RESTRICT"),
         nullable=False,
-    )
-    hp: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        server_default="0",
-    )
-    base_hp: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        server_default="0",
     )
     ability_id: Mapped[Optional[int]] = mapped_column(
         Integer,
         ForeignKey("enemy_leader_abilities.id", ondelete="RESTRICT"),
         nullable=True,
     )
-    has_passive: Mapped[bool] = mapped_column(
-        Boolean,
-        nullable=False,
-        server_default="false",
-    )
     passive_ability_id: Mapped[Optional[int]] = mapped_column(
         Integer,
         ForeignKey("enemy_passive_abilities.id", ondelete="RESTRICT"),
         nullable=True,
     )
-    value: Mapped[int] = mapped_column(
-        Integer,
+    data: Mapped[dict[str, Any]] = mapped_column(
+        JSONB,
+        server_default="{}",
         nullable=False,
-        server_default="0",
-    )
-    timer: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        server_default="0",
-    )
-    default_timer: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        server_default="0",
-    )
-    reset_timer: Mapped[bool] = mapped_column(
-        Boolean,
-        nullable=False,
-        server_default="false",
-    )
-    each_tick: Mapped[bool] = mapped_column(
-        Boolean,
-        nullable=False,
-        server_default="false",
     )

@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from lib.utils.config.env_types import EnvType
 from services.rest.app.config import Config, get_config
 
 
@@ -26,10 +27,13 @@ SECRET_KEY = config.DJANGO_SECRET_KEY
 #     "http://127.0.0.1:8002",
 # ]
 ALLOWED_HOSTS = ["*"]
+
 CSRF_TRUSTED_ORIGINS = [
     "http://*",
     "https://*",
 ]
+if config.ENV_TYPE in EnvType.docker_development():
+    CSRF_TRUSTED_ORIGINS = config.CSRF_TRUSTED_ORIGINS
 
 # Security settings
 SECURE_BROWSER_XSS_FILTER = True

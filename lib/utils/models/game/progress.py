@@ -16,10 +16,50 @@ class UserResource(BaseModel, TimestampMixin):
         nullable=False,
         server_default="1000",
     )
+    raw_bronze: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="0",
+    )
+    raw_silver: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="0",
+    )
+    raw_gold: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="0",
+    )
+    bronze_ingots: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="0",
+    )
+    silver_ingots: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="0",
+    )
+    gold_ingots: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="0",
+    )
+    crops: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="1000",
+    )
     wood: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
         server_default="1000",
+    )
+    silk: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="0",
     )
     kegs: Mapped[int] = mapped_column(
         Integer,
@@ -40,6 +80,16 @@ class UserResource(BaseModel, TimestampMixin):
         Integer,
         nullable=False,
         server_default="3",
+    )
+    rare_gem: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="0",
+    )
+    money: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="2000",
     )
 
 
@@ -157,6 +207,38 @@ class UserLevel(BaseModel, TimestampMixin):
     level_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("levels.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    finished: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        server_default="false",
+    )
+
+
+class UserSeason(BaseModel, TimestampMixin):
+    __tablename__ = "user_seasons"
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id",
+            "season_id",
+            name="uq_user_season",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        autoincrement=True,
+    )
+    user_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("users.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    season_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("seasons.id", ondelete="RESTRICT"),
         nullable=False,
     )
     finished: Mapped[bool] = mapped_column(

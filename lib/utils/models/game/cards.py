@@ -1,7 +1,8 @@
-from typing import Optional
+from typing import Any, Optional
 
 from lib.utils.models import BaseModel, TimestampMixin
 from sqlalchemy import Boolean, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 
@@ -75,14 +76,6 @@ class Leader(BaseModel, TimestampMixin):
         String(255),
         nullable=False,
     )
-    image_tablet: Mapped[str] = mapped_column(
-        String(255),
-        nullable=False,
-    )
-    image_phone: Mapped[str] = mapped_column(
-        String(255),
-        nullable=False,
-    )
     unlocked: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
@@ -98,50 +91,20 @@ class Leader(BaseModel, TimestampMixin):
         ForeignKey("abilities.id", ondelete="RESTRICT"),
         nullable=False,
     )
-    damage: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        server_default="0",
-    )
-    charges: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        server_default="1",
-    )
-    heal: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        server_default="0",
-    )
-    has_passive: Mapped[bool] = mapped_column(
-        Boolean,
-        nullable=False,
-        server_default="false",
-    )
     passive_ability_id: Mapped[Optional[int]] = mapped_column(
         Integer,
         ForeignKey("passive_abilities.id", ondelete="RESTRICT"),
         nullable=True,
     )
-    value: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        server_default="0",
-    )
-    timer: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        server_default="0",
-    )
-    default_timer: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        server_default="0",
-    )
-    reset_timer: Mapped[bool] = mapped_column(
+    newly_added: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
         server_default="false",
+    )
+    data: Mapped[dict[str, Any]] = mapped_column(
+        JSONB,
+        server_default="{}",
+        nullable=False,
     )
 
 
@@ -159,14 +122,6 @@ class Card(BaseModel, TimestampMixin):
         unique=True,
     )
     image_original: Mapped[str] = mapped_column(
-        String(255),
-        nullable=False,
-    )
-    image_tablet: Mapped[str] = mapped_column(
-        String(255),
-        nullable=False,
-    )
-    image_phone: Mapped[str] = mapped_column(
         String(255),
         nullable=False,
     )
@@ -195,75 +150,20 @@ class Card(BaseModel, TimestampMixin):
         ForeignKey("abilities.id", ondelete="RESTRICT"),
         nullable=False,
     )
-    damage: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        server_default="0",
-    )
-    charges: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        server_default="1",
-    )
-    hp: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        server_default="0",
-    )
-    heal: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        server_default="0",
-    )
-    has_passive: Mapped[bool] = mapped_column(
-        Boolean,
-        nullable=False,
-        server_default="false",
-    )
-    has_passive_in_hand: Mapped[bool] = mapped_column(
-        Boolean,
-        nullable=False,
-        server_default="false",
-    )
-    has_passive_in_deck: Mapped[bool] = mapped_column(
-        Boolean,
-        nullable=False,
-        server_default="false",
-    )
-    has_passive_in_grave: Mapped[bool] = mapped_column(
-        Boolean,
-        nullable=False,
-        server_default="false",
-    )
     passive_ability_id: Mapped[Optional[int]] = mapped_column(
         Integer,
         ForeignKey("passive_abilities.id", ondelete="RESTRICT"),
         nullable=True,
     )
-    value: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        server_default="0",
-    )
-    timer: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        server_default="0",
-    )
-    default_timer: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        server_default="0",
-    )
-    reset_timer: Mapped[bool] = mapped_column(
+    newly_added: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
         server_default="false",
     )
-    each_tick: Mapped[bool] = mapped_column(
-        Boolean,
+    data: Mapped[dict[str, Any]] = mapped_column(
+        JSONB,
+        server_default="{}",
         nullable=False,
-        server_default="false",
     )
 
 

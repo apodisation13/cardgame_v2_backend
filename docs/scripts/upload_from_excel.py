@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 import asyncio
@@ -53,7 +54,7 @@ async def upload_with_names_and_descriptions(file, db_pool, page_name, table_nam
 
         await connection.executemany(
             f"""INSERT INTO {table_name} (name, description) VALUES ($1, $2)""",
-            data_to_insert,
+            data_to_insert[existing_row_count:],
         )
 
 
@@ -88,11 +89,11 @@ async def upload_leaders(file, db_pool):
     # вместо пустой строки ставим None для инзерта в бд
     needed_data = [row[1:len(row) - 1] for row in data[1:] if row]
     for element in needed_data:
-        if element[9] == "":
-            element[9] = None
+        if element[11] == "":
+            element[11] = None
 
     # добавляем туда измененные картинк
-    data_to_insert = await update_images_in_place(needed_data, img_idx=7)
+    data_to_insert = await update_images_in_place(needed_data, img_idx=9)
     print(len(data_to_insert), data_to_insert)
 
     async with db_pool.acquire() as connection:
@@ -110,9 +111,11 @@ async def upload_leaders(file, db_pool):
                 unlocked,
                 faction_id,
                 ability_id,
+                hp,
                 damage,
                 charges,
                 heal,
+                armor,
                 image_original,
                 image_tablet,
                 image_phone,
@@ -123,7 +126,7 @@ async def upload_leaders(file, db_pool):
                 default_timer,
                 reset_timer
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
             """,
             data_to_insert[existing_row_count:],
         )
@@ -137,13 +140,13 @@ async def upload_cards(file, db_pool):
 
     # а здесь берем все столбцы, кроме первого (id) + так же пропускаем первую строку, там названия столбцов
     # вместо пустой строки в passive_ability_id ставим None для инзерта в бд
-    needed_data = [row[1:22] for row in data[1:] if row]
+    needed_data = [row[1:23] for row in data[1:] if row]
     for element in needed_data:
-        if element[15] == "":
-            element[15] = None
+        if element[16] == "":
+            element[16] = None
 
     # добавляем туда измененные картинк
-    data_to_insert = await update_images_in_place(needed_data, img_idx=10)
+    data_to_insert = await update_images_in_place(needed_data, img_idx=11)
     print(len(data_to_insert), data_to_insert)
 
     async with db_pool.acquire() as connection:
@@ -170,6 +173,7 @@ async def upload_cards(file, db_pool):
                 charges,
                 hp,
                 heal,
+                armor,
                 image_original,
                 image_tablet,
                 image_phone,
@@ -184,7 +188,7 @@ async def upload_cards(file, db_pool):
                 reset_timer,
                 each_tick
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)
             """,
             data_to_insert[existing_row_count:],
         )
@@ -345,8 +349,8 @@ async def upload_seasons(file, db_pool):
 
     data = file["Enemies.Season"]
 
-    # берем name, unlocked, description (столбцы 2,3,4) + так же пропускаем первую строку, там названия столбцов
-    data_to_insert = [row[1:4] for row in data[1:] if row]
+    # берем name, unlocked, description, x, y (столбцы 2,3,4) + так же пропускаем первую строку, там названия столбцов
+    data_to_insert = [row[1:6] for row in data[1:] if row]
 
     async with db_pool.acquire() as connection:
         existing_row_count = await connection.fetchval("""select count(*) from seasons""")
@@ -356,9 +360,34 @@ async def upload_seasons(file, db_pool):
             return
 
         await connection.executemany(
-            """INSERT INTO seasons (name, unlocked, description) VALUES ($1, $2, $3)""",
+            """INSERT INTO seasons (name, unlocked, description, x, y) VALUES ($1, $2, $3, $4, $5)""",
             data_to_insert,
         )
+
+    data = file["Seasons.SeasonRelatedSeason"]
+
+    data_to_insert = [row[1:4] for row in data[1:] if row]
+    print(len(data_to_insert), data_to_insert)
+
+    for element in data_to_insert:
+        if element[2] == "NONE":
+            element[2] = None
+        element.append(f"{element[0]}-{element[1]}")
+
+    print(len(data_to_insert), data_to_insert)
+    async with db_pool.acquire() as connection:
+        existing_row_count = await connection.fetchval("""select count(*) from season_related_seasons""")
+        print(existing_row_count, len(data_to_insert))
+
+        if existing_row_count != len(data_to_insert):
+            await connection.executemany(
+                """
+                    INSERT INTO season_related_seasons
+                     (season_id, related_season_id, line, connection)
+                     VALUES ($1, $2, $3, $4)
+                """,
+                data_to_insert,
+            )
 
 
 async def upload_levels_enemies(file, db_pool):
@@ -437,20 +466,154 @@ async def upload_levels_enemies(file, db_pool):
             )
 
 
-async def upload_from_excel():
-    load_env()
-    config = get_config()
-    # config.DB_URL = "postgresql://postgres:pass@localhost:YOUR_DOCKER_DB_OUTSIDE_PORT/docker_db_name"
-    db = Database(config)
+async def update_leaders(file, db_pool):
+    print("Updating leaders")
 
-    data = get_data("database.ods")
+    data = file["Cards.Leader_2"]
 
-    db_pool = await db.connect()
+    header = data[0]
+    data_idx = header.index('data')
 
+    needed_data = []
+    for row in data[1:]:
+        if not row:
+            continue
+        element = [None if v == "" else v for v in row[0:len(row) - 1]]
+        element[data_idx] = json.loads(element[data_idx].replace("“", '"').replace("”", '"'))
+        needed_data.append(element)
+
+    print(needed_data)
+
+    # массовый апдейт по leaders.id
+    async with db_pool.acquire() as connection:
+        await connection.executemany("""
+            UPDATE leaders
+            SET
+                name = $2,
+                unlocked = $3,
+                faction_id = $4,
+                ability_id = $5,
+                passive_ability_id = $6,
+                data = $7,
+                image_original = $8
+            WHERE
+                leaders.id = $1
+            """,
+            needed_data,
+        )
+
+
+async def update_cards(file, db_pool):
+    print("Updating cards")
+
+    data = file["Cards.Card_2"]
+
+    header = data[0]
+    data_idx = header.index('data')
+
+    needed_data = []
+    for row in data[1:]:
+        if not row:
+            continue
+        element = [None if v == "" else v for v in row[:10]]
+        element[data_idx] = json.loads(element[data_idx].replace("“", '"').replace("”", '"'))
+        needed_data.append(element)
+
+    # массовый апдейт по cards.id
+    async with db_pool.acquire() as connection:
+        await connection.executemany("""
+            UPDATE cards
+            SET
+                name = $2,
+                unlocked = $3,
+                faction_id = $4,
+                color_id = $5,
+                type_id = $6,
+                ability_id = $7,
+                passive_ability_id = $8,
+                data = $9,
+                image_original = $10
+            WHERE
+                cards.id = $1
+            """,
+            needed_data,
+        )
+
+
+async def update_enemy_leaders(file, db_pool):
+    print("Updating enemy leaders")
+
+    data = file["Enemies.EnemyLeader_2"]
+
+    header = data[0]
+    data_idx = header.index('data')
+
+    needed_data = []
+    for row in data[1:]:
+        if not row:
+            continue
+        element = [None if v == "" else v for v in row[:7]]
+        element[data_idx] = json.loads(element[data_idx].replace("“", '"').replace("”", '"'))
+        needed_data.append(element)
+
+    # массовый апдейт по enemy_leaders.id
+    async with db_pool.acquire() as connection:
+        await connection.executemany("""
+            UPDATE enemy_leaders
+            SET
+                name = $2,
+                faction_id = $3,
+                ability_id = $4,
+                passive_ability_id = $5,
+                data = $6,
+                image_original = $7
+            WHERE
+                enemy_leaders.id = $1
+            """,
+            needed_data,
+        )
+
+
+async def update_enemies(file, db_pool):
+    print("Updating enemies")
+
+    data = file["Enemies.Enemy_2"]
+
+    header = data[0]
+    data_idx = header.index('data')
+
+    needed_data = []
+    for row in data[1:]:
+        if not row:
+            continue
+        element = [None if v == "" else v for v in row[:9]]
+        element[data_idx] = json.loads(element[data_idx].replace("“", '"').replace("”", '"'))
+        needed_data.append(element)
+
+    # массовый апдейт по enemies.id
+    async with db_pool.acquire() as connection:
+        await connection.executemany("""
+            UPDATE enemies
+            SET
+                name = $2,
+                faction_id = $3,
+                color_id = $4,
+                move_id = $5,
+                passive_ability_id = $6,
+                deathwish_id = $7,
+                data = $8,
+                image_original = $9
+            WHERE
+                enemies.id = $1
+            """,
+            needed_data,
+        )
+
+
+async def create(data, db_pool):
     await upload_with_only_names(data, db_pool, page_name="Faction", table_name="factions")
     await upload_with_only_names(data, db_pool, page_name="Color", table_name="colors")
     await upload_with_only_names(data, db_pool, page_name="Type", table_name="types")
-
     await upload_with_names_and_descriptions(data, db_pool, page_name="Ability", table_name="abilities")
     await upload_with_names_and_descriptions(data, db_pool, page_name="CardPassiveAbility", table_name="passive_abilities")
     await upload_with_names_and_descriptions(data, db_pool, page_name="Move", table_name="moves")
@@ -465,6 +628,31 @@ async def upload_from_excel():
     await upload_enemies(data, db_pool)
     await upload_seasons(data, db_pool)
     await upload_levels_enemies(data, db_pool)
+
+
+async def update(data, db_pool):
+    await update_leaders(data, db_pool)
+    await update_cards(data, db_pool)
+    await update_enemy_leaders(data, db_pool)
+    await update_enemies(data, db_pool)
+
+
+async def upload_from_excel():
+    load_env()
+    config = get_config()
+    config.DB_URL = "CHANGE HERE"
+    db = Database(config)
+
+    data = get_data("database.ods")
+
+    db_pool = await db.connect()
+
+    async with db_pool.acquire() as connection:
+        a = await connection.fetch("SELECT * FROM users")
+    print(len(a), a)
+
+    await create(data, db_pool)
+    await update(data, db_pool)
 
 
 if __name__ == "__main__":

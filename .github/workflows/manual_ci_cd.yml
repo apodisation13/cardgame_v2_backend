@@ -4,12 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: 'Ветка для деплоя'
+        description: 'Ветка для деплоя (main → production, testing → testing)'
         required: true
-        type: choice
-        options:
-          - testing
-          - main
+        type: string
         default: 'testing'
 
 env:
@@ -30,8 +27,20 @@ jobs:
       MODE: ${{ github.event.inputs.branch == 'main' && 'production' || 'testing' }}
 
     steps:
+      - name: ✅ Проверяем ветку
+        run: |
+          BRANCH="${{ github.event.inputs.branch }}"
+          if [[ "$BRANCH" != "main" && "$BRANCH" != "testing" ]]; then
+            echo "❌ Ошибка: деплой разрешён только из веток 'main' или 'testing'."
+            echo "   Указана ветка: $BRANCH"
+            exit 1
+          fi
+          echo "✅ Ветка '$BRANCH' → окружение: ${{ env.MODE }}"
+
       - name: 📥 Получаем код
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
 
       - name: 🔐 Логин в GitHub Container Registry
         uses: docker/login-action@v3
@@ -61,6 +70,9 @@ jobs:
           ELASTIC_PASSWORD=${{ secrets.ELASTIC_PASSWORD }}
           KIBANA_SYSTEM_PASSWORD=${{ secrets.KIBANA_SYSTEM_PASSWORD }}
           APM_SECRET_TOKEN=${{ secrets.APM_SECRET_TOKEN }}
+          
+          DOMAIN_NAME=${{ secrets.DOMAIN_NAME }}
+          LETSENCRYPT_EMAIL=${{ secrets.LETSENCRYPT_EMAIL }}
           
           EOF
           
@@ -119,6 +131,7 @@ jobs:
             DJANGO_SUPERUSER_USERNAME=${{ secrets.DJANGO_SUPERUSER_USERNAME }}
             DJANGO_SUPERUSER_EMAIL=${{ secrets.DJANGO_SUPERUSER_EMAIL }}
             DJANGO_SUPERUSER_PASSWORD=${{ secrets.DJANGO_SUPERUSER_PASSWORD }}
+            CSRF_TRUSTED_ORIGINS=${{ secrets.CSRF_TRUSTED_ORIGINS }}
             
             USER_PASSWORD_SECRET_KEY=${{ secrets.USER_PASSWORD_SECRET_KEY }}
             
@@ -128,6 +141,9 @@ jobs:
             ELASTIC_PASSWORD=${{ secrets.ELASTIC_PASSWORD }}
             KIBANA_SYSTEM_PASSWORD=${{ secrets.KIBANA_SYSTEM_PASSWORD }}
             APM_SECRET_TOKEN=${{ secrets.APM_SECRET_TOKEN }}
+            
+            DOMAIN_NAME=${{ secrets.DOMAIN_NAME }}
+            LETSENCRYPT_EMAIL=${{ secrets.LETSENCRYPT_EMAIL }}
 
         with:
           host: ${{ secrets.SSH_SERVER }}
@@ -154,6 +170,8 @@ jobs:
             
             echo "🧹 Чистим старые образы..."
             docker image prune -f
+            
+            docker restart gridways-nginx
             
             echo ""
             echo "✅ Деплой завершён!"

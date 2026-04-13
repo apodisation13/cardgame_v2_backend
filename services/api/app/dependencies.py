@@ -1,8 +1,12 @@
 from fastapi import Depends, FastAPI
 from lib.utils.db.pool import Database
 from services.api.app.apps.auth.service import AuthService
+from services.api.app.apps.cards.service import CardsService
+from services.api.app.apps.game_const.service import GameConstService
 from services.api.app.apps.news.service import NewsService
+from services.api.app.apps.preferences.service import PreferencesService
 from services.api.app.apps.progress.service import UserProgressService
+from services.api.app.apps.stats.service import StatsService
 from services.api.app.config import Config
 
 
@@ -35,6 +39,16 @@ async def get_auth_service(
     )
 
 
+async def get_cards_service(
+    db_pool: Database = Depends(get_db),
+    config: Config = Depends(get_config),
+) -> CardsService:
+    return CardsService(
+        db_pool=db_pool,
+        config=config,
+    )
+
+
 async def get_news_service(
     db_pool: Database = Depends(get_db),
     config: Config = Depends(get_config),
@@ -45,11 +59,41 @@ async def get_news_service(
     )
 
 
+async def get_game_const_service(
+    db_pool: Database = Depends(get_db),
+    config: Config = Depends(get_config),
+) -> GameConstService:
+    return GameConstService(
+        db_pool=db_pool,
+        config=config,
+    )
+
+
+async def get_preferences_service(
+    db_pool: Database = Depends(get_db),
+    config: Config = Depends(get_config),
+) -> PreferencesService:
+    return PreferencesService(
+        db_pool=db_pool,
+        config=config,
+    )
+
+
 async def get_user_progress_service(
     db_pool: Database = Depends(get_db),
     config: Config = Depends(get_config),
 ) -> UserProgressService:
     return UserProgressService(
+        db_pool=db_pool,
+        config=config,
+    )
+
+
+async def get_stats_service(
+    db_pool: Database = Depends(get_db),
+    config: Config = Depends(get_config),
+) -> StatsService:
+    return StatsService(
         db_pool=db_pool,
         config=config,
     )

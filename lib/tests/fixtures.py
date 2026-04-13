@@ -26,7 +26,7 @@ _db_setup_done = False
 @pytest.fixture(autouse=True, scope="session")
 def setup_tests_config():
     os.environ["CONFIG"] = EnvType.TEST_LOCAL
-    logger.info("!!!!!!!!!!STR14 SET CONFIG")
+    logger.info("Setting up test config")
 
 
 @pytest.fixture(scope="session")
@@ -92,7 +92,8 @@ async def create_pool(
     config: BaseTestLocalConfig,
 ) -> asyncpg.pool.Pool:
     logger.info("🔌 Creating NEW connection pool...")
-    db_pool = await asyncpg.create_pool(dsn=config.DB_URL, min_size=1, max_size=10, command_timeout=60)
+    db = Database(config)
+    db_pool = await db.connect()
     logger.info("✅ Connection pool created")
     return db_pool
 

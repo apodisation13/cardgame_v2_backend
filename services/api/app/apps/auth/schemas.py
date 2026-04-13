@@ -1,5 +1,12 @@
+from enum import StrEnum
+
 from lib.utils.schemas import Base
 from pydantic import EmailStr, Field
+
+
+class TokenType(StrEnum):
+    ACCESS_TOKEN = "access_token"
+    REFRESH_TOKEN = "refresh_token"
 
 
 class UserRegisterRequest(Base):
@@ -33,7 +40,8 @@ class UserLoginRequest(Base):
 
 class Token(Base):
     access_token: str
-    token_type: str
+    refresh_token: str
+    token_type: str = "bearer"
 
 
 class UserLoginResponse(Base):
@@ -46,3 +54,12 @@ class UserLoginResponse(Base):
 class UserCheckTokenResponse(Base):
     id: int
     email: str
+
+
+class RefreshTokenRequest(Base):
+    refresh_token: str
+
+
+class RefreshTokenResponse(Base):
+    access_token: str
+    token_type: str = "bearer"

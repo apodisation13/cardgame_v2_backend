@@ -3,8 +3,10 @@ from .events import Event, EventLog
 from .game.cards import Ability, Card, CardDeck, Deck, Leader, PassiveAbility, Type
 from .game.core import Color, Faction, GameConstants
 from .game.enemies import Deathwish, Enemy, EnemyLeader, EnemyLeaderAbility, EnemyPassiveAbility, Move
-from .game.progress import UserCard, UserDeck, UserLeader, UserLevel, UserResource
-from .game.seasons import Level, LevelEnemy, LevelRelatedLevels, Season
+from .game.preferences import UserPreferences
+from .game.progress import UserCard, UserDeck, UserLeader, UserLevel, UserResource, UserSeason
+from .game.seasons import Level, LevelEnemy, LevelRelatedLevels, Season, SeasonRelatedSeasons
+from .game.stats import Leaderboard, UserStats
 from .news import News
 from .tasks import CronTask
 from .users import User
@@ -29,6 +31,7 @@ __all__ = [
     "Faction",
     "GameConstants",
     "Leader",
+    "Leaderboard",
     "Level",
     "LevelEnemy",
     "LevelRelatedLevels",
@@ -36,6 +39,7 @@ __all__ = [
     "News",
     "PassiveAbility",
     "Season",
+    "SeasonRelatedSeasons",
     "TimestampMixin",
     "Type",
     "User",
@@ -43,5 +47,8 @@ __all__ = [
     "UserDeck",
     "UserLeader",
     "UserLevel",
+    "UserPreferences",
     "UserResource",
+    "UserSeason",
+    "UserStats",
 ]
