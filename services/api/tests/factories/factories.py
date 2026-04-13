@@ -103,22 +103,10 @@ class LeaderFactory(BaseModelFactory):
 
     name = factory.Sequence(lambda n: f"Leader {n + 1}")
     image_original = "image_url"
-    image_tablet = "image_url"
-    image_phone = "image_url"
     unlocked = False
     faction_id = factory.SubFactory(FactionFactory)
     ability_id = factory.SubFactory(AbilityFactory)
-    hp = 0
-    damage = 0
-    charges = 1
-    heal = 0
-    armor = 0
-    has_passive = False
     passive_ability_id = None
-    value = 0
-    timer = 0
-    default_timer = 0
-    reset_timer = False
     newly_added = False
     data = {}
 
@@ -129,28 +117,12 @@ class CardFactory(BaseModelFactory):
 
     name = factory.Sequence(lambda n: f"Card {n + 1}")
     image_original = "image_url"
-    image_tablet = "image_url"
-    image_phone = "image_url"
     unlocked = False
     faction_id = factory.SubFactory(FactionFactory)
     color_id = factory.SubFactory(ColorFactory)
     type_id = factory.SubFactory(TypeFactory)
     ability_id = factory.SubFactory(AbilityFactory)
-    damage = 0
-    charges = 1
-    hp = 0
-    heal = 0
-    armor = 0
-    has_passive = False
-    has_passive_in_hand = False
-    has_passive_in_deck = False
-    has_passive_in_grave = False
     passive_ability_id = None
-    value = 0
-    timer = 0
-    default_timer = 0
-    reset_timer = False
-    each_tick = False
     newly_added = False
     data = {}
 
@@ -209,28 +181,11 @@ class EnemyFactory(BaseModelFactory):
 
     name = factory.Sequence(lambda n: f"Enemy {n + 1}")
     image_original = "image_url"
-    image_tablet = "image_url"
-    image_phone = "image_url"
     faction_id = factory.SubFactory(FactionFactory)
     color_id = factory.SubFactory(ColorFactory)
     move_id = factory.SubFactory(MoveFactory)
-    damage = 0
-    hp = 10
-    base_hp = 10
-    shield = False
-    has_passive = False
-    has_passive_in_field = False
-    has_passive_in_deck = False
-    has_passive_in_grave = False
     passive_ability_id = None
-    value = 0
-    timer = 0
-    default_timer = 0
-    reset_timer = False
-    each_tick = False
-    has_deathwish = False
     deathwish_id = None
-    deathwish_value = 0
     data = {}
 
 
@@ -240,19 +195,9 @@ class EnemyLeaderFactory(BaseModelFactory):
 
     name = factory.Sequence(lambda n: f"Enemy Leader {n + 1}")
     image_original = "image_url"
-    image_tablet = "image_url"
-    image_phone = "image_url"
     faction_id = factory.SubFactory(FactionFactory)
-    hp = 100
-    base_hp = 100
     ability_id = factory.SubFactory(EnemyLeaderAbilityFactory)
-    has_passive = False
     passive_ability_id = None
-    value = 0
-    timer = 0
-    default_timer = 0
-    reset_timer = False
-    each_tick = False
     data = {}
 
 

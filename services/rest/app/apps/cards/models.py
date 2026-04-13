@@ -1,4 +1,7 @@
 from django.db import models
+from django.db.models import IntegerField, OrderBy
+from django.db.models.fields.json import KeyTextTransform
+from django.db.models.functions import Cast
 
 from apps.core.models import Color, Faction
 
@@ -84,7 +87,7 @@ class Leader(models.Model):
         verbose_name_plural = "Карты лидеров"
         ordering = (
             "faction",
-            "-damage",
+            OrderBy(Cast(KeyTextTransform("damage", "data"), IntegerField()), descending=True),
         )
 
     name = models.CharField(
@@ -96,16 +99,6 @@ class Leader(models.Model):
     )
     # TODO: работа с картинками!!!
     image_original = models.ImageField(
-        upload_to="leaders/",
-        blank=False,
-        null=False,
-    )
-    image_tablet = models.ImageField(
-        upload_to="leaders/",
-        blank=False,
-        null=False,
-    )
-    image_phone = models.ImageField(
         upload_to="leaders/",
         blank=False,
         null=False,
@@ -126,28 +119,6 @@ class Leader(models.Model):
         on_delete=models.PROTECT,
         null=False,
     )
-    damage = models.IntegerField(
-        verbose_name="Урон, который наносит карта лидера (damage)",
-        default=0,
-        blank=False,
-        null=False,
-    )
-    charges = models.IntegerField(
-        verbose_name="Количество зарядов карты лидера (charges)",
-        default=1,
-        blank=False,
-        null=False,
-    )
-    heal = models.IntegerField(
-        verbose_name="На сколько карта лидера лечит (heal)",
-        default=0,
-        blank=False,
-        null=False,
-    )
-    has_passive = models.BooleanField(
-        verbose_name="Есть ли у карты лидера пассивная способность (has_passive)",
-        default=False,
-    )
     passive_ability = models.ForeignKey(
         PassiveAbility,
         related_name="leaders",
@@ -156,31 +127,15 @@ class Leader(models.Model):
         null=True,
         default=None,
     )
-    value = models.IntegerField(
-        verbose_name="Значение для пассивной способности (value)",
-        default=0,
+    data = models.JSONField(
+        default=dict,
         blank=False,
         null=False,
-    )
-    timer = models.IntegerField(
-        verbose_name="Текущее значение таймера пассивной способности (timer)",
-        default=0,
-        blank=False,
-        null=False,
-    )
-    default_timer = models.IntegerField(
-        verbose_name="Дефолтное значение таймера пассивной способности (default_timer)",
-        default=0,
-        blank=False,
-        null=False,
-    )
-    reset_timer = models.BooleanField(
-        verbose_name="Нужно ли сбрасывать таймер на дефолтный после его истечения (reset_timer)",
-        default=False,
+        verbose_name="Данные лидера",
     )
 
     def __str__(self) -> str:
-        return f"{self.name}, ability {self.ability}, damage {self.damage} charges {self.charges}"
+        return f"{self.name}, ability {self.ability}"
 
 
 class Card(models.Model):
@@ -191,9 +146,9 @@ class Card(models.Model):
         verbose_name_plural = "Карты"
         ordering = (
             "-color",
-            "-damage",
-            "-hp",
-            "-charges",
+            OrderBy(Cast(KeyTextTransform("damage", "data"), IntegerField()), descending=True),
+            OrderBy(Cast(KeyTextTransform("hp", "data"), IntegerField()), descending=True),
+            OrderBy(Cast(KeyTextTransform("charges", "data"), IntegerField()), descending=True),
         )
 
     name = models.CharField(
@@ -205,16 +160,6 @@ class Card(models.Model):
     )
     # TODO: работа с картинками!!!
     image_original = models.ImageField(
-        upload_to="leaders/",
-        blank=False,
-        null=False,
-    )
-    image_tablet = models.ImageField(
-        upload_to="leaders/",
-        blank=False,
-        null=False,
-    )
-    image_phone = models.ImageField(
         upload_to="leaders/",
         blank=False,
         null=False,
@@ -245,46 +190,6 @@ class Card(models.Model):
         on_delete=models.PROTECT,
         null=False,
     )
-    damage = models.IntegerField(
-        verbose_name="Урон, который наносит карта (damage)",
-        default=0,
-        blank=False,
-        null=False,
-    )
-    charges = models.IntegerField(
-        verbose_name="Количество зарядов карты (charges)",
-        default=1,
-        blank=False,
-        null=False,
-    )
-    hp = models.IntegerField(
-        verbose_name="Жизни карты (hp)",
-        default=0,
-        blank=False,
-        null=False,
-    )
-    heal = models.IntegerField(
-        verbose_name="На сколько карта лечит (heal)",
-        default=0,
-        blank=False,
-        null=False,
-    )
-    has_passive = models.BooleanField(
-        verbose_name="Есть ли у карты пассивная способность (has_passive)",
-        default=False,
-    )
-    has_passive_in_hand = models.BooleanField(
-        verbose_name="Есть ли у карты пассивная способность, которая срабатывает в руке (has_passive_in_hand)",
-        default=False,
-    )
-    has_passive_in_deck = models.BooleanField(
-        verbose_name="Есть ли у карты пассивная способность, которая срабатывает в колоде (has_passive_in_deck)",
-        default=False,
-    )
-    has_passive_in_grave = models.BooleanField(
-        verbose_name="Есть ли у карты пассивная способность, которая срабатывает в сбросе (has_passive_in_grave)",
-        default=False,
-    )
     passive_ability = models.ForeignKey(
         PassiveAbility,
         related_name="cards",
@@ -293,48 +198,19 @@ class Card(models.Model):
         null=True,
         default=None,
     )
-    value = models.IntegerField(
-        verbose_name="Значение для пассивной способности (value)",
-        default=0,
-        blank=False,
-        null=False,
-    )
-    timer = models.IntegerField(
-        verbose_name="Текущее значение таймера пассивной способности (timer)",
-        default=0,
-        blank=False,
-        null=False,
-    )
-    default_timer = models.IntegerField(
-        verbose_name="Дефолтное значение таймера пассивной способности (default_timer)",
-        default=0,
-        blank=False,
-        null=False,
-    )
-    reset_timer = models.BooleanField(
-        verbose_name="Нужно ли сбрасывать таймер на дефолтный после его истечения (reset_timer)",
+    newly_added = models.BooleanField(
+        verbose_name="Добавлена ли карта недавно (для фильтров)",
         default=False,
     )
-    each_tick = models.BooleanField(
-        verbose_name="Cрабатывает ли пассивка каждый ход таймера (True) или только когда таймер 0 (False)",
-        default=False,
+    data = models.JSONField(
+        default=dict,
+        blank=False,
+        null=False,
+        verbose_name="Данные карты",
     )
 
     def __str__(self) -> str:
-        return f"{self.pk} {self.name}, hp {self.hp}, ability {self.ability}, damage {self.damage}, heal {self.heal} "
-
-    # @classmethod
-    # def from_db(cls, db, field_names, values):
-    #     instance = super().from_db(db, field_names, values)
-    #     # здесь мы запоминаем значения, которые были
-    #     instance._loaded_values = dict(zip(field_names, values))
-    #     return instance
-    #
-    # def save(self, *args, **kwargs):
-    #     # если мы ИЗМЕНЯЕМ карту и мы изменили её ЖИЗНИ, то пересчитываем жизни всех колод с этой картой!
-    #     if not self._state.adding and (self.hp - self._loaded_values['hp']):
-    #         change_decks_health(card_id=self.id, diff=self.hp - self._loaded_values['hp'])
-    #     super().save(*args, **kwargs)
+        return f"{self.pk} {self.name}, ability {self.ability}"
 
 
 class Deck(models.Model):

@@ -1,4 +1,7 @@
 from django.db import models
+from django.db.models import IntegerField, OrderBy
+from django.db.models.fields.json import KeyTextTransform
+from django.db.models.functions import Cast
 
 from apps.core.models import Color, Faction
 
@@ -109,6 +112,12 @@ class Enemy(models.Model):
         db_table = "enemies"
         verbose_name = "Карта врага"
         verbose_name_plural = "Карты врагов"
+        ordering = (
+            "-faction",
+            "color",
+            OrderBy(Cast(KeyTextTransform("hp", "data"), IntegerField()), descending=True),
+            OrderBy(Cast(KeyTextTransform("damage", "data"), IntegerField()), descending=True),
+        )
 
     name = models.CharField(
         verbose_name="Имя карты врага (название)",
@@ -119,16 +128,6 @@ class Enemy(models.Model):
     )
     # TODO: работа с картинками!!!
     image_original = models.ImageField(
-        upload_to="leaders/",
-        blank=False,
-        null=False,
-    )
-    image_tablet = models.ImageField(
-        upload_to="leaders/",
-        blank=False,
-        null=False,
-    )
-    image_phone = models.ImageField(
         upload_to="leaders/",
         blank=False,
         null=False,
@@ -149,44 +148,6 @@ class Enemy(models.Model):
         related_name="enemies",
         on_delete=models.PROTECT,
     )
-    damage = models.IntegerField(
-        verbose_name="Урон, который наносит карта врага (damage)",
-        default=0,
-        blank=False,
-        null=False,
-    )
-    hp = models.IntegerField(
-        verbose_name="Жизни карты врага (hp)",
-        default=0,
-        blank=False,
-        null=False,
-    )
-    base_hp = models.IntegerField(
-        verbose_name="Дефолтные жизни карты врага (hp)",
-        default=0,
-        blank=False,
-        null=False,
-    )
-    shield = models.BooleanField(
-        verbose_name="щит, есть или нет",
-        default=False,
-    )
-    has_passive = models.BooleanField(
-        verbose_name="Есть ли у карты врага пассивная способность (has_passive)",
-        default=False,
-    )
-    has_passive_in_field = models.BooleanField(
-        verbose_name="Есть ли у карты врага пассивная способность, которая срабатывает на поле (has_passive_in_field)",
-        default=False,
-    )
-    has_passive_in_deck = models.BooleanField(
-        verbose_name="Есть ли у карты врага пассивная способность, которая срабатывает в колоде (has_passive_in_deck)",
-        default=False,
-    )
-    has_passive_in_grave = models.BooleanField(
-        verbose_name="Есть ли у карты врага пассивная способность, которая срабатывает в сбросе (has_passive_in_grave)",
-        default=False,
-    )
     passive_ability = models.ForeignKey(
         EnemyPassiveAbility,
         related_name="enemies",
@@ -194,36 +155,6 @@ class Enemy(models.Model):
         blank=True,
         null=True,
         default=None,
-    )
-    value = models.IntegerField(
-        verbose_name="Значение для пассивной способности карты врага (value)",
-        default=0,
-        blank=False,
-        null=False,
-    )
-    timer = models.IntegerField(
-        verbose_name="Текущее значение таймера пассивной способности врага (timer)",
-        default=0,
-        blank=False,
-        null=False,
-    )
-    default_timer = models.IntegerField(
-        verbose_name="Дефолтное значение таймера пассивной способности врага (default_timer)",
-        default=0,
-        blank=False,
-        null=False,
-    )
-    reset_timer = models.BooleanField(
-        verbose_name="Нужно ли сбрасывать таймер на дефолтный после его истечения (reset_timer)",
-        default=False,
-    )
-    each_tick = models.BooleanField(
-        verbose_name="Cрабатывает ли пассивка каждый ход таймера (True) или только когда таймер 0 (False)",
-        default=False,
-    )
-    has_deathwish = models.BooleanField(
-        verbose_name="Есть ли завещание у врага (способность после его уничтожения)",
-        default=False,
     )
     deathwish = models.ForeignKey(
         Deathwish,
@@ -233,18 +164,15 @@ class Enemy(models.Model):
         null=True,
         default=None,
     )
-    deathwish_value = models.IntegerField(
-        verbose_name="Значение для завещания врага (deathwish_value)",
-        default=0,
+    data = models.JSONField(
+        default=dict,
         blank=False,
         null=False,
+        verbose_name="Данные врага",
     )
 
     def __str__(self) -> str:
-        return (
-            f"{self.pk}:{self.name}, {self.faction}, {self.color}, "
-            f"damage {self.damage}, hp {self.hp}, move {self.move.name}, shield {self.shield}"
-        )
+        return f"{self.pk}:{self.name}, {self.faction}, {self.color}, move {self.move.name}"
 
 
 class EnemyLeader(models.Model):
@@ -267,32 +195,10 @@ class EnemyLeader(models.Model):
         blank=False,
         null=False,
     )
-    image_tablet = models.ImageField(
-        upload_to="leaders/",
-        blank=False,
-        null=False,
-    )
-    image_phone = models.ImageField(
-        upload_to="leaders/",
-        blank=False,
-        null=False,
-    )
     faction = models.ForeignKey(
         Faction,
         related_name="enemy_leaders",
         on_delete=models.PROTECT,
-        null=False,
-    )
-    hp = models.IntegerField(
-        verbose_name="Жизни карты лидера врагов (hp)",
-        default=0,
-        blank=False,
-        null=False,
-    )
-    base_hp = models.IntegerField(
-        verbose_name="Дефолтные жизни карты лидера врагов (hp)",
-        default=0,
-        blank=False,
         null=False,
     )
     ability = models.ForeignKey(
@@ -303,10 +209,6 @@ class EnemyLeader(models.Model):
         null=True,
         default=None,
     )
-    has_passive = models.BooleanField(
-        verbose_name="Есть ли у карты врага пассивная способность (has_passive)",
-        default=False,
-    )
     passive_ability = models.ForeignKey(
         EnemyPassiveAbility,
         related_name="enemy_leaders",
@@ -314,35 +216,12 @@ class EnemyLeader(models.Model):
         blank=True,
         null=True,
     )
-    value = models.IntegerField(
-        verbose_name="Значение для пассивной способности карты лидера врага (value)",
-        default=0,
+    data = models.JSONField(
+        default=dict,
         blank=False,
         null=False,
-    )
-    timer = models.IntegerField(
-        verbose_name="Текущее значение таймера пассивной способности лидера врагов (timer)",
-        default=0,
-        blank=False,
-        null=False,
-    )
-    default_timer = models.IntegerField(
-        verbose_name="Дефолтное значение таймера пассивной способности лидера врагов (default_timer)",
-        default=0,
-        blank=False,
-        null=False,
-    )
-    reset_timer = models.BooleanField(
-        verbose_name="Нужно ли сбрасывать таймер на дефолтный после его истечения (reset_timer)",
-        default=False,
-    )
-    each_tick = models.BooleanField(
-        verbose_name="Cрабатывает ли пассивка каждый ход таймера (True) или только когда таймер 0 (False)",
-        default=False,
+        verbose_name="Данные лидера врага",
     )
 
     def __str__(self) -> str:
-        return (
-            f"{self.pk} - {self.name}, hp {self.hp}, passive {self.has_passive}, "
-            f"абилка - {self.ability}, пассивка - {self.passive_ability}"
-        )
+        return f"{self.pk} - {self.name}, абилка - {self.ability}, пассивка - {self.passive_ability}"

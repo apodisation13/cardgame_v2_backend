@@ -410,7 +410,6 @@ async def init_db_cards(
         ability_id=a.id,
         color_id=c3.id,
         type_id=t2.id,
-        has_passive=True,
         passive_ability_id=pa.id,
         data={
             "hp": 11,
@@ -458,9 +457,7 @@ async def init_db_cards(
         faction_id=f1.id,
         color_id=c1.id,
         move_id=m1.id,
-        has_passive=True,
         passive_ability_id=epa.id,
-        has_deathwish=True,
         deathwish_id=deathwish.id,
         data={
             "hp": 10,

@@ -8,7 +8,7 @@ class TestGetUserProgressAPI:
 
     @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
-    async def test_get_user_progress_v2(
+    async def test_get_user_progress(
         self,
         # service fixtures
         client: AsyncClient,
