@@ -1,20 +1,9 @@
-name: ci-cd gridways backend
+name: AUTO ci-cd gridways backend
 
 on:
   pull_request:
     branches: [ main, testing ]
     types: [opened, synchronize, closed]
-
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Целевое окружение'
-        required: true
-        default: 'testing'
-        type: choice
-        options:
-          - testing
-          - production
 
 env:
   REGISTRY: ghcr.io
@@ -22,33 +11,39 @@ env:
 
 
 jobs:
-  validate-if-pr-to-main-from-testing-only:
+  # ==========================================
+  # 🔍 ВАЛИДАЦИЯ PR (только при открытии/обновлении)
+  # ==========================================
+  validate-pr:
     runs-on: ubuntu-latest
-    if: github.event_name != 'workflow_dispatch'
+    if: github.event.action == 'opened' || github.event.action == 'synchronize'
     outputs:
       pr_valid: ${{ steps.validate.outputs.valid }}
     steps:
-      - name: Check PR to main is from testing only
+      - name: Проверяем правила Pull Request
         id: validate
         run: |
           echo "🔍 Проверяем правила Pull Request..."
           echo "Целевая ветка: ${{ github.base_ref }}"
           echo "Исходная ветка: ${{ github.head_ref }}"
-          
+
           if [[ "${{ github.base_ref }}" == "main" && "${{ github.head_ref }}" != "testing" ]]; then
             echo "❌ PR to main can only be from testing branch"
             echo "valid=false" >> $GITHUB_OUTPUT
             exit 1
           fi
-          
-          echo "✅ Valid PR: main ← testing"
+
+          echo "✅ PR валиден"
           echo "valid=true" >> $GITHUB_OUTPUT
 
+  # ==========================================
+  # 🧪 ТЕСТЫ И ЛИНТЕРЫ (только при открытии/обновлении)
+  # ==========================================
   linters-and-tests:
-    needs: validate-if-pr-to-main-from-testing-only
-    if: | 
-      github.event_name != 'workflow_dispatch' &&
-      needs.validate-if-pr-to-main-from-testing-only.outputs.pr_valid == 'true'
+    needs: validate-pr
+    if: |
+      (github.event.action == 'opened' || github.event.action == 'synchronize') &&
+      needs.validate-pr.outputs.pr_valid == 'true'
     runs-on: ubuntu-latest
 
     services:
@@ -121,14 +116,16 @@ jobs:
       run: |
         pytest -s -vv
 
+  # ==========================================
+  # 🔎 АНАЛИЗ ИЗМЕНЕНИЙ (только при открытии/обновлении)
+  # ==========================================
   analyze-changes:
-    if: github.event_name != 'workflow_dispatch'
     needs: linters-and-tests
+    if: github.event.action == 'opened' || github.event.action == 'synchronize'
     runs-on: ubuntu-latest
     outputs:
       services_to_build: ${{ steps.detect.outputs.services }}
       build_all: ${{ steps.detect.outputs.build_all }}
-      services_json: ${{ steps.detect.outputs.services_json }}
 
     steps:
       - name: Получаем код
@@ -139,16 +136,13 @@ jobs:
       - name: Анализируем изменения
         id: detect
         run: |
-          ALL_SERVICES_LIST="migrant,api,rest,events,cron"
-          
           echo "🔍 Анализируем что изменилось в PR..."
-          
-          # Получаем измененные файлы
+
           CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }})
           echo "📄 Измененные файлы:"
           echo "$CHANGED_FILES"
           echo ""
-          
+
           # ПРАВИЛО 1: Игнорируем если только тесты
           ONLY_TESTS=true
           for file in $CHANGED_FILES; do
@@ -156,14 +150,14 @@ jobs:
               ONLY_TESTS=false
             fi
           done
-          
+
           if [[ "$ONLY_TESTS" == "true" ]]; then
-            echo "📝 Только тесты изменены - ничего не билдим"
+            echo "📝 Только тесты изменены — при мердже ничего не будем билдить"
             echo "services=" >> $GITHUB_OUTPUT
             echo "build_all=false" >> $GITHUB_OUTPUT
             exit 0
           fi
-          
+
           # ПРАВИЛО 2: Проверяем lib/utils (кроме models)
           LIB_UTILS_CHANGED=false
           for file in $CHANGED_FILES; do
@@ -171,172 +165,250 @@ jobs:
               LIB_UTILS_CHANGED=true
             fi
           done
-          
+
           if [[ "$LIB_UTILS_CHANGED" == "true" ]]; then
-            echo "📚 Изменены общие утилиты - билдим ВСЕ сервисы"
+            echo "📚 Изменены общие утилиты — при мердже будем билдить ВСЕ сервисы"
             echo "build_all=true" >> $GITHUB_OUTPUT
-            echo "services=migrant,api,rest,events,cron" >> $GITHUB_OUTPUT
+            echo "services=migrant api rest events cron" >> $GITHUB_OUTPUT
             exit 0
           fi
-          
+
           # ПРАВИЛО 3: Определяем измененные сервисы
           echo "🔎 Ищем измененные микросервисы..."
           CHANGED_SERVICES=""
-          
-          # Список всех сервисов
           ALL_SERVICES=("migrant" "api" "rest" "events" "cron")
-          
+
           for service in "${ALL_SERVICES[@]}"; do
             for file in $CHANGED_FILES; do
               if [[ $file =~ ^services/$service/ ]] && [[ ! $file =~ ^services/$service/tests/ ]]; then
                 echo "✅ Сервис '$service' изменился"
-                CHANGED_SERVICES="$CHANGED_SERVICES$service,"
+                CHANGED_SERVICES="$CHANGED_SERVICES $service"
                 break
               fi
             done
           done
-          
-          # Убираем последнюю запятую
-          CHANGED_SERVICES=${CHANGED_SERVICES%,}
-          
-          echo "📦 Сервисы для сборки: $CHANGED_SERVICES"
+
+          CHANGED_SERVICES="${CHANGED_SERVICES# }"
+          echo "📦 Сервисы для сборки при мердже: $CHANGED_SERVICES"
           echo "services=$CHANGED_SERVICES" >> $GITHUB_OUTPUT
           echo "build_all=false" >> $GITHUB_OUTPUT
-          
-          if [[ -n "$CHANGED_SERVICES" ]]; then
-            # Способ 1: Через sed и tr (простой)
-            SERVICES_JSON="[\"$(echo "$CHANGED_SERVICES" | sed 's/,/","/g')\"]"
-            echo "✅ Преобразовано в JSON: $SERVICES_JSON"
-            echo "services_json=$SERVICES_JSON" >> $GITHUB_OUTPUT
-          else
-            echo "services_json=[]" >> $GITHUB_OUTPUT
+
+  # ==========================================
+  # 🚀 БИЛД И ДЕПЛОЙ (только при мердже)
+  # ==========================================
+  build-and-deploy:
+    if: github.event.action == 'closed' && github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    environment: ${{ github.base_ref == 'main' && 'production' || 'testing' }}
+    env:
+      MODE: ${{ github.base_ref == 'main' && 'production' || 'testing' }}
+
+    steps:
+      - name: 📥 Получаем код
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          fetch-depth: 0
+
+      - name: 🔎 Анализируем изменения
+        id: analyze
+        run: |
+          echo "🔍 Анализируем что изменилось в PR..."
+
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.merge_commit_sha }})
+          echo "📄 Измененные файлы:"
+          echo "$CHANGED_FILES"
+          echo ""
+
+          # ПРАВИЛО 1: Только тесты — ничего не билдим
+          ONLY_TESTS=true
+          for file in $CHANGED_FILES; do
+            if [[ ! $file =~ /tests/ ]] && [[ ! $file =~ ^lib/tests/ ]]; then
+              ONLY_TESTS=false
+            fi
+          done
+
+          if [[ "$ONLY_TESTS" == "true" ]]; then
+            echo "📝 Только тесты изменены — деплой не требуется"
+            echo "services=" >> $GITHUB_OUTPUT
+            exit 0
           fi
 
-#  build-images:
-#    needs: [ linters-and-tests, analyze-changes ]
-#    if: |
-#      github.event_name != 'workflow_dispatch' &&
-#      github.event_name == 'pull_request' &&
-#      github.event.action == 'closed' &&
-#      github.event.pull_request.merged == true &&
-#      needs.analyze-changes.outputs.services_to_build != ''
-#
-#    runs-on: ubuntu-latest
-#
-#    # Определяем окружение по целевой ветке
-#    environment: ${{ github.base_ref == 'main' && 'production' || 'testing' }}
-#
-#    strategy:
-#      matrix:
-#        service: ${{ fromJson(needs.analyze-changes.outputs.services_json) }}
-#
-#    steps:
-#      - name: 📥 Получаем код
-#        uses: actions/checkout@v4
-#        with:
-#          ref: ${{ github.event.pull_request.merge_commit_sha }}
-#
-#      - name: 🏷️ Определяем тег
-#        id: vars
-#        run: |
-#          if [[ "${{ github.base_ref }}" == "main" ]]; then
-#            echo "tag=production" >> $GITHUB_OUTPUT
-#            echo "🏷️ Окружение: production"
-#          else
-#            echo "tag=testing" >> $GITHUB_OUTPUT
-#            echo "🏷️ Окружение: testing"
-#          fi
-#
-#      - name: 🔧 Настройка Docker Buildx
-#        uses: docker/setup-buildx-action@v3
-#
-#      - name: 🔐 Логин в GitHub Container Registry
-#        uses: docker/login-action@v3
-#        with:
-#          registry: ghcr.io
-#          username: ${{ github.actor }}
-#          password: ${{ secrets.GITHUB_TOKEN }}
-#
-#      - name: 🔨 Билд и пуш образа
-#        run: |
-#          export TAG="${{ steps.vars.outputs.tag }}"
-#
-#          echo "🔨 Собираем: ${{ matrix.service }}"
-#          echo "🏷️ Тег: $TAG"
-#
-#          docker-compose build ${{ matrix.service }}
-#          docker-compose push ${{ matrix.service }}
-#
-#          echo "✅ ${{ matrix.service }}:$TAG готов!"
-#
-#  # ==========================================
-#  # 🚀 ДЕПЛОЙ (после всех билдов)
-#  # ==========================================
-#  deploy:
-#    needs: [ analyze-changes, build-images ]
-#    if: |
-#      github.event_name != 'workflow_dispatch' &&
-#      github.event_name == 'pull_request' &&
-#      github.event.action == 'closed' &&
-#      github.event.pull_request.merged == true &&
-#      needs.analyze-changes.outputs.services_to_build != ''
-#
-#    runs-on: ubuntu-latest
-#
-#    environment: ${{ github.base_ref == 'main' && 'production' || 'testing' }}
-#    env:
-#      MODE: ${{ github.ref_name == 'main' && 'production' || 'testing' }}
-#
-#    steps:
-#      - name: 🏷️ Определяем окружение
-#        id: vars
-#        run: |
-#          if [[ "${{ github.base_ref }}" == "main" ]]; then
-#            echo "tag=production" >> $GITHUB_OUTPUT
-#          else
-#            echo "tag=testing" >> $GITHUB_OUTPUT
-#          fi
-#
-#      - name: Send docker-compose
-#        uses: appleboy/scp-action@v0.1.7
-#        with:
-#          host: ${{ secrets.SSH_SERVER }}
-#          username: ${{ secrets.SSH_USER }}
-#          key: ${{ secrets.SSH_KEY }}
-#          source: "docker-compose.yml"
-#          target: "/srv/cardgame/backend/${{ env.MODE }}"
-#
-#      - name: 🚀 Деплой на сервер
-#        uses: appleboy/ssh-action@v1
-#        with:
-#          host: ${{ secrets.SERVER_HOST }}
-#          username: ${{ secrets.SERVER_USER }}
-#          key: ${{ secrets.SSH_PRIVATE_KEY }}
-#          script: |
-#            echo "🚀 Деплой на ${{ steps.vars.outputs.tag }}"
-#
-#            cd /srv/cardgame/backend/${{ env.MODE }}
-#
-#            export REGISTRY=${{ env.REGISTRY }}
-#            export BACKEND_IMAGE_NAME=${{ env.BACKEND_IMAGE_NAME }}
-#            export MODE=${{ env.MODE }}
-#
-#            export TAG="${{ steps.vars.outputs.tag }}"
-#
-#            # Логин в registry
-#            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-#
-#            # Пуллим только изменённые сервисы
-#            echo "📥 Пуллим: ${{ needs.analyze-changes.outputs.services_to_build }}"
-#            docker-compose pull ${{ needs.analyze-changes.outputs.services_to_build }}
-#
-#            # Перезапускаем
-#            echo "🔄 Перезапускаем сервисы..."
-#            docker-compose up -d
-#
-#            # Чистим
-#            docker image prune -f
-#
-#            echo ""
-#            echo "✅ Деплой завершён!"
-#            docker-compose ps
+          # ПРАВИЛО 2: lib/utils (кроме models) — билдим всё
+          for file in $CHANGED_FILES; do
+            if [[ $file =~ ^lib/utils/ ]] && [[ ! $file =~ ^lib/utils/models/ ]]; then
+              echo "📚 Изменены общие утилиты — билдим ВСЕ сервисы"
+              echo "services=migrant api rest events cron" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+          done
+
+          # ПРАВИЛО 3: Определяем измененные сервисы
+          CHANGED_SERVICES=""
+          ALL_SERVICES=("migrant" "api" "rest" "events" "cron")
+
+          for service in "${ALL_SERVICES[@]}"; do
+            for file in $CHANGED_FILES; do
+              if [[ $file =~ ^services/$service/ ]] && [[ ! $file =~ ^services/$service/tests/ ]]; then
+                echo "✅ Сервис '$service' изменился"
+                CHANGED_SERVICES="$CHANGED_SERVICES $service"
+                break
+              fi
+            done
+          done
+
+          CHANGED_SERVICES="${CHANGED_SERVICES# }"
+          echo "📦 Сервисы для сборки: $CHANGED_SERVICES"
+          echo "services=$CHANGED_SERVICES" >> $GITHUB_OUTPUT
+
+      - name: 🔐 Логин в GitHub Container Registry
+        if: steps.analyze.outputs.services != ''
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔐 Создаем .env из Environment secrets
+        if: steps.analyze.outputs.services != ''
+        run: |
+          cat > .env << EOF
+          APP_PORT_OUTSIDE=${{ secrets.APP_PORT_OUTSIDE }}
+
+          DB_PORT_OUTSIDE=${{ secrets.DB_PORT_OUTSIDE }}
+          DB_NAME=${{ secrets.DB_NAME }}
+          DB_HOST=${{ secrets.DB_HOST }}
+          DB_USER=${{ secrets.DB_USER }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+
+          DJANGO_SUPERUSER_USERNAME=${{ secrets.DJANGO_SUPERUSER_USERNAME }}
+          DJANGO_SUPERUSER_EMAIL=${{ secrets.DJANGO_SUPERUSER_EMAIL }}
+          DJANGO_SUPERUSER_PASSWORD=${{ secrets.DJANGO_SUPERUSER_PASSWORD }}
+
+          KAFKA_BOOTSTRAP_SERVERS=${{ secrets.KAFKA_BOOTSTRAP_SERVERS }}
+
+          ELASTIC_USERNAME=${{ secrets.ELASTIC_USERNAME }}
+          ELASTIC_PASSWORD=${{ secrets.ELASTIC_PASSWORD }}
+          KIBANA_SYSTEM_PASSWORD=${{ secrets.KIBANA_SYSTEM_PASSWORD }}
+          APM_SECRET_TOKEN=${{ secrets.APM_SECRET_TOKEN }}
+
+          DOMAIN_NAME=${{ secrets.DOMAIN_NAME }}
+          LETSENCRYPT_EMAIL=${{ secrets.LETSENCRYPT_EMAIL }}
+
+          EOF
+
+          echo "✅ .env создан для Environment: ${{ env.MODE }}"
+
+      - name: 🔨 Билдим изменённые сервисы
+        if: steps.analyze.outputs.services != ''
+        run: |
+          export TAG="${{ env.MODE }}"
+          SERVICES="${{ steps.analyze.outputs.services }}"
+
+          echo "🚀 Билдим: $SERVICES"
+          echo "🏷️ Тег: $TAG"
+          echo ""
+
+          docker compose build $SERVICES
+
+      - name: 📤 Пушим образы в registry
+        if: steps.analyze.outputs.services != ''
+        run: |
+          export TAG="${{ env.MODE }}"
+          SERVICES="${{ steps.analyze.outputs.services }}"
+
+          echo "📤 Пушим образы: $SERVICES"
+          docker compose push $SERVICES
+
+          echo "✅ Все образы в registry!"
+
+      - name: Send docker-compose
+        if: steps.analyze.outputs.services != ''
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_SERVER }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "docker-compose.yaml,nginx/nginx.conf"
+          target: "/srv/cardgame/backend/${{ env.MODE }}"
+
+      - name: 🚀 Деплой на сервер
+        if: steps.analyze.outputs.services != ''
+        uses: appleboy/ssh-action@v1
+        env:
+          TAG: ${{ env.MODE }}
+          MODE: ${{ env.MODE }}
+          SERVICES: ${{ steps.analyze.outputs.services }}
+          BACKEND_IMAGE_NAME: ${{ github.repository }}
+          ENV_CONTENT: |
+            CONFIG=${{ secrets.CONFIG }}
+
+            APP_PORT_OUTSIDE=${{ secrets.APP_PORT_OUTSIDE }}
+
+            DB_PORT_OUTSIDE=${{ secrets.DB_PORT_OUTSIDE }}
+            DB_NAME=${{ secrets.DB_NAME }}
+            DB_HOST=${{ secrets.DB_HOST }}
+            DB_USER=${{ secrets.DB_USER }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+
+            DJANGO_SUPERUSER_USERNAME=${{ secrets.DJANGO_SUPERUSER_USERNAME }}
+            DJANGO_SUPERUSER_EMAIL=${{ secrets.DJANGO_SUPERUSER_EMAIL }}
+            DJANGO_SUPERUSER_PASSWORD=${{ secrets.DJANGO_SUPERUSER_PASSWORD }}
+            CSRF_TRUSTED_ORIGINS=${{ secrets.CSRF_TRUSTED_ORIGINS }}
+
+            USER_PASSWORD_SECRET_KEY=${{ secrets.USER_PASSWORD_SECRET_KEY }}
+
+            KAFKA_BOOTSTRAP_SERVERS=${{ secrets.KAFKA_BOOTSTRAP_SERVERS }}
+
+            ELASTIC_USERNAME=${{ secrets.ELASTIC_USERNAME }}
+            ELASTIC_PASSWORD=${{ secrets.ELASTIC_PASSWORD }}
+            KIBANA_SYSTEM_PASSWORD=${{ secrets.KIBANA_SYSTEM_PASSWORD }}
+            APM_SECRET_TOKEN=${{ secrets.APM_SECRET_TOKEN }}
+
+            DOMAIN_NAME=${{ secrets.DOMAIN_NAME }}
+            LETSENCRYPT_EMAIL=${{ secrets.LETSENCRYPT_EMAIL }}
+
+        with:
+          host: ${{ secrets.SSH_SERVER }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          envs: ENV_CONTENT,MODE,TAG,SERVICES,BACKEND_IMAGE_NAME
+          script: |
+            export TAG="$TAG"
+            export MODE="$MODE"
+            export BACKEND_IMAGE_NAME="$BACKEND_IMAGE_NAME"
+
+            cd /srv/cardgame/backend/$MODE
+
+            printf '%s\n' "$ENV_CONTENT" > .env.docker
+
+            echo "📥 Логинимся в registry..."
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            echo "📥 Пуллим образы: $SERVICES"
+            docker-compose pull $SERVICES
+
+            echo "🔄 Перезапускаем сервисы..."
+            docker-compose --env-file .env.docker up -d
+
+            echo "🧹 Чистим старые образы..."
+            docker image prune -f
+
+            docker restart gridways-nginx
+
+            echo ""
+            echo "✅ Деплой завершён!"
+            docker-compose ps
+
+      - name: 📋 Итог
+        run: |
+          echo "=========================================="
+          if [[ -z "${{ steps.analyze.outputs.services }}" ]]; then
+            echo "📝 Только тесты изменены — деплой не потребовался"
+          else
+            echo "✅ Автоматический деплой завершён!"
+            echo "Окружение: ${{ env.MODE }}"
+            echo "Сервисы:   ${{ steps.analyze.outputs.services }}"
+          fi
+          echo "=========================================="
