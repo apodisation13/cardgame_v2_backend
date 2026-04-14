@@ -16,6 +16,6 @@ async def test_task_one_execution(
     await task.do()
 
     call_args = event_sender_mock.call_args_list
-    print(call_args)
+    print(19, call_args)
     call_args = event_sender_mock.call_args
-    print(call_args)
+    print(21, call_args)
