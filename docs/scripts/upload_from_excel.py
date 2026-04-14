@@ -58,49 +58,29 @@ async def upload_with_names_and_descriptions(file, db_pool, page_name, table_nam
         )
 
 
-async def update_images_in_place(cards_list, img_idx):
-    for card in cards_list:
-
-        old_path = card[img_idx]
-        # Получаем директорию и имя файла
-        dir_part, file_part = old_path.rsplit('/', 1)
-        prefix = f"{dir_part}/"
-
-        # Имя без расширения
-        name_no_ext = os.path.splitext(file_part)[0]
-
-        # Заменяем одно поле тремя
-        card[img_idx:img_idx + 1] = [
-            f"{prefix}{name_no_ext}_original.webp",
-            f"{prefix}{name_no_ext}_tablet.webp",
-            f"{prefix}{name_no_ext}_phone.webp"
-        ]
-
-    return cards_list
-
-
 async def upload_leaders(file, db_pool):
     print("Inserting leaders")
 
-    data = file["Cards.Leader"]
-    print(len(data), data)
+    data = file["Cards.Leader_2"]
 
-    # а здесь берем все столбцы, кроме первого (id) + так же пропускаем первую строку, там названия столбцов
-    # вместо пустой строки ставим None для инзерта в бд
-    needed_data = [row[1:len(row) - 1] for row in data[1:] if row]
-    for element in needed_data:
-        if element[11] == "":
-            element[11] = None
+    header = data[0]
+    data_idx = header.index('data')
 
-    # добавляем туда измененные картинк
-    data_to_insert = await update_images_in_place(needed_data, img_idx=9)
-    print(len(data_to_insert), data_to_insert)
+    needed_data = []
+    for row in data[1:]:
+        if not row:
+            continue
+        element = [None if v == "" else v for v in row[0:len(row) - 1]]
+        element[data_idx] = json.loads(element[data_idx].replace("“", '"').replace("”", '"'))
+        needed_data.append(element)
+
+    print(needed_data)
 
     async with db_pool.acquire() as connection:
         existing_row_count = await connection.fetchval("""select count(*) from leaders""")
-        print(existing_row_count, len(data_to_insert))
+        print(existing_row_count, len(needed_data))
 
-        if existing_row_count == len(data_to_insert):
+        if existing_row_count == len(needed_data):
             print("Nothing to insert in table leaders")
             return
 
@@ -111,54 +91,39 @@ async def upload_leaders(file, db_pool):
                 unlocked,
                 faction_id,
                 ability_id,
-                hp,
-                damage,
-                charges,
-                heal,
-                armor,
-                image_original,
-                image_tablet,
-                image_phone,
-                has_passive,
                 passive_ability_id,
-                value,
-                timer,
-                default_timer,
-                reset_timer
+                data,
+                image_original
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
             """,
-            data_to_insert[existing_row_count:],
+            needed_data[existing_row_count:],
         )
 
 
 async def upload_cards(file, db_pool):
     print("Inserting cards")
 
-    data = file["Cards.Card"]
-    print(len(data), data)
+    data = file["Cards.Card_2"]
 
-    # а здесь берем все столбцы, кроме первого (id) + так же пропускаем первую строку, там названия столбцов
-    # вместо пустой строки в passive_ability_id ставим None для инзерта в бд
-    needed_data = [row[1:23] for row in data[1:] if row]
-    for element in needed_data:
-        if element[16] == "":
-            element[16] = None
+    header = data[0]
+    data_idx = header.index('data')
 
-    # добавляем туда измененные картинк
-    data_to_insert = await update_images_in_place(needed_data, img_idx=11)
-    print(len(data_to_insert), data_to_insert)
+    needed_data = []
+    for row in data[1:]:
+        if not row:
+            continue
+        element = [None if v == "" else v for v in row[:10]]
+        element[data_idx] = json.loads(element[data_idx].replace("“", '"').replace("”", '"'))
+        needed_data.append(element)
 
     async with db_pool.acquire() as connection:
         existing_row_count = await connection.fetchval("""select count(*) from cards""")
-        print(existing_row_count, len(data_to_insert))
+        print(existing_row_count, len(needed_data))
 
-        if existing_row_count == len(data_to_insert):
+        if existing_row_count == len(needed_data):
             print("Nothing to insert in table cards")
             return
-
-        for element in data_to_insert:
-            print(len(element))
 
         await connection.executemany("""
             INSERT INTO cards
@@ -169,28 +134,13 @@ async def upload_cards(file, db_pool):
                 color_id,
                 type_id,
                 ability_id,
-                damage,
-                charges,
-                hp,
-                heal,
-                armor,
-                image_original,
-                image_tablet,
-                image_phone,
-                has_passive,
-                has_passive_in_hand,
-                has_passive_in_deck,
-                has_passive_in_grave,
                 passive_ability_id,
-                value,
-                timer,
-                default_timer,
-                reset_timer,
-                each_tick
+                data,
+                image_original
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             """,
-            data_to_insert[existing_row_count:],
+            needed_data[existing_row_count:],
         )
 
 
@@ -234,27 +184,24 @@ async def upload_base_deck(file, db_pool):
 async def upload_enemy_leaders(file, db_pool):
     print("Inserting enemy leaders")
 
-    data = file["Enemies.EnemyLeader"]
-    print(len(data), data)
+    data = file["Enemies.EnemyLeader_2"]
 
-    # а здесь берем все столбцы, кроме первого (id) + так же пропускаем первую строку, там названия столбцов
-    # вместо пустой строки ставим None для инзерта в бд
-    needed_data = [row[1:14] for row in data[1:] if row]
-    for element in needed_data:
-        if element[2] == "":
-            element[2] = None
-        if element[6] == "":
-            element[6] = None
+    header = data[0]
+    data_idx = header.index('data')
 
-    # добавляем туда измененные картинк
-    data_to_insert = await update_images_in_place(needed_data, img_idx=7)
-    print(len(data_to_insert), data_to_insert)
+    needed_data = []
+    for row in data[1:]:
+        if not row:
+            continue
+        element = [None if v == "" else v for v in row[:7]]
+        element[data_idx] = json.loads(element[data_idx].replace("“", '"').replace("”", '"'))
+        needed_data.append(element)
 
     async with db_pool.acquire() as connection:
         existing_row_count = await connection.fetchval("""select count(*) from enemy_leaders""")
-        print(existing_row_count, len(data_to_insert))
+        print(existing_row_count, len(needed_data))
 
-        if existing_row_count == len(data_to_insert):
+        if existing_row_count == len(needed_data):
             print("Nothing to insert in table leaders")
             return
 
@@ -264,49 +211,37 @@ async def upload_enemy_leaders(file, db_pool):
                 name,
                 faction_id,
                 ability_id,
-                hp,
-                base_hp,
-                has_passive,
                 passive_ability_id,
-                image_original,
-                image_tablet,
-                image_phone,
-                value,
-                timer,
-                default_timer,
-                reset_timer,
-                each_tick
+                data,
+                image_original
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+            VALUES ($1, $2, $3, $4, $5, $6)
             """,
-            data_to_insert[existing_row_count:],
+            needed_data[existing_row_count:],
         )
 
 
 async def upload_enemies(file, db_pool):
     print("Inserting enemies")
 
-    data = file["Enemies.Enemy"]
-    print(len(data), data)
+    data = file["Enemies.Enemy_2"]
 
-    # а здесь берем все столбцы, кроме первого (id) + так же пропускаем первую строку, там названия столбцов
-    # вместо пустой строки ставим None для инзерта в бд
-    needed_data = [row[1:23] for row in data[1:] if row]
-    for element in needed_data:
-        if element[13] == "":
-            element[13] = None
-        if element[20] == "":
-            element[20] = None
+    header = data[0]
+    data_idx = header.index('data')
 
-    # добавляем туда измененные картинк
-    data_to_insert = await update_images_in_place(needed_data, img_idx=8)
-    print(len(data_to_insert), data_to_insert)
+    needed_data = []
+    for row in data[1:]:
+        if not row:
+            continue
+        element = [None if v == "" else v for v in row[:9]]
+        element[data_idx] = json.loads(element[data_idx].replace("“", '"').replace("”", '"'))
+        needed_data.append(element)
 
     async with db_pool.acquire() as connection:
         existing_row_count = await connection.fetchval("""select count(*) from enemies""")
-        print(existing_row_count, len(data_to_insert))
+        print(existing_row_count, len(needed_data))
 
-        if existing_row_count == len(data_to_insert):
+        if existing_row_count == len(needed_data):
             print("Nothing to insert in table leaders")
             return
 
@@ -317,30 +252,14 @@ async def upload_enemies(file, db_pool):
                 faction_id,
                 color_id,
                 move_id,
-                damage,
-                hp,
-                base_hp,
-                shield,
-                image_original,
-                image_tablet,
-                image_phone,
-                has_passive,
-                has_passive_in_field,
-                has_passive_in_deck,
-                has_passive_in_grave,
                 passive_ability_id,
-                value,
-                timer,
-                default_timer,
-                reset_timer,
-                each_tick,
-                has_deathwish,
                 deathwish_id,
-                deathwish_value
+                data,
+                image_original 
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             """,
-            data_to_insert[existing_row_count:],
+            needed_data[existing_row_count:],
         )
 
 
