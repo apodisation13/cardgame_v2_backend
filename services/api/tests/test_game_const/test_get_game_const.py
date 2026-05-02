@@ -41,6 +41,7 @@ class TestGetGameConstAPI:
         response_json = response.json()
         assert response_json == {
             "hand_size": 6,
+            "max_random_n_enemies": 200,
             "number_of_cards_in_deck": 12,
             "resources_transitions": ANY,
             "key_rewards": ANY,
