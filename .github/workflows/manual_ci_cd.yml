@@ -32,10 +32,10 @@ jobs:
           echo "✅ Ветка '$BRANCH' → окружение: ${{ env.MODE }}"
 
       - name: 📥 Получаем код
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: 🔐 Логин в GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -95,7 +95,7 @@ jobs:
           echo "✅ Все образы в registry!"
 
       - name: Send docker-compose
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.SSH_SERVER }}
           username: ${{ secrets.SSH_USER }}

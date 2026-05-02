@@ -65,6 +65,7 @@ class GameConstantsFactory(BaseModelFactory):
 
     data = {
         "hand_size": 6,
+        "max_random_n_enemies": 200,
         "number_of_cards_in_deck": 12,
         "resources_transitions": DEFAULT_RESOURCES_TRANSITIONS,
         "key_rewards": DEFAULT_KEY_REWARDS,
