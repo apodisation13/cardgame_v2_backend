@@ -1,13 +1,11 @@
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy.dialects.postgresql import JSONB
-
 from lib.utils.models import BaseModel, TimestampMixin
-from sqlalchemy import Integer, String, ForeignKey, Boolean, Numeric
-from sqlalchemy.orm import Mapped, mapped_column
-
 from lib.utils.schemas.products import ProductType, PurchaseStatus
+from sqlalchemy import Boolean, ForeignKey, Integer, Numeric, String
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import Mapped, mapped_column
 
 
 class Product(BaseModel, TimestampMixin):
@@ -33,7 +31,7 @@ class Product(BaseModel, TimestampMixin):
     )
     priority: Mapped[int] = mapped_column(
         Integer,
-        server_default="0"
+        server_default="0",
     )
     data: Mapped[dict[str, Any]] = mapped_column(
         JSONB,

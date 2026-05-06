@@ -4,11 +4,11 @@ from .game.cards import Ability, Card, CardDeck, Deck, Leader, PassiveAbility, T
 from .game.core import Color, Faction, GameConstants
 from .game.enemies import Deathwish, Enemy, EnemyLeader, EnemyLeaderAbility, EnemyPassiveAbility, Move
 from .game.preferences import UserPreferences
-from .products import Product, Purchase
 from .game.progress import UserCard, UserDeck, UserLeader, UserLevel, UserResource, UserSeason
 from .game.seasons import Level, LevelEnemy, LevelRelatedLevels, Season, SeasonRelatedSeasons
 from .game.stats import Leaderboard, UserStats
 from .news import News
+from .products import Product, Purchase
 from .tasks import CronTask
 from .users import User
 
