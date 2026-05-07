@@ -1,12 +1,12 @@
-from enum import StrEnum
+from lib.utils.schemas.base import StrEnumChoices
 
 
-class ProductType(StrEnum):
+class ProductType(StrEnumChoices):
     RESOURCE = "resource"
     AVATAR = "avatar"
 
 
-class PurchaseStatus(StrEnum):
+class PurchaseStatus(StrEnumChoices):
     PENDING = "pending"
     SUCCESS = "success"
     FAILED = "failed"
