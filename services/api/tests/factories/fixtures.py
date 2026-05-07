@@ -62,7 +62,7 @@ from services.api.tests.factories.factories import (
     UserPreferenceFactory,
     UserResourceFactory,
     UserSeasonFactory,
-    UserStatsFactory,
+    UserStatsFactory, ProductFactory,
 )
 
 
@@ -307,6 +307,14 @@ def leaderboard_factory(db_connection):
 def user_stats_factory(db_connection):
     async def factory(**kwargs) -> UserStats:
         return await UserStatsFactory.create_in_db(conn=db_connection, **kwargs)
+
+    return factory
+
+
+@pytest_asyncio.fixture
+def product_factory(db_connection):
+    async def factory(**kwargs) -> Type:
+        return await ProductFactory.create_in_db(conn=db_connection, **kwargs)
 
     return factory
 

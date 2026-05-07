@@ -30,7 +30,7 @@ from lib.utils.models import (
     UserPreferences,
     UserResource,
     UserSeason,
-    UserStats,
+    UserStats, Product,
 )
 from lib.utils.schemas.game import (
     DEFAULT_CARDS_PRICES,
@@ -40,8 +40,9 @@ from lib.utils.schemas.game import (
     DEFAULT_WIN_LEVEL_REWARDS,
     LeaderboardGameMode,
     LevelDifficulty,
-    UserStatsRecordType,
+    UserStatsRecordType, ResourceType,
 )
+from lib.utils.schemas.products import ProductType
 from services.api.app.apps.preferences.schemas import DEFAULT_PREFERENCES
 
 
@@ -348,3 +349,21 @@ class UserStatsFactory(BaseModelFactory, TimeStampMixinFactory):
     faction_id = factory.SubFactory(FactionFactory)
     type = UserStatsRecordType.PLAY
     count = 1
+
+
+class ProductFactory(BaseModelFactory, TimeStampMixinFactory):
+    class Meta:
+        model = Product
+
+    title = "title"
+    is_active = True
+    type = ProductType.RESOURCE
+    priority = 999
+    price = 100.43
+    data = {
+        "resources": {
+            ResourceType.MONEY: 2000,
+            ResourceType.WOOD: 1000,
+            ResourceType.SCRAPS: 1500,
+        },
+    }
