@@ -52,6 +52,8 @@ from services.api.tests.factories.factories import (
     LevelRelatedLevelsFactory,
     MoveFactory,
     PassiveAbilityFactory,
+    ProductFactory,
+    PurchaseFactory,
     SeasonFactory,
     SeasonRelatedSeasonsFactory,
     TypeFactory,
@@ -62,7 +64,7 @@ from services.api.tests.factories.factories import (
     UserPreferenceFactory,
     UserResourceFactory,
     UserSeasonFactory,
-    UserStatsFactory, ProductFactory, PurchaseFactory,
+    UserStatsFactory,
 )
 
 

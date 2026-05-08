@@ -2,9 +2,6 @@ import pytest
 
 from httpx import AsyncClient
 
-from lib.utils.schemas.game import ResourceType
-from lib.utils.schemas.products import ProductType, PurchaseStatus
-
 
 class TestPurchaseProductAPI:
     endpoint = "user/{user_id}/purchase-product/{product_id}"

@@ -20,6 +20,8 @@ from lib.utils.models import (
     LevelRelatedLevels,
     Move,
     PassiveAbility,
+    Product,
+    Purchase,
     Season,
     SeasonRelatedSeasons,
     Type,
@@ -30,7 +32,7 @@ from lib.utils.models import (
     UserPreferences,
     UserResource,
     UserSeason,
-    UserStats, Product, Purchase,
+    UserStats,
 )
 from lib.utils.schemas.game import (
     DEFAULT_CARDS_PRICES,
@@ -40,7 +42,8 @@ from lib.utils.schemas.game import (
     DEFAULT_WIN_LEVEL_REWARDS,
     LeaderboardGameMode,
     LevelDifficulty,
-    UserStatsRecordType, ResourceType,
+    ResourceType,
+    UserStatsRecordType,
 )
 from lib.utils.schemas.products import ProductType, PurchaseStatus
 from services.api.app.apps.preferences.schemas import DEFAULT_PREFERENCES

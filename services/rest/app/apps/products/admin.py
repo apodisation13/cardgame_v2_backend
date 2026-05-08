@@ -1,8 +1,8 @@
-from django.contrib import admin
 from django import forms
-from django_json_widget.widgets import JSONEditorWidget
+from django.contrib import admin
 
 from apps.products.models import Product
+from django_json_widget.widgets import JSONEditorWidget
 
 
 class ProductForm(forms.ModelForm):
@@ -49,9 +49,5 @@ class ProductAdmin(admin.ModelAdmin):
         "created_at",
         "updated_at",
     )
-    list_filter = (
-        "is_active",
-    )
-    search_fields = (
-        "title",
-    )
+    list_filter = ("is_active",)
+    search_fields = ("title",)

@@ -1,9 +1,7 @@
 import pytest
 
 from httpx import AsyncClient
-
-from lib.utils.schemas.game import ResourceType
-from lib.utils.schemas.products import ProductType, PurchaseStatus
+from lib.utils.schemas.products import PurchaseStatus
 
 
 class TestPurchaseStatusAPI:
@@ -61,9 +59,9 @@ class TestPurchaseStatusAPI:
         assert response.status_code == 404
         response_json = response.json()
         assert response_json == {
-            'error': {
-                'code': 'NOT_FOUND',
-                'message': 'PurchaseDoesNotExistError',
-                'details': 'PurchaseDoesNotExistError()',
+            "error": {
+                "code": "NOT_FOUND",
+                "message": "PurchaseDoesNotExistError",
+                "details": "PurchaseDoesNotExistError()",
             },
         }

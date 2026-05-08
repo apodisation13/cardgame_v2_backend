@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, Path
-
 from lib.utils.schemas.products import PurchaseStatus
 from services.api.app.apps.auth import dependencies as auth_dependencies
 from services.api.app.apps.purchases.schemas import Product, PurchaseProductResponse
 from services.api.app.apps.purchases.service import PurchasesService
 from services.api.app.dependencies import get_purchase_service
+
 
 router = APIRouter()
 

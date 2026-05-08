@@ -7,6 +7,7 @@ from services.api.app.apps.purchases.schemas import Product, PurchaseProductResp
 from services.api.app.config import Config
 from services.api.app.exceptions.exceptions import ProductDoesNotExistError, PurchaseDoesNotExistError
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -24,7 +25,7 @@ class PurchasesService:
             rows = await connection.fetch(
                 """
                     SELECT
-                        id, 
+                        id,
                         title,
                         data,
                         price,
@@ -35,9 +36,9 @@ class PurchasesService:
                         is_active is TRUE
                     ORDER BY
                         priority DESC,
-                        price, 
+                        price,
                         updated_at DESC
-                """
+                """,
             )
 
         return [Product.get_one(row) for row in rows]
@@ -51,13 +52,13 @@ class PurchasesService:
         async with self.db_pool.connection() as connection:
             product_info: dict = await connection.fetchrow(
                 """
-                SELECT 
+                SELECT
                     products.price,
-                    products.title 
-                FROM 
-                    products 
-                WHERE 
-                    is_active IS TRUE 
+                    products.title
+                FROM
+                    products
+                WHERE
+                    is_active IS TRUE
                     AND products.id = $1
                 """,
                 product_id,
@@ -71,36 +72,9 @@ class PurchasesService:
             # TODO: вот тут будет вызов юкассы, которая вернет 2 параметра включая transaction_id
             transaction_id = str(uuid.uuid4())
 
-            """
-            Что создаёт твоя ручка purchase-product:                                                                                                                        
-              1. Создаёт запись в таблице purchases → получаешь purchases.id (твой внутренний ID)
-              2. Вызывает ЮКассу → получаешь yookassa_payment_id (UUID от ЮКассы) + confirmation_url                                                                          
-              3. Сохраняет yookassa_payment_id в строку purchases (как внешний ключ)                
-              4. Возвращает на фронт { purchase_id: purchases.id, confirmation_url }                                                                                          
-                                                                                                                                                                              
-              Что идёт в return_url для ЮКассы:                                                                                                                               
-              /payment/result?payment_id=<purchases.id>                                                                                                                       
-              Твой внутренний ID, не ЮКассин. Клиент не должен знать про yookassa_payment_id.                                                                                 
-                                                                                                                                                                              
-              Флоу целиком:                                                                                                                                                   
-                                                                                                                                                                              
-              POST purchase-product                                                                                                                                           
-                → создаёт purchases(id=5, status=pending, yookassa_id="abc-123")                                                                                              
-                → return_url = "/payment/result?payment_id=5"                                                                                                                 
-                → возвращает { purchase_id: 5, confirmation_url: "yookassa.ru/..." }
-                                                                                                                                                                              
-                                                                                                                                                                              
-              GET /purchase-status/5                                                                                                                                          
-                → ищет в purchases WHERE id=5                                                                                                                                 
-                → возвращает { status: "pending" / "succeeded" / "failed" }
-                                                                                                                                                                              
-              Вебхук от ЮКассы
-                → UPDATE purchases SET status="succeeded" WHERE yookassa_id="abc-123"       
-            """
-
             purchase_id: int = await connection.fetchval(
                 """
-                INSERT INTO purchases 
+                INSERT INTO purchases
                 (user_id, product_id, amount, transaction_id)
                 VALUES ($1, $2, $3, $4)
                 RETURNING id

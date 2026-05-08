@@ -1,7 +1,6 @@
 import pytest
 
 from httpx import AsyncClient
-
 from lib.utils.schemas.game import ResourceType
 from lib.utils.schemas.products import ProductType
 
