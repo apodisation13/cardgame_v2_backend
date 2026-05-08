@@ -42,4 +42,4 @@ class Product(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
 
     def __str__(self) -> str:
-        return f"Новость {self.pk}: {self.title}"
+        return f"Продукт {self.pk}: {self.title}"
