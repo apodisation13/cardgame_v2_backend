@@ -559,8 +559,8 @@ async def update(data, db_pool):
 async def upload_from_excel():
     load_env()
     config = get_config()
-    # config.DB_URL = "postgresql://postgres:strongPass123123@46.243.210.49:5434/gridways_testing"
-    config.DB_URL = "postgresql://postgres:iknowYou1932844)@localhost:5432/my_local_test_db"
+    # config.DB_URL = ""
+    config.DB_URL = ""
     db = Database(config)
 
     data = get_data("database.ods")
