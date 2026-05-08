@@ -70,8 +70,8 @@ async def upload_leaders(file, db_pool):
     for row in data[1:]:
         if not row:
             continue
-        element = [None if v == "" else v for v in row[0:len(row) - 1]]
-        element[data_idx] = json.loads(element[data_idx].replace("“", '"').replace("”", '"'))
+        element = [None if v == "" else v for v in row[1:len(row) - 1]]
+        element[data_idx - 1] = json.loads(element[data_idx - 1].replace("“", '"').replace("”", '"'))
         needed_data.append(element)
 
     print(needed_data)
@@ -113,8 +113,8 @@ async def upload_cards(file, db_pool):
     for row in data[1:]:
         if not row:
             continue
-        element = [None if v == "" else v for v in row[:10]]
-        element[data_idx] = json.loads(element[data_idx].replace("“", '"').replace("”", '"'))
+        element = [None if v == "" else v for v in row[1:10]]
+        element[data_idx - 1] = json.loads(element[data_idx - 1].replace("“", '"').replace("”", '"'))
         needed_data.append(element)
 
     async with db_pool.acquire() as connection:
@@ -193,8 +193,8 @@ async def upload_enemy_leaders(file, db_pool):
     for row in data[1:]:
         if not row:
             continue
-        element = [None if v == "" else v for v in row[:7]]
-        element[data_idx] = json.loads(element[data_idx].replace("“", '"').replace("”", '"'))
+        element = [None if v == "" else v for v in row[1:7]]
+        element[data_idx - 1] = json.loads(element[data_idx - 1].replace("“", '"').replace("”", '"'))
         needed_data.append(element)
 
     async with db_pool.acquire() as connection:
@@ -233,8 +233,8 @@ async def upload_enemies(file, db_pool):
     for row in data[1:]:
         if not row:
             continue
-        element = [None if v == "" else v for v in row[:9]]
-        element[data_idx] = json.loads(element[data_idx].replace("“", '"').replace("”", '"'))
+        element = [None if v == "" else v for v in row[1:9]]
+        element[data_idx - 1] = json.loads(element[data_idx - 1].replace("“", '"').replace("”", '"'))
         needed_data.append(element)
 
     async with db_pool.acquire() as connection:
@@ -280,7 +280,7 @@ async def upload_seasons(file, db_pool):
 
         await connection.executemany(
             """INSERT INTO seasons (name, unlocked, description, x, y) VALUES ($1, $2, $3, $4, $5)""",
-            data_to_insert,
+            data_to_insert[existing_row_count:],
         )
 
     data = file["Seasons.SeasonRelatedSeason"]
@@ -305,7 +305,7 @@ async def upload_seasons(file, db_pool):
                      (season_id, related_season_id, line, connection)
                      VALUES ($1, $2, $3, $4)
                 """,
-                data_to_insert,
+                data_to_insert[existing_row_count:],
             )
 
 
@@ -381,7 +381,7 @@ async def upload_levels_enemies(file, db_pool):
                      (level_id, related_level_id, line, connection)
                      VALUES ($1, $2, $3, $4)
                 """,
-                data_to_insert,
+                data_to_insert[existing_row_count:],
             )
 
 
@@ -530,22 +530,22 @@ async def update_enemies(file, db_pool):
 
 
 async def create(data, db_pool):
-    await upload_with_only_names(data, db_pool, page_name="Faction", table_name="factions")
-    await upload_with_only_names(data, db_pool, page_name="Color", table_name="colors")
-    await upload_with_only_names(data, db_pool, page_name="Type", table_name="types")
-    await upload_with_names_and_descriptions(data, db_pool, page_name="Ability", table_name="abilities")
-    await upload_with_names_and_descriptions(data, db_pool, page_name="CardPassiveAbility", table_name="passive_abilities")
-    await upload_with_names_and_descriptions(data, db_pool, page_name="Move", table_name="moves")
-    await upload_with_names_and_descriptions(data, db_pool, page_name="EnemyPassiveAbility", table_name="enemy_passive_abilities")
-    await upload_with_names_and_descriptions(data, db_pool, page_name="EnemyLeaderAbility", table_name="enemy_leader_abilities")
-    await upload_with_names_and_descriptions(data, db_pool, page_name="Deathwish", table_name="deathwishes")
-
-    await upload_leaders(data, db_pool)
-    await upload_cards(data, db_pool)
-    await upload_base_deck(data, db_pool)
-    await upload_enemy_leaders(data, db_pool)
-    await upload_enemies(data, db_pool)
-    await upload_seasons(data, db_pool)
+    # await upload_with_only_names(data, db_pool, page_name="Faction", table_name="factions")
+    # await upload_with_only_names(data, db_pool, page_name="Color", table_name="colors")
+    # await upload_with_only_names(data, db_pool, page_name="Type", table_name="types")
+    # await upload_with_names_and_descriptions(data, db_pool, page_name="Ability", table_name="abilities")
+    # await upload_with_names_and_descriptions(data, db_pool, page_name="CardPassiveAbility", table_name="passive_abilities")
+    # await upload_with_names_and_descriptions(data, db_pool, page_name="Move", table_name="moves")
+    # await upload_with_names_and_descriptions(data, db_pool, page_name="EnemyPassiveAbility", table_name="enemy_passive_abilities")
+    # await upload_with_names_and_descriptions(data, db_pool, page_name="EnemyLeaderAbility", table_name="enemy_leader_abilities")
+    # await upload_with_names_and_descriptions(data, db_pool, page_name="Deathwish", table_name="deathwishes")
+    #
+    # await upload_leaders(data, db_pool)
+    # await upload_cards(data, db_pool)
+    # await upload_base_deck(data, db_pool)
+    # await upload_enemy_leaders(data, db_pool)
+    # await upload_enemies(data, db_pool)
+    # await upload_seasons(data, db_pool)
     await upload_levels_enemies(data, db_pool)
 
 
@@ -559,7 +559,8 @@ async def update(data, db_pool):
 async def upload_from_excel():
     load_env()
     config = get_config()
-    config.DB_URL = "CHANGE HERE"
+    # config.DB_URL = ""
+    config.DB_URL = ""
     db = Database(config)
 
     data = get_data("database.ods")
@@ -571,7 +572,7 @@ async def upload_from_excel():
     print(len(a), a)
 
     await create(data, db_pool)
-    await update(data, db_pool)
+    # await update(data, db_pool)
 
 
 if __name__ == "__main__":

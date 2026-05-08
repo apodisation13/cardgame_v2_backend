@@ -52,6 +52,8 @@ from services.api.tests.factories.factories import (
     LevelRelatedLevelsFactory,
     MoveFactory,
     PassiveAbilityFactory,
+    ProductFactory,
+    PurchaseFactory,
     SeasonFactory,
     SeasonRelatedSeasonsFactory,
     TypeFactory,
@@ -307,6 +309,22 @@ def leaderboard_factory(db_connection):
 def user_stats_factory(db_connection):
     async def factory(**kwargs) -> UserStats:
         return await UserStatsFactory.create_in_db(conn=db_connection, **kwargs)
+
+    return factory
+
+
+@pytest_asyncio.fixture
+def product_factory(db_connection):
+    async def factory(**kwargs) -> Type:
+        return await ProductFactory.create_in_db(conn=db_connection, **kwargs)
+
+    return factory
+
+
+@pytest_asyncio.fixture
+def purchase_factory(db_connection):
+    async def factory(**kwargs) -> Type:
+        return await PurchaseFactory.create_in_db(conn=db_connection, **kwargs)
 
     return factory
 

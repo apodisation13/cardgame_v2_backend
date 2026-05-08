@@ -6,6 +6,7 @@ from services.api.app.apps.game_const.service import GameConstService
 from services.api.app.apps.news.service import NewsService
 from services.api.app.apps.preferences.service import PreferencesService
 from services.api.app.apps.progress.service import UserProgressService
+from services.api.app.apps.purchases.service import PurchasesService
 from services.api.app.apps.stats.service import StatsService
 from services.api.app.config import Config
 
@@ -94,6 +95,16 @@ async def get_stats_service(
     config: Config = Depends(get_config),
 ) -> StatsService:
     return StatsService(
+        db_pool=db_pool,
+        config=config,
+    )
+
+
+async def get_purchase_service(
+    db_pool: Database = Depends(get_db),
+    config: Config = Depends(get_config),
+) -> PurchasesService:
+    return PurchasesService(
         db_pool=db_pool,
         config=config,
     )

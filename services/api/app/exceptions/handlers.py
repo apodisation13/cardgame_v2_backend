@@ -8,6 +8,8 @@ from services.api.app.exceptions import UserAlreadyExistsError
 from services.api.app.exceptions.exceptions import (
     CraftMillCardProcessError,
     ManageResourcesProcessError,
+    ProductDoesNotExistError,
+    PurchaseDoesNotExistError,
     UserNotFoundError,
 )
 
@@ -175,6 +177,26 @@ async def user_already_exists_exception_handler(
     )
 
 
+async def not_found_exception_handler(
+    request: Request,
+    exc: Exception,
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_404_NOT_FOUND,
+        content={
+            "error": {
+                "code": "NOT_FOUND",
+                "message": exc.__class__.__name__,
+                "details": exc.__repr__(),
+            },
+        },
+        headers={
+            "Access-Control-Allow-Origin": request.headers.get("origin", "*"),
+            "Access-Control-Allow-Credentials": "true",
+        },
+    )
+
+
 async def bad_request_global_exception_handler(
     request: Request,
     exc: Exception,
@@ -201,5 +223,7 @@ def add_exceptions(app: FastAPI) -> FastAPI:
     app.add_exception_handler(UserNotFoundError, bad_request_global_exception_handler)
     app.add_exception_handler(ManageResourcesProcessError, bad_request_global_exception_handler)
     app.add_exception_handler(CraftMillCardProcessError, bad_request_global_exception_handler)
+    app.add_exception_handler(ProductDoesNotExistError, not_found_exception_handler)
+    app.add_exception_handler(PurchaseDoesNotExistError, not_found_exception_handler)
     app.add_exception_handler(Exception, global_exception_handler)
     return app

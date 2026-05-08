@@ -20,6 +20,8 @@ from lib.utils.models import (
     LevelRelatedLevels,
     Move,
     PassiveAbility,
+    Product,
+    Purchase,
     Season,
     SeasonRelatedSeasons,
     Type,
@@ -40,8 +42,10 @@ from lib.utils.schemas.game import (
     DEFAULT_WIN_LEVEL_REWARDS,
     LeaderboardGameMode,
     LevelDifficulty,
+    ResourceType,
     UserStatsRecordType,
 )
+from lib.utils.schemas.products import ProductType, PurchaseStatus
 from services.api.app.apps.preferences.schemas import DEFAULT_PREFERENCES
 
 
@@ -348,3 +352,33 @@ class UserStatsFactory(BaseModelFactory, TimeStampMixinFactory):
     faction_id = factory.SubFactory(FactionFactory)
     type = UserStatsRecordType.PLAY
     count = 1
+
+
+class ProductFactory(BaseModelFactory, TimeStampMixinFactory):
+    class Meta:
+        model = Product
+
+    title = "title"
+    is_active = True
+    type = ProductType.RESOURCE
+    priority = 999
+    price = 100.43
+    data = {
+        "resources": {
+            ResourceType.MONEY: 2000,
+            ResourceType.WOOD: 1000,
+            ResourceType.SCRAPS: 1500,
+        },
+    }
+
+
+class PurchaseFactory(BaseModelFactory, TimeStampMixinFactory):
+    class Meta:
+        model = Purchase
+
+    user_id = factory.SubFactory(UserFactory)
+    product_id = factory.SubFactory(ProductFactory)
+    status = PurchaseStatus.PENDING
+    amount = 0
+    transaction_id = None
+    response_description = None

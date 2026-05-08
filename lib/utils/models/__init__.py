@@ -8,6 +8,7 @@ from .game.progress import UserCard, UserDeck, UserLeader, UserLevel, UserResour
 from .game.seasons import Level, LevelEnemy, LevelRelatedLevels, Season, SeasonRelatedSeasons
 from .game.stats import Leaderboard, UserStats
 from .news import News
+from .products import Product, Purchase
 from .tasks import CronTask
 from .users import User
 
@@ -38,6 +39,8 @@ __all__ = [
     "Move",
     "News",
     "PassiveAbility",
+    "Product",
+    "Purchase",
     "Season",
     "SeasonRelatedSeasons",
     "TimestampMixin",

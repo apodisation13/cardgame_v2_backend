@@ -12,6 +12,7 @@ from services.api.app.apps.game_const.routes import router as game_const_router
 from services.api.app.apps.news.routes import router as news_router
 from services.api.app.apps.preferences.routes import router as preferences_router
 from services.api.app.apps.progress.routes import router as progress_router
+from services.api.app.apps.purchases.routes import router as purchases_router
 from services.api.app.apps.stats.routes import router as stats_router
 from services.api.app.config import get_config as get_app_settings
 from services.api.app.dependencies import set_global_app
@@ -78,5 +79,6 @@ api_v1_router.include_router(game_const_router, prefix="/game_const", tags=["gam
 api_v1_router.include_router(progress_router, prefix="/user-progress", tags=["progress"])
 api_v1_router.include_router(preferences_router, prefix="/preferences", tags=["preferences"])
 api_v1_router.include_router(stats_router, prefix="/statistics", tags=["statistics"])
+api_v1_router.include_router(purchases_router, prefix="", tags=["purchases"])
 
 app.include_router(api_v1_router)
