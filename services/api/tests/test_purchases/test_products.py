@@ -46,7 +46,7 @@ class TestProductsAPI:
         product_4 = await product_factory(
             is_active=True,
             priority=5,
-            price=234.23,
+            price=234.21,
         )
 
         response = await client.get(
@@ -59,19 +59,6 @@ class TestProductsAPI:
         response_json = response.json()
 
         expected_data = [
-            {
-                "id": product_3.id,
-                "title": "title",
-                "data": {
-                    "resources": {
-                        ResourceType.MONEY: 2000,
-                        ResourceType.WOOD: 1000,
-                        ResourceType.SCRAPS: 1500,
-                    },
-                },
-                "type": ProductType.RESOURCE,
-                "price": 334.21,
-            },
             {
                 "id": product_4.id,
                 "title": "title",
@@ -86,10 +73,25 @@ class TestProductsAPI:
                 "price": 234.21,
             },
             {
+                "id": product_3.id,
+                "title": "title",
+                "data": {
+                    "resources": {
+                        ResourceType.MONEY: 2000,
+                        ResourceType.WOOD: 1000,
+                        ResourceType.SCRAPS: 1500,
+                    },
+                },
+                "type": ProductType.RESOURCE,
+                "price": 334.21,
+            },
+            {
                 "id": product_2.id,
                 "title": "title",
                 "data": {"resources": {ResourceType.MONEY: 20000}},
                 "type": ProductType.RESOURCE,
-                "price": 234.21,
+                "price": 134.23,
             },
         ]
+
+        assert response_json == expected_data

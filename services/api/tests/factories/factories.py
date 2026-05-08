@@ -30,7 +30,7 @@ from lib.utils.models import (
     UserPreferences,
     UserResource,
     UserSeason,
-    UserStats, Product,
+    UserStats, Product, Purchase,
 )
 from lib.utils.schemas.game import (
     DEFAULT_CARDS_PRICES,
@@ -42,7 +42,7 @@ from lib.utils.schemas.game import (
     LevelDifficulty,
     UserStatsRecordType, ResourceType,
 )
-from lib.utils.schemas.products import ProductType
+from lib.utils.schemas.products import ProductType, PurchaseStatus
 from services.api.app.apps.preferences.schemas import DEFAULT_PREFERENCES
 
 
@@ -367,3 +367,15 @@ class ProductFactory(BaseModelFactory, TimeStampMixinFactory):
             ResourceType.SCRAPS: 1500,
         },
     }
+
+
+class PurchaseFactory(BaseModelFactory, TimeStampMixinFactory):
+    class Meta:
+        model = Purchase
+
+    user_id = factory.SubFactory(UserFactory)
+    product_id = factory.SubFactory(ProductFactory)
+    status = PurchaseStatus.PENDING
+    amount = 0
+    transaction_id = None
+    response_description = None

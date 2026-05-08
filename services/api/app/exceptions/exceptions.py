@@ -20,3 +20,11 @@ class CraftMillCardProcessError(Exception):
 
 class PostStatsError(Exception):
     pass
+
+
+class ProductDoesNotExistError(Exception):
+    pass
+
+
+class PurchaseDoesNotExistError(Exception):
+    pass

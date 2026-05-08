@@ -18,3 +18,8 @@ class Product(Base):
             data=row["data"],
             price=row["price"],
         )
+
+
+class PurchaseProductResponse(Base):
+    purchase_id: int
+    confirmation_url: str | None = None
