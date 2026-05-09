@@ -1,9 +1,21 @@
 import hashlib
 
 import factory
-from lib.tests.factories.base import BaseModelFactory
-from lib.utils.models import User
+from lib.tests.factories.base import AsyncFactory, BaseModelFactory, TimeStampMixinFactory
+from lib.utils.events.event_types import EventType
+from lib.utils.models import User, UserResource, Product, Purchase
+from lib.utils.schemas.events import EventMessage
+from lib.utils.schemas.game import ResourceType
+from lib.utils.schemas.products import ProductType, PurchaseStatus
 from lib.utils.schemas.users import UserRole
+
+
+class EventMessageFactory(AsyncFactory):
+    class Meta:
+        model = EventMessage
+
+    event_type = EventType.EVENT_1
+    payload = factory.LazyFunction(dict)
 
 
 class UserFactory(BaseModelFactory):
@@ -16,3 +28,56 @@ class UserFactory(BaseModelFactory):
     is_active = True
     role = UserRole.PLAYER
     email_verified = True
+
+
+class UserResourceFactory(BaseModelFactory):
+    class Meta:
+        model = UserResource
+
+    id = factory.SubFactory(UserFactory)
+    scraps = 1000
+    raw_bronze = 0
+    raw_silver = 0
+    raw_gold = 0
+    bronze_ingots = 0
+    silver_ingots = 0
+    gold_ingots = 0
+    crops = 1000
+    wood = 1000
+    silk = 0
+    kegs = 3
+    big_kegs = 1
+    chests = 0
+    keys = 3
+    rare_gem = 0
+    money = 2000
+
+
+class ProductFactory(BaseModelFactory, TimeStampMixinFactory):
+    class Meta:
+        model = Product
+
+    title = "title"
+    is_active = True
+    type = ProductType.RESOURCE
+    priority = 999
+    price = 100.43
+    data = {
+        "resources": {
+            ResourceType.MONEY: 2000,
+            ResourceType.WOOD: 1000,
+            ResourceType.SCRAPS: 1500,
+        },
+    }
+
+
+class PurchaseFactory(BaseModelFactory, TimeStampMixinFactory):
+    class Meta:
+        model = Purchase
+
+    user_id = factory.SubFactory(UserFactory)
+    product_id = factory.SubFactory(ProductFactory)
+    status = PurchaseStatus.PENDING
+    amount = 0
+    transaction_id = None
+    response_description = None

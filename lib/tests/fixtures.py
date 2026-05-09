@@ -161,6 +161,7 @@ async def db(
 ):
     db_ = Database(config)
     yield db_
+    await db_.disconnect()
 
 
 @pytest.fixture

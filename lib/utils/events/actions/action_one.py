@@ -13,15 +13,12 @@ class SendSmsAction(ActionBase):
         self.sms_client = SmsClient(config)
         self.tg_client = TelegramClient(config)
 
-    async def execute(
-        self,
-        payload: dict,
-    ) -> None:
-        print("STR19", type(payload), payload)
+    async def execute(self) -> None:
+        print("STR19", type(self.payload), self.payload)
 
         receiver_template = self.action_config.receiver
         print("STR35", receiver_template)
-        receiver = render_template(receiver_template, payload)
+        receiver = render_template(receiver_template, self.payload)
         print("STR37", receiver)
 
         try:

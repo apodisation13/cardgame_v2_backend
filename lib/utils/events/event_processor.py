@@ -40,17 +40,17 @@ class EventProcessor:
                 event_type,
             )
 
-            processing: list[ActionConfigData] = [
-                ActionConfigData(
-                    type=item["type"],
-                    conditions=item["conditions"],
-                    receiver=item["receiver"],
-                )
-                for item in json.loads(event_config["processing"])
-            ]
-
         if not event_config:
             raise ValueError(f"Event config not found for {event_type}")
+
+        processing: list[ActionConfigData] = [
+            ActionConfigData(
+                type=item["type"],
+                conditions=item["conditions"],
+                receiver=item["receiver"],
+            )
+            for item in json.loads(event_config["processing"])
+        ]
 
         try:
             for action_config_data in processing:
@@ -86,11 +86,12 @@ class EventProcessor:
             config=self.config,
             action_config=action_config,
             payload=payload,
+            db=self.db,
         )
 
         try:
             if action_instance.check_conditions():
-                await action_instance.execute(payload=payload)
+                await action_instance.execute()
             else:
                 print("failed conditions")
         except RuntimeError as e:

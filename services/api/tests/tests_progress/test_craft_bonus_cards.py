@@ -14,7 +14,6 @@ class TestCraftBonusCardAPI:
         db_connection,
         client: AsyncClient,
         user_login_fixture,
-        # fixtures for test
     ):
         user_id = user_login_fixture["id"]
         access_token = user_login_fixture["token"]["access_token"]

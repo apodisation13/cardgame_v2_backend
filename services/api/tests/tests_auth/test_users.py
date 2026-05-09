@@ -129,6 +129,7 @@ class TestUserRegisterAPI:
     @pytest.mark.asyncio
     async def test_register_user_incorrect_data(
         self,
+        # service fixtures
         client: AsyncClient,
     ):
         response = await client.post(

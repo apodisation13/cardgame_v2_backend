@@ -259,29 +259,6 @@ class LevelEnemyFactory(BaseModelFactory):
     enemy_id = factory.SubFactory(EnemyFactory)
 
 
-class UserResourceFactory(BaseModelFactory):
-    class Meta:
-        model = UserResource
-
-    id = factory.SubFactory(UserFactory)
-    scraps = 1000
-    raw_bronze = 0
-    raw_silver = 0
-    raw_gold = 0
-    bronze_ingots = 0
-    silver_ingots = 0
-    gold_ingots = 0
-    crops = 1000
-    wood = 1000
-    silk = 0
-    kegs = 3
-    big_kegs = 1
-    chests = 0
-    keys = 3
-    rare_gem = 0
-    money = 2000
-
-
 class UserCardFactory(BaseModelFactory):
     class Meta:
         model = UserCard
@@ -352,33 +329,3 @@ class UserStatsFactory(BaseModelFactory, TimeStampMixinFactory):
     faction_id = factory.SubFactory(FactionFactory)
     type = UserStatsRecordType.PLAY
     count = 1
-
-
-class ProductFactory(BaseModelFactory, TimeStampMixinFactory):
-    class Meta:
-        model = Product
-
-    title = "title"
-    is_active = True
-    type = ProductType.RESOURCE
-    priority = 999
-    price = 100.43
-    data = {
-        "resources": {
-            ResourceType.MONEY: 2000,
-            ResourceType.WOOD: 1000,
-            ResourceType.SCRAPS: 1500,
-        },
-    }
-
-
-class PurchaseFactory(BaseModelFactory, TimeStampMixinFactory):
-    class Meta:
-        model = Purchase
-
-    user_id = factory.SubFactory(UserFactory)
-    product_id = factory.SubFactory(ProductFactory)
-    status = PurchaseStatus.PENDING
-    amount = 0
-    transaction_id = None
-    response_description = None

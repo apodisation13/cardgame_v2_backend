@@ -15,6 +15,7 @@ class TestGetGameConstAPI:
         # service fixtures
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         game_constants_factory,
     ):
         access_token = user_login_fixture["token"]["access_token"]

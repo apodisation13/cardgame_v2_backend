@@ -77,14 +77,12 @@ class EventConsumer:
 
         try:
             await processor.process_event(event_message=event_message)
-
         except Exception as e:
             logger.error("Error processing event: %s", e)
-        finally:
-            await self.db.disconnect()
 
     async def stop(self):
         """Остановка потребителя"""
         self.running = False
         if self.consumer:
             await self.consumer.stop()
+        await self.db.disconnect()

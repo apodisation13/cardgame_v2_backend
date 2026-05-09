@@ -26,7 +26,6 @@ from lib.utils.models import (
     UserLeader,
     UserLevel,
     UserPreferences,
-    UserResource,
     UserSeason,
     UserStats,
 )
@@ -52,8 +51,6 @@ from services.api.tests.factories.factories import (
     LevelRelatedLevelsFactory,
     MoveFactory,
     PassiveAbilityFactory,
-    ProductFactory,
-    PurchaseFactory,
     SeasonFactory,
     SeasonRelatedSeasonsFactory,
     TypeFactory,
@@ -62,7 +59,6 @@ from services.api.tests.factories.factories import (
     UserLeaderFactory,
     UserLevelFactory,
     UserPreferenceFactory,
-    UserResourceFactory,
     UserSeasonFactory,
     UserStatsFactory,
 )
@@ -240,15 +236,6 @@ def level_enemy_factory(db_connection):
     return factory
 
 
-# Пользовательские данные
-@pytest_asyncio.fixture
-def user_resource_factory(db_connection):
-    async def factory(**kwargs) -> UserResource:
-        return await UserResourceFactory.create_in_db(conn=db_connection, **kwargs)
-
-    return factory
-
-
 @pytest_asyncio.fixture
 def user_card_factory(db_connection):
     async def factory(**kwargs) -> UserCard:
@@ -309,22 +296,6 @@ def leaderboard_factory(db_connection):
 def user_stats_factory(db_connection):
     async def factory(**kwargs) -> UserStats:
         return await UserStatsFactory.create_in_db(conn=db_connection, **kwargs)
-
-    return factory
-
-
-@pytest_asyncio.fixture
-def product_factory(db_connection):
-    async def factory(**kwargs) -> Type:
-        return await ProductFactory.create_in_db(conn=db_connection, **kwargs)
-
-    return factory
-
-
-@pytest_asyncio.fixture
-def purchase_factory(db_connection):
-    async def factory(**kwargs) -> Type:
-        return await PurchaseFactory.create_in_db(conn=db_connection, **kwargs)
 
     return factory
 
