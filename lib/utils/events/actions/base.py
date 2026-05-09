@@ -3,11 +3,11 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-from lib.utils.config.base import BaseConfig
-from lib.utils.schemas.events import ActionConfigData
 
 if TYPE_CHECKING:
+    from lib.utils.config.base import BaseConfig
     from lib.utils.db.pool import Database
+    from lib.utils.schemas.events import ActionConfigData
 
 
 class ActionBase(ABC):

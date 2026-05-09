@@ -69,7 +69,7 @@ class EventSender:
                 message.id,
                 message.event_type,
                 EventProcessingState.SENT,
-                json.dumps(payload),
+                payload,
             )
 
 

@@ -128,6 +128,12 @@ class AuthService:
             refresh_token=refresh_token,
         )
 
+        # await event_sender.create_event(
+        #     event_type=EventType.USER_REGISTRATION,
+        #     payload={"user_id": user["id"]},
+        #     config=self.config,
+        # )
+
         return UserLoginResponse(
             id=user["id"],
             username=user["username"],

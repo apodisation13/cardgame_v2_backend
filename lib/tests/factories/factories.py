@@ -3,7 +3,7 @@ import hashlib
 import factory
 from lib.tests.factories.base import AsyncFactory, BaseModelFactory, TimeStampMixinFactory
 from lib.utils.events.event_types import EventType
-from lib.utils.models import User, UserResource, Product, Purchase
+from lib.utils.models import Product, Purchase, User, UserResource
 from lib.utils.schemas.events import EventMessage
 from lib.utils.schemas.game import ResourceType
 from lib.utils.schemas.products import ProductType, PurchaseStatus

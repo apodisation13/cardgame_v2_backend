@@ -1,10 +1,10 @@
 import pytest
-import pytest_asyncio
 
 from lib.tests.factories import UserFactory
-from lib.tests.factories.factories import EventMessageFactory, UserResourceFactory, ProductFactory, PurchaseFactory
-from lib.utils.models import User, UserResource, Product, Purchase
+from lib.tests.factories.factories import EventMessageFactory, ProductFactory, PurchaseFactory, UserResourceFactory
+from lib.utils.models import Product, Purchase, User, UserResource
 from lib.utils.schemas.events import EventMessage
+import pytest_asyncio
 
 
 @pytest_asyncio.fixture
@@ -29,7 +29,6 @@ def event_message_factory():
         return EventMessageFactory.build(**kwargs)
 
     return factory
-
 
 
 @pytest_asyncio.fixture

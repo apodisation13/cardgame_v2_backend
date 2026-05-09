@@ -80,7 +80,7 @@ async def test_add_resources_partial_fields(
         user.id,
     )
     assert row["scraps"] == 700
-    assert row["wood"] == 1000   # не изменился
+    assert row["wood"] == 1000  # не изменился
     assert row["money"] == 2000  # не изменился
 
 

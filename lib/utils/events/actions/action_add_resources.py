@@ -7,6 +7,11 @@ from lib.utils.schemas.game import ResourceType
 
 _RESOURCE_FIELDS = frozenset(ResourceType)
 
+"""
+    "type": "ActionAddResources",
+    "payload": { "money": 2000, "scraps": 1000, },
+"""
+
 
 class ActionAddResources(ActionBase):
     def __init__(
@@ -25,10 +30,7 @@ class ActionAddResources(ActionBase):
         if not resources:
             return
 
-        set_clauses = ", ".join(
-            f"{col} = {col} + ${i + 2}"
-            for i, col in enumerate(resources)
-        )
+        set_clauses = ", ".join(f"{col} = {col} + ${i + 2}" for i, col in enumerate(resources))
 
         async with self.db.connection() as conn:
             await conn.execute(

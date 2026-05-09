@@ -22,4 +22,5 @@ class EventMessage(Base):
 class ActionConfigData(Base):
     type: str
     conditions: bool | list[dict]
-    receiver: str | None
+    receiver: str | None = None
+    message: str | None = None

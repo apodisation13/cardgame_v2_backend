@@ -1,4 +1,3 @@
-import json
 import logging
 from uuid import UUID
 
@@ -47,9 +46,10 @@ class EventProcessor:
             ActionConfigData(
                 type=item["type"],
                 conditions=item["conditions"],
-                receiver=item["receiver"],
+                receiver=item.get("receiver"),
+                message=item.get("message"),
             )
-            for item in json.loads(event_config["processing"])
+            for item in event_config["processing"]
         ]
 
         try:
@@ -59,8 +59,8 @@ class EventProcessor:
                     payload=payload,
                 )
 
-        except Exception:
-            logger.error("Failed to process %s", event_type)
+        except Exception as e:
+            logger.error("Failed to process %s, %s", event_type, e)
             await self._update_processing_state(
                 event_id=event_message.id,
                 state=EventProcessingState.FAILED,

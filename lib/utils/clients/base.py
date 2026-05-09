@@ -93,7 +93,12 @@ class TelegramClient(BaseClient):
     def __init__(self, config: BaseConfig):
         super().__init__(config)
 
-    async def send(self, to: str, message: str, subject: str | None = None) -> bool:
+    async def send(
+        self,
+        to: str,
+        message: str,
+        subject: str | None = None,
+    ) -> None:
         """Отправка сообщения в Telegram"""
         try:
             # Формирование URL для API Telegram
@@ -112,11 +117,8 @@ class TelegramClient(BaseClient):
 
             if result.get("ok"):
                 logger.info("Сообщение отправлено в Telegram chat_id: %s", to)
-                return True
             else:
                 logger.error("Ошибка Telegram API: %s", result.get("description"))
-                return False
 
         except Exception as e:
             logger.error("Ошибка отправки в Telegram: %s", e)
-            return False

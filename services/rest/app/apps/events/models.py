@@ -13,7 +13,7 @@ class Event(models.Model):
     id = models.AutoField(
         primary_key=True,
     )
-    type = models.EmailField(
+    type = models.CharField(
         unique=True,
         max_length=255,
         verbose_name="Название события",
@@ -23,8 +23,8 @@ class Event(models.Model):
     )
     processing = models.JSONField(
         default=list,
-        blank=False,
-        null=False,
+        blank=True,
+        null=True,
         verbose_name="Конфиг события",
     )
 
