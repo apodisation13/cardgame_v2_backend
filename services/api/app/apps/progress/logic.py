@@ -395,11 +395,29 @@ async def get_user_resources(
     return UserResources.get_one(user_resources)
 
 
-async def get_game_constants(
+async def change_resources(
     connection: asyncpg.Connection,
-) -> dict:
-    game_constants: dict = await connection.fetchval("""SELECT data::jsonb FROM game_constants""")
-    return game_constants
+    user_id: int,
+    resources_to_change: dict,
+) -> UserResources:
+    set_parts = []
+    query_params = [user_id]
+
+    for i, (resource, delta) in enumerate(resources_to_change.items(), start=2):
+        set_parts.append(f"{resource} = {resource} + ${i}")
+        query_params.append(delta)
+
+    set_parts.append("updated_at = NOW()")
+
+    query = f"""
+        UPDATE user_resources
+        SET {", ".join(set_parts)}
+        WHERE id = $1
+        RETURNING *
+    """  # noqa: S608
+
+    result = await connection.fetchrow(query, *query_params)
+    return UserResources.get_one(result)
 
 
 async def open_default_content(

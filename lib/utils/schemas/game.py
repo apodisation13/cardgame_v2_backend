@@ -520,13 +520,13 @@ class UserStatsRecordType(StrEnum):
     WIN = "win"
 
 
-class UpgradeType(StrEnum):
+class UpgradeType(StrEnumChoices):
     RESOURCES = "resources"
     SETTINGS = "settings"
     GAME = "game"
 
 
-class UpgradeSubtype(StrEnum):
+class UpgradeSubtype(StrEnumChoices):
     MAX_CARDS_IN_DECK = "max_cards_in_deck"
     HAND_SIZE = "hand_size"
     MAX_ARMOR = "max_armor"
@@ -547,7 +547,7 @@ class UpgradeSubtype(StrEnum):
 
 
 DEFAULT_USER_UPGRADES = {
-    UpgradeType.RESOURCES: {
+    UpgradeType.GAME: {
         UpgradeSubtype.MAX_CARDS_IN_DECK: 0,
         UpgradeSubtype.HAND_SIZE: 0,
         UpgradeSubtype.MAX_ARMOR: 0,
@@ -558,7 +558,7 @@ DEFAULT_USER_UPGRADES = {
         UpgradeSubtype.AVATAR: 0,
         UpgradeSubtype.THEME: 0,
     },
-    UpgradeType.GAME: {
+    UpgradeType.RESOURCES: {
         UpgradeSubtype.MONEY: 0,
         UpgradeSubtype.SCRAPS: 0,
         UpgradeSubtype.RARE_GEMS: 0,

@@ -1,4 +1,5 @@
 from lib.utils.db.pool import Database
+from services.api.app.apps.game_const import logic
 from services.api.app.config import Config
 
 
@@ -13,7 +14,7 @@ class GameConstService:
 
     async def get_game_const(self) -> dict:
         async with self.db_pool.connection() as connection:
-            game_const: dict | None = await connection.fetchval("""SELECT data::jsonb FROM game_constants""")
+            game_const: dict | None = await logic.get_game_constants(connection=connection)
 
         if not game_const:
             return {}

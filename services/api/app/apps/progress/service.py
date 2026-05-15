@@ -1,8 +1,6 @@
 import logging
 from typing import TYPE_CHECKING
 
-import asyncpg
-
 from lib.utils.db.pool import Database
 from lib.utils.schemas.game import (
     CardActionSubtype,
@@ -12,6 +10,7 @@ from lib.utils.schemas.game import (
     ResourceType,
 )
 from services.api.app.apps.progress import logic
+from services.api.app.apps.game_const import logic as game_const_logic
 from services.api.app.apps.progress.schemas import (
     CardCraftBonusResponse,
     CardCraftMillResponse,
@@ -237,7 +236,7 @@ class UserProgressService:
                 Тут придет словарь с ресурсами, которые нужно начислить
                 """
                 async with self.db_pool.connection() as connection:
-                    return await self._change_resources(
+                    return await logic.change_resources(
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=resource_request.data,
@@ -249,7 +248,7 @@ class UserProgressService:
                 Тут придет словарь с ресурсами, которые нужно списать или наоборот начислить
                 """
                 async with self.db_pool.transaction() as connection:
-                    game_constants: dict = await logic.get_game_constants(
+                    game_constants: dict = await game_const_logic.get_game_constants(
                         connection=connection,
                     )
                     resources_transitions: dict = game_constants["resources_transitions"]
@@ -297,7 +296,7 @@ class UserProgressService:
 
                     logger.info("Resources to change: %s for user %s", resources_to_change, user_id)
 
-                    user_resources: UserResources = await self._change_resources(
+                    user_resources: UserResources = await logic.change_resources(
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=resources_to_change,
@@ -328,7 +327,7 @@ class UserProgressService:
                         raise ManageResourcesProcessError(msg % (subtype, user_id, value, resource))
 
                 async with self.db_pool.transaction() as connection:
-                    user_resources: UserResources = await self._change_resources(
+                    user_resources: UserResources = await logic.change_resources(
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=resource_request.data,
@@ -345,31 +344,6 @@ class UserProgressService:
 
             case _:
                 raise TypeError(f"Invalid subtype {subtype}")
-
-    async def _change_resources(
-        self,
-        connection: asyncpg.Connection,
-        user_id: int,
-        resources_to_change: dict[ResourceType:int],
-    ) -> UserResources:
-        set_parts = []
-        query_params = [user_id]
-
-        for i, (resource, delta) in enumerate(resources_to_change.items(), start=2):
-            set_parts.append(f"{resource} = {resource} + ${i}")
-            query_params.append(delta)
-
-        set_parts.append("updated_at = NOW()")
-
-        query = f"""
-            UPDATE user_resources
-            SET {", ".join(set_parts)}
-            WHERE id = $1
-            RETURNING *
-        """  # noqa: S608
-
-        result = await connection.fetchrow(query, *query_params)
-        return UserResources.get_one(result)
 
     async def manage_craft_mill_process(
         self,
@@ -395,7 +369,7 @@ class UserProgressService:
                     )
 
                     # 1.2. В константах лежат параметры, сколько списать за крафт той или иной карты
-                    game_constants: dict = await logic.get_game_constants(
+                    game_constants: dict = await game_const_logic.get_game_constants(
                         connection=connection,
                     )
 
@@ -415,7 +389,7 @@ class UserProgressService:
                         raise ManageResourcesProcessError(msg % (recipe, user_id))
 
                     # 1.5. Попытались списать ресурсы
-                    user_resources: UserResources = await self._change_resources(
+                    user_resources: UserResources = await logic.change_resources(
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=pay_resources,
@@ -462,7 +436,7 @@ class UserProgressService:
                 async with self.db_pool.transaction() as connection:
                     # 1. Спишем ресурсы за карту лидера
                     # 1.1. Берем опять же игровые константы
-                    game_constants: dict = await logic.get_game_constants(
+                    game_constants: dict = await game_const_logic.get_game_constants(
                         connection=connection,
                     )
 
@@ -483,7 +457,7 @@ class UserProgressService:
                         raise ManageResourcesProcessError(msg % (recipe, user_id))
 
                     # 1.5. Попытались списать ресурсы
-                    user_resources: UserResources = await self._change_resources(
+                    user_resources: UserResources = await logic.change_resources(
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=pay_resources,
@@ -595,7 +569,7 @@ class UserProgressService:
                     )
 
                     # 2.2. Достаем игровые константы
-                    game_constants: dict = await logic.get_game_constants(
+                    game_constants: dict = await game_const_logic.get_game_constants(
                         connection=connection,
                     )
 
@@ -603,7 +577,7 @@ class UserProgressService:
                     pay_resources = game_constants["cards_resources_prices"][card_color][CardActionSubtype.MILL_CARD]
 
                     # 2.3. Добавляем тут юзеру ресурсы
-                    user_resources: UserResources = await self._change_resources(
+                    user_resources: UserResources = await logic.change_resources(
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=pay_resources[0],
@@ -681,7 +655,7 @@ class UserProgressService:
 
                     # 2. А теперь начисляем ресурсы за униточженную карту лидера
                     # 2.1. С лидером проще - за него всегда одна и та же сумма
-                    game_constants: dict = await logic.get_game_constants(
+                    game_constants: dict = await game_const_logic.get_game_constants(
                         connection=connection,
                     )
 
@@ -689,7 +663,7 @@ class UserProgressService:
                     pay_resources = game_constants["cards_resources_prices"]["leader"][CardActionSubtype.MILL_LEADER]
 
                     # 2.2. Добавляем тут юзеру ресурсы
-                    user_resources: UserResources = await self._change_resources(
+                    user_resources: UserResources = await logic.change_resources(
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=pay_resources[0],
