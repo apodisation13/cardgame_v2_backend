@@ -569,3 +569,1076 @@ DEFAULT_USER_UPGRADES = {
         UpgradeSubtype.KEGS: 0,
     }
 }
+
+DEFAULT_UPGRADES: dict[UpgradeType, dict] = {
+    UpgradeType.GAME: {
+        "ordering": 0,
+        "title": "Игровые",
+        "upgrades": {
+            UpgradeSubtype.MAX_CARDS_IN_DECK: {
+                "ordering": 1,
+                "title": "Карт в колоде",
+                "upgrades": {
+                    0: {
+                        "value": 10,
+                        "next": {
+                            ResourceType.MONEY: -1000,
+                            ResourceType.RAW_BRONZE: -30,
+                            ResourceType.RAW_SILVER: -10,
+                            ResourceType.RAW_GOLD: -5,
+                        },
+                    },
+                    1: {
+                        "value": 11,
+                        "next": {
+                            ResourceType.MONEY: -2000,
+                            ResourceType.RAW_BRONZE: -50,
+                            ResourceType.RAW_SILVER: -30,
+                            ResourceType.RAW_GOLD: -20,
+                        },
+                    },
+                    2: {
+                        "value": 12,
+                        "next": {
+                            ResourceType.MONEY: -3000,
+                            ResourceType.RAW_BRONZE: -50,
+                            ResourceType.RAW_SILVER: -30,
+                            ResourceType.RAW_GOLD: -20,
+                        },
+                    },
+                    3: {
+                        "value": 13,
+                        "next": {
+                            ResourceType.MONEY: -5000,
+                            ResourceType.RAW_BRONZE: -100,
+                            ResourceType.RAW_SILVER: -50,
+                            ResourceType.RAW_GOLD: -40,
+                            ResourceType.BRONZE_INGOTS: -5,
+                            ResourceType.SILVER_INGOTS: -3,
+                            ResourceType.GOLD_INGOTS: -1,
+                        },
+                    },
+                    4: {
+                        "value": 14,
+                        "next": {
+                            ResourceType.MONEY: -5000,
+                            ResourceType.RAW_BRONZE: -200,
+                            ResourceType.RAW_SILVER: -80,
+                            ResourceType.RAW_GOLD: -50,
+                            ResourceType.BRONZE_INGOTS: -7,
+                            ResourceType.SILVER_INGOTS: -5,
+                            ResourceType.GOLD_INGOTS: -2,
+                        },
+                    },
+                    5: {
+                        "value": 15,
+                        "next": {
+                            ResourceType.MONEY: -6000,
+                            ResourceType.RAW_BRONZE: -300,
+                            ResourceType.RAW_SILVER: -100,
+                            ResourceType.RAW_GOLD: -75,
+                            ResourceType.BRONZE_INGOTS: -10,
+                            ResourceType.SILVER_INGOTS: -8,
+                            ResourceType.GOLD_INGOTS: -5,
+                        },
+                    },
+                    6: {
+                        "value": 16,
+                        "next": {
+                            ResourceType.MONEY: -8000,
+                            ResourceType.RAW_BRONZE: -400,
+                            ResourceType.RAW_SILVER: -100,
+                            ResourceType.RAW_GOLD: -90,
+                            ResourceType.BRONZE_INGOTS: -10,
+                            ResourceType.SILVER_INGOTS: -8,
+                            ResourceType.GOLD_INGOTS: -5,
+                        },
+                    },
+                    7: {
+                        "value": 17,
+                        "next": {
+                            ResourceType.MONEY: -10000,
+                            ResourceType.RAW_BRONZE: -500,
+                            ResourceType.RAW_SILVER: -250,
+                            ResourceType.RAW_GOLD: -150,
+                            ResourceType.BRONZE_INGOTS: -15,
+                            ResourceType.SILVER_INGOTS: -10,
+                            ResourceType.GOLD_INGOTS: -8,
+                        },
+                    },
+                    8: {"value": 18, "next": None},
+                },
+            },
+            UpgradeSubtype.HAND_SIZE: {
+                "ordering": 2,
+                "title": "Размер руки",
+                "upgrades": {
+                    0: {
+                        "value": 5,
+                        "next": {
+                            ResourceType.MONEY: -1000,
+                            ResourceType.SCRAPS: -1000,
+                            ResourceType.RAW_BRONZE: -20,
+                            ResourceType.RAW_SILVER: -10,
+                            ResourceType.RAW_GOLD: -5,
+                        },
+                    },
+                    1: {
+                        "value": 6,
+                        "next": {
+                            ResourceType.MONEY: -5000,
+                            ResourceType.SCRAPS: -2500,
+                            ResourceType.RAW_BRONZE: -200,
+                            ResourceType.RAW_SILVER: -100,
+                            ResourceType.RAW_GOLD: -100,
+                            ResourceType.BRONZE_INGOTS: 10,
+                            ResourceType.SILVER_INGOTS: 8,
+                            ResourceType.GOLD_INGOTS: 5,
+                        },
+                    },
+                    2: {
+                        "value": 7,
+                        "next": {
+                            ResourceType.MONEY: -15000,
+                            ResourceType.SCRAPS: -7500,
+                            ResourceType.RAW_BRONZE: -500,
+                            ResourceType.RAW_SILVER: -300,
+                            ResourceType.RAW_GOLD: -250,
+                            ResourceType.BRONZE_INGOTS: 30,
+                            ResourceType.SILVER_INGOTS: 20,
+                            ResourceType.GOLD_INGOTS: 15,
+                        },
+                    },
+                    3: {"value": 8, "next": None},
+                },
+            },
+            UpgradeSubtype.MAX_ARMOR: {
+                "ordering": 4,
+                "title": "Броня лидера",
+                "upgrades": {
+                    0: {
+                        "value": 0,
+                        "next": {
+                            ResourceType.MONEY: -1000,
+                            ResourceType.WOOD: -500,
+                            ResourceType.CROPS: -1000,
+                        },
+                    },
+                    1: {
+                        "value": 10,
+                        "next": {
+                            ResourceType.MONEY: -2000,
+                            ResourceType.WOOD: -1000,
+                            ResourceType.CROPS: -1500,
+                        },
+                    },
+                    2: {
+                        "value": 15,
+                        "next": {
+                            ResourceType.MONEY: -3000,
+                            ResourceType.WOOD: -2000,
+                            ResourceType.CROPS: -3000,
+                            ResourceType.SILK: -1,
+                        },
+                    },
+                    3: {
+                        "value": 20,
+                        "next": {
+                            ResourceType.MONEY: -4000,
+                            ResourceType.WOOD: -3000,
+                            ResourceType.CROPS: -4000,
+                            ResourceType.SILK: -3,
+                        },
+                    },
+                    4: {
+                        "value": 25,
+                        "next": {
+                            ResourceType.MONEY: -5000,
+                            ResourceType.WOOD: -4000,
+                            ResourceType.CROPS: -5000,
+                            ResourceType.SILK: -5,
+                        },
+                    },
+                    5: {
+                        "value": 30,
+                        "next": {
+                            ResourceType.MONEY: -6000,
+                            ResourceType.WOOD: -5000,
+                            ResourceType.CROPS: -6000,
+                            ResourceType.SILK: -7,
+                        },
+                    },
+                    6: {
+                        "value": 35,
+                        "next": {
+                            ResourceType.MONEY: -7000,
+                            ResourceType.WOOD: -6000,
+                            ResourceType.CROPS: -7000,
+                            ResourceType.SILK: -10,
+                        },
+                    },
+                    7: {
+                        "value": 40,
+                        "next": {
+                            ResourceType.MONEY: -10000,
+                            ResourceType.WOOD: -10000,
+                            ResourceType.CROPS: -10000,
+                            ResourceType.SILK: -20,
+                        },
+                    },
+                    8: {"value": 100, "next": None},
+                },
+            },
+            UpgradeSubtype.MAX_HP: {
+                "ordering": 3,
+                "title": "Здоровье колоды",
+                "upgrades": {
+                    0: {
+                        "value": 100,
+                        "next": {
+                            ResourceType.MONEY: -1000,
+                            ResourceType.SCRAPS: -300,
+                            ResourceType.BRONZE_INGOTS: -2,
+                        },
+                    },
+                    1: {
+                        "value": 125,
+                        "next": {
+                            ResourceType.MONEY: -1500,
+                            ResourceType.SCRAPS: -700,
+                            ResourceType.BRONZE_INGOTS: -3,
+                        },
+                    },
+                    2: {
+                        "value": 150,
+                        "next": {
+                            ResourceType.MONEY: -2500,
+                            ResourceType.SCRAPS: -1000,
+                            ResourceType.BRONZE_INGOTS: -5,
+                            ResourceType.SILVER_INGOTS: -2,
+                        },
+                    },
+                    3: {
+                        "value": 175,
+                        "next": {
+                            ResourceType.MONEY: -3000,
+                            ResourceType.SCRAPS: -1500,
+                            ResourceType.BRONZE_INGOTS: -6,
+                            ResourceType.SILVER_INGOTS: -3,
+                            ResourceType.GOLD_INGOTS: -2,
+                        },
+                    },
+                    4: {
+                        "value": 200,
+                        "next": {
+                            ResourceType.MONEY: -3500,
+                            ResourceType.WOOD: -2000,
+                            ResourceType.CROPS: -3000,
+                            ResourceType.BRONZE_INGOTS: -8,
+                            ResourceType.SILVER_INGOTS: -5,
+                            ResourceType.GOLD_INGOTS: -3,
+                        },
+                    },
+                    5: {
+                        "value": 225,
+                        "next": {
+                            ResourceType.MONEY: -5000,
+                            ResourceType.WOOD: -3000,
+                            ResourceType.CROPS: -4000,
+                            ResourceType.BRONZE_INGOTS: -10,
+                            ResourceType.SILVER_INGOTS: -7,
+                            ResourceType.GOLD_INGOTS: -5,
+                        },
+                    },
+                    6: {
+                        "value": 250,
+                        "next": {
+                            ResourceType.MONEY: -5000,
+                            ResourceType.WOOD: -4000,
+                            ResourceType.CROPS: -5000,
+                            ResourceType.SILK: -10,
+                            ResourceType.BRONZE_INGOTS: -10,
+                            ResourceType.SILVER_INGOTS: -7,
+                            ResourceType.GOLD_INGOTS: -5,
+                        },
+                    },
+                    7: {
+                        "value": 275,
+                        "next": {
+                            ResourceType.MONEY: -7000,
+                            ResourceType.WOOD: -5000,
+                            ResourceType.CROPS: -7000,
+                            ResourceType.SILK: -15,
+                            ResourceType.BRONZE_INGOTS: -15,
+                            ResourceType.SILVER_INGOTS: -10,
+                            ResourceType.GOLD_INGOTS: -7,
+                        },
+                    },
+                    8: {"value": 300, "next": None},
+                },
+            },
+            UpgradeSubtype.MAX_DECKS: {
+                "ordering": 0,
+                "title": "Количество колод",
+                "upgrades": {
+                    0: {
+                        "value": 2,
+                        "next": {
+                            ResourceType.MONEY: -1000,
+                            ResourceType.CROPS: -1000,
+                        },
+                    },
+                    1: {
+                        "value": 3,
+                        "next": {
+                            ResourceType.MONEY: -2000,
+                            ResourceType.CROPS: -1500,
+                            ResourceType.WOOD: -1000,
+                        },
+                    },
+                    2: {
+                        "value": 5,
+                        "next": {
+                            ResourceType.MONEY: -3000,
+                            ResourceType.CROPS: -3000,
+                            ResourceType.WOOD: -2000,
+                            ResourceType.SILK: -5,
+                        },
+                    },
+                    3: {
+                        "value": 7,
+                        "next": {
+                            ResourceType.MONEY: -5000,
+                            ResourceType.CROPS: -3000,
+                            ResourceType.WOOD: -2000,
+                            ResourceType.SILK: -5,
+                            ResourceType.SILVER_INGOTS: -5,
+                        },
+                    },
+                    4: {
+                        "value": 8,
+                        "next": {
+                            ResourceType.MONEY: -10000,
+                            ResourceType.CROPS: -5000,
+                            ResourceType.WOOD: -4000,
+                            ResourceType.SILK: -15,
+                            ResourceType.BRONZE_INGOTS: -30,
+                            ResourceType.SILVER_INGOTS: -15,
+                            ResourceType.GOLD_INGOTS: -5,
+                        },
+                    },
+                    5: {"value": 10, "next": None},
+                },
+            },
+        },
+    },
+    UpgradeType.SETTINGS: {
+        "ordering": 2,
+        "title": "Настройки",
+        "upgrades": {
+            UpgradeSubtype.AVATAR: {
+                "ordering": 0,
+                "title": "Аватары",
+                "upgrades": {
+                    0: {
+                        "value": False,
+                        "next": {
+                            ResourceType.MONEY: -10000,
+                            ResourceType.CROPS: -5000,
+                        },
+                    },
+                    1: {"value": True, "next": None},
+                },
+            },
+            UpgradeSubtype.THEME: {
+                "ordering": 1,
+                "title": "Темы",
+                "upgrades": {
+                    0: {
+                        "value": False,
+                        "next": {
+                            ResourceType.MONEY: -10000,
+                            ResourceType.WOOD: -3000,
+                            ResourceType.SCRAPS: -3000,
+                        },
+                    },
+                    1: {"value": True, "next": None},
+                },
+            },
+        },
+    },
+    UpgradeType.RESOURCES: {
+        "ordering": 1,
+        "title": "Ресурсы",
+        "upgrades": {
+            UpgradeSubtype.MONEY: {
+                "ordering": 0,
+                "title": "Запас монет",
+                "upgrades": {
+                    0: {
+                        "value": 5000,
+                        "next": {
+                            ResourceType.MONEY: -1000,
+                            ResourceType.CROPS: -500,
+                            ResourceType.RAW_BRONZE: -30,
+                        },
+                    },
+                    1: {
+                        "value": 10000,
+                        "next": {
+                            ResourceType.MONEY: -2000,
+                            ResourceType.CROPS: -1000,
+                            ResourceType.RAW_BRONZE: -50,
+                        },
+                    },
+                    2: {
+                        "value": 15000,
+                        "next": {
+                            ResourceType.MONEY: -3000,
+                            ResourceType.CROPS: -2000,
+                            ResourceType.RAW_BRONZE: -100,
+                            ResourceType.RAW_SILVER: -30,
+                        },
+                    },
+                    3: {
+                        "value": 20000,
+                        "next": {
+                            ResourceType.MONEY: -3000,
+                            ResourceType.CROPS: -2000,
+                            ResourceType.WOOD: -1000,
+                            ResourceType.RAW_BRONZE: -150,
+                            ResourceType.RAW_SILVER: -50,
+                        },
+                    },
+                    4: {
+                        "value": 30000,
+                        "next": {
+                            ResourceType.MONEY: -4000,
+                            ResourceType.CROPS: -3000,
+                            ResourceType.WOOD: -2000,
+                            ResourceType.RAW_BRONZE: -200,
+                            ResourceType.RAW_SILVER: -70,
+                            ResourceType.RAW_GOLD: -30,
+                        },
+                    },
+                    5: {
+                        "value": 40000,
+                        "next": {
+                            ResourceType.MONEY: -4000,
+                            ResourceType.CROPS: -3000,
+                            ResourceType.WOOD: -2000,
+                            ResourceType.SILK: -20,
+                            ResourceType.RAW_BRONZE: -250,
+                            ResourceType.RAW_SILVER: -100,
+                            ResourceType.RAW_GOLD: -50,
+                        },
+                    },
+                    6: {
+                        "value": 50000,
+                        "next": {
+                            ResourceType.MONEY: -5000,
+                            ResourceType.CROPS: -4000,
+                            ResourceType.WOOD: -3000,
+                            ResourceType.SILK: -30,
+                            ResourceType.RAW_BRONZE: -300,
+                            ResourceType.RAW_SILVER: -150,
+                            ResourceType.RAW_GOLD: -100,
+                        },
+                    },
+                    7: {
+                        "value": 75000,
+                        "next": {
+                            ResourceType.MONEY: -7000,
+                            ResourceType.CROPS: -3000,
+                            ResourceType.WOOD: -2000,
+                            ResourceType.SILK: -20,
+                            ResourceType.BRONZE_INGOTS: -20,
+                            ResourceType.SILVER_INGOTS: -15,
+                            ResourceType.GOLD_INGOTS: -5,
+                        },
+                    },
+                    8: {
+                        "value": 100000,
+                        "next": {
+                            ResourceType.MONEY: -10000,
+                            ResourceType.CROPS: -5000,
+                            ResourceType.WOOD: -4000,
+                            ResourceType.SILK: -50,
+                            ResourceType.BRONZE_INGOTS: -40,
+                            ResourceType.SILVER_INGOTS: -25,
+                            ResourceType.GOLD_INGOTS: -15,
+                        },
+                    },
+                    9: {
+                        "value": 200000,
+                        "next": {
+                            ResourceType.MONEY: -20000,
+                            ResourceType.CROPS: -7000,
+                            ResourceType.WOOD: -7000,
+                            ResourceType.SILK: -50,
+                            ResourceType.BRONZE_INGOTS: -50,
+                            ResourceType.SILVER_INGOTS: -50,
+                            ResourceType.GOLD_INGOTS: -50,
+                        },
+                    },
+                    10: {"value": 1000000, "next": None},
+                },
+            },
+            UpgradeSubtype.SCRAPS: {
+                "ordering": 4,
+                "title": "Запас тряпок",
+                "upgrades": {
+                    0: {
+                        "value": 2000,
+                        "next": {
+                            ResourceType.MONEY: -1000,
+                            ResourceType.CROPS: -500,
+                        },
+                    },
+                    1: {
+                        "value": 3000,
+                        "next": {
+                            ResourceType.MONEY: -1000,
+                            ResourceType.CROPS: -500,
+                            ResourceType.WOOD: -200,
+                        },
+                    },
+                    2: {
+                        "value": 5000,
+                        "next": {
+                            ResourceType.MONEY: -2000,
+                            ResourceType.CROPS: -1000,
+                            ResourceType.WOOD: -500,
+                        },
+                    },
+                    3: {
+                        "value": 7500,
+                        "next": {
+                            ResourceType.MONEY: -3000,
+                            ResourceType.CROPS: -1500,
+                            ResourceType.WOOD: -750,
+                            ResourceType.SILK: -5,
+                        },
+                    },
+                    4: {
+                        "value": 10000,
+                        "next": {
+                            ResourceType.MONEY: -4000,
+                            ResourceType.CROPS: -2000,
+                            ResourceType.WOOD: -1000,
+                            ResourceType.SILK: -8,
+                        },
+                    },
+                    5: {
+                        "value": 15000,
+                        "next": {
+                            ResourceType.MONEY: -8000,
+                            ResourceType.SILK: -10,
+                            ResourceType.BRONZE_INGOTS: -8,
+                            ResourceType.SILVER_INGOTS: -4,
+                        },
+                    },
+                    6: {
+                        "value": 20000,
+                        "next": {
+                            ResourceType.MONEY: -10000,
+                            ResourceType.SILK: -15,
+                            ResourceType.BRONZE_INGOTS: -13,
+                            ResourceType.SILVER_INGOTS: -8,
+                        },
+                    },
+                    7: {
+                        "value": 30000,
+                        "next": {
+                            ResourceType.MONEY: -10000,
+                            ResourceType.SILK: -15,
+                            ResourceType.BRONZE_INGOTS: -20,
+                            ResourceType.SILVER_INGOTS: -14,
+                            ResourceType.GOLD_INGOTS: -4,
+                        },
+                    },
+                    8: {
+                        "value": 40000,
+                        "next": {
+                            ResourceType.MONEY: -10000,
+                            ResourceType.SILK: -15,
+                            ResourceType.BRONZE_INGOTS: -20,
+                            ResourceType.SILVER_INGOTS: -15,
+                            ResourceType.GOLD_INGOTS: -10,
+                        },
+                    },
+                    9: {
+                        "value": 50000,
+                        "next": {
+                            ResourceType.MONEY: -15000,
+                            ResourceType.SILK: -20,
+                            ResourceType.RAW_GOLD: -100,
+                            ResourceType.GOLD_INGOTS: -20,
+                        },
+                    },
+                    10: {"value": 100000, "next": None},
+                },
+            },
+            UpgradeSubtype.KEGS: {
+                "ordering": 1,
+                "title": "Запас бочек/коробок",
+                "upgrades": {
+                    0: {
+                        "value": 0,
+                        "next": {
+                            ResourceType.MONEY: -1000,
+                            ResourceType.WOOD: -300,
+                        },
+                    },
+                    1: {
+                        "value": 1,
+                        "next": {
+                            ResourceType.MONEY: -1000,
+                            ResourceType.WOOD: -500,
+                        },
+                    },
+                    2: {
+                        "value": 3,
+                        "next": {
+                            ResourceType.MONEY: -2000,
+                            ResourceType.WOOD: -1000,
+                            ResourceType.BRONZE_INGOTS: -5,
+                        },
+                    },
+                    3: {
+                        "value": 5,
+                        "next": {
+                            ResourceType.MONEY: -2500,
+                            ResourceType.WOOD: -1500,
+                            ResourceType.BRONZE_INGOTS: -8,
+                            ResourceType.SILVER_INGOTS: -4,
+                        },
+                    },
+                    4: {
+                        "value": 7,
+                        "next": {
+                            ResourceType.MONEY: -3500,
+                            ResourceType.WOOD: -2000,
+                            ResourceType.BRONZE_INGOTS: -12,
+                            ResourceType.SILVER_INGOTS: -6,
+                        },
+                    },
+                    5: {
+                        "value": 10,
+                        "next": {
+                            ResourceType.MONEY: -3500,
+                            ResourceType.WOOD: -2500,
+                            ResourceType.BRONZE_INGOTS: -15,
+                            ResourceType.SILVER_INGOTS: -8,
+                            ResourceType.GOLD_INGOTS: -3,
+                        },
+                    },
+                    6: {
+                        "value": 15,
+                        "next": {
+                            ResourceType.MONEY: -5000,
+                            ResourceType.WOOD: -3000,
+                            ResourceType.BRONZE_INGOTS: -15,
+                            ResourceType.SILVER_INGOTS: -10,
+                            ResourceType.GOLD_INGOTS: -5,
+                        },
+                    },
+                    7: {
+                        "value": 25,
+                        "next": {
+                            ResourceType.MONEY: -5000,
+                            ResourceType.WOOD: -3000,
+                            ResourceType.BRONZE_INGOTS: -15,
+                            ResourceType.SILVER_INGOTS: -10,
+                            ResourceType.GOLD_INGOTS: -5,
+                            ResourceType.SILK: -10,
+                        },
+                    },
+                    8: {
+                        "value": 40,
+                        "next": {
+                            ResourceType.MONEY: -5000,
+                            ResourceType.WOOD: -3000,
+                            ResourceType.BRONZE_INGOTS: -15,
+                            ResourceType.SILVER_INGOTS: -10,
+                            ResourceType.GOLD_INGOTS: -5,
+                            ResourceType.SILK: -20,
+                        },
+                    },
+                    9: {"value": 100, "next": None},
+                },
+            },
+            UpgradeSubtype.SILK: {
+                "ordering": 6,
+                "title": "Запас золотого шёлка",
+                "upgrades": {
+                    0: {
+                        "value": 0,
+                        "next": {
+                            ResourceType.MONEY: -1000,
+                            ResourceType.RAW_GOLD: -5,
+                        },
+                    },
+                    1: {
+                        "value": 3,
+                        "next": {
+                            ResourceType.MONEY: -1000,
+                            ResourceType.RAW_GOLD: -8,
+                        },
+                    },
+                    2: {
+                        "value": 5,
+                        "next": {
+                            ResourceType.MONEY: -1500,
+                            ResourceType.RAW_GOLD: -8,
+                            ResourceType.GOLD_INGOTS: -2,
+                        },
+                    },
+                    3: {
+                        "value": 10,
+                        "next": {
+                            ResourceType.MONEY: -2500,
+                            ResourceType.RAW_GOLD: -10,
+                            ResourceType.GOLD_INGOTS: -4,
+                        },
+                    },
+                    4: {
+                        "value": 15,
+                        "next": {
+                            ResourceType.MONEY: -2500,
+                            ResourceType.RAW_GOLD: -10,
+                            ResourceType.GOLD_INGOTS: -4,
+                            ResourceType.SILK: -5,
+                        },
+                    },
+                    5: {
+                        "value": 25,
+                        "next": {
+                            ResourceType.MONEY: -3500,
+                            ResourceType.RAW_GOLD: -15,
+                            ResourceType.GOLD_INGOTS: -8,
+                            ResourceType.SILK: -8,
+                        },
+                    },
+                    6: {
+                        "value": 40,
+                        "next": {
+                            ResourceType.MONEY: -5000,
+                            ResourceType.RAW_GOLD: -25,
+                            ResourceType.GOLD_INGOTS: -10,
+                            ResourceType.SILK: -10,
+                        },
+                    },
+                    7: {
+                        "value": 60,
+                        "next": {
+                            ResourceType.MONEY: -7000,
+                            ResourceType.RAW_GOLD: -30,
+                            ResourceType.GOLD_INGOTS: -14,
+                            ResourceType.SILK: -14,
+                        },
+                    },
+                    8: {
+                        "value": 100,
+                        "next": {
+                            ResourceType.MONEY: -10000,
+                            ResourceType.RAW_GOLD: -30,
+                            ResourceType.GOLD_INGOTS: -15,
+                            ResourceType.SILK: -20,
+                        },
+                    },
+                    9: {"value": 200, "next": None},
+                },
+            },
+            UpgradeSubtype.RARE_GEMS: {
+                "ordering": 7,
+                "title": "Запас редких камней",
+                "upgrades": {
+                    0: {"value": 0, "next": {ResourceType.MONEY: -2000}},
+                    1: {"value": 1, "next": {ResourceType.MONEY: -3000}},
+                    2: {"value": 3, "next": {ResourceType.MONEY: -5000}},
+                    3: {"value": 5, "next": {ResourceType.MONEY: -10000}},
+                    4: {"value": 7, "next": {ResourceType.MONEY: -10000}},
+                    5: {"value": 10, "next": None},
+                },
+            },
+            UpgradeSubtype.WOOD: {
+                "ordering": 5,
+                "title": "Запас соломы/дерева",
+                "upgrades": {
+                    0: {
+                        "value": 3000,
+                        "next": {
+                            ResourceType.MONEY: -1000,
+                            ResourceType.CROPS: -500,
+                            ResourceType.WOOD: -200,
+                        },
+                    },
+                    1: {
+                        "value": 5000,
+                        "next": {
+                            ResourceType.MONEY: -1500,
+                            ResourceType.CROPS: -700,
+                            ResourceType.WOOD: -400,
+                        },
+                    },
+                    2: {
+                        "value": 7000,
+                        "next": {
+                            ResourceType.MONEY: -2000,
+                            ResourceType.CROPS: -1000,
+                            ResourceType.WOOD: -500,
+                        },
+                    },
+                    3: {
+                        "value": 1000,
+                        "next": {
+                            ResourceType.MONEY: -2500,
+                            ResourceType.CROPS: -1200,
+                            ResourceType.WOOD: -700,
+                        },
+                    },
+                    4: {
+                        "value": 15000,
+                        "next": {
+                            ResourceType.MONEY: -3000,
+                            ResourceType.CROPS: -1500,
+                            ResourceType.WOOD: -1000,
+                        },
+                    },
+                    5: {
+                        "value": 20000,
+                        "next": {
+                            ResourceType.MONEY: -3500,
+                            ResourceType.CROPS: -2000,
+                            ResourceType.WOOD: -1200,
+                        },
+                    },
+                    6: {
+                        "value": 25000,
+                        "next": {
+                            ResourceType.MONEY: -4000,
+                            ResourceType.CROPS: -2500,
+                            ResourceType.WOOD: -1500,
+                            ResourceType.SILK: -5,
+                        },
+                    },
+                    7: {
+                        "value": 35000,
+                        "next": {
+                            ResourceType.MONEY: -5000,
+                            ResourceType.CROPS: -3000,
+                            ResourceType.WOOD: -2000,
+                            ResourceType.SILK: -8,
+                        },
+                    },
+                    8: {
+                        "value": 50000,
+                        "next": {
+                            ResourceType.MONEY: -6000,
+                            ResourceType.CROPS: -3500,
+                            ResourceType.WOOD: -2500,
+                            ResourceType.SILK: -10,
+                        },
+                    },
+                    9: {
+                        "value": 75000,
+                        "next": {
+                            ResourceType.MONEY: -10000,
+                            ResourceType.CROPS: -5000,
+                            ResourceType.WOOD: -3000,
+                            ResourceType.SILK: -15,
+                            ResourceType.GOLD_INGOTS: -10,
+                        },
+                    },
+                    10: {"value": 100000, "next": None},
+                },
+            },
+            UpgradeSubtype.INGOTS: {
+                "ordering": 3,
+                "title": "Запас слитков",
+                "upgrades": {
+                    0: {
+                        "value": 0,
+                        "next": {
+                            ResourceType.MONEY: -1000,
+                            ResourceType.CROPS: -1000,
+                        },
+                    },
+                    1: {
+                        "value": 5,
+                        "next": {
+                            ResourceType.MONEY: -1500,
+                            ResourceType.RAW_BRONZE: -30,
+                        },
+                    },
+                    2: {
+                        "value": 10,
+                        "next": {
+                            ResourceType.MONEY: -2000,
+                            ResourceType.RAW_BRONZE: -50,
+                        },
+                    },
+                    3: {
+                        "value": 15,
+                        "next": {
+                            ResourceType.MONEY: -2500,
+                            ResourceType.RAW_BRONZE: -75,
+                            ResourceType.RAW_SILVER: -20,
+                        },
+                    },
+                    4: {
+                        "value": 20,
+                        "next": {
+                            ResourceType.MONEY: -3000,
+                            ResourceType.RAW_BRONZE: -100,
+                            ResourceType.RAW_SILVER: -35,
+                        },
+                    },
+                    5: {
+                        "value": 30,
+                        "next": {
+                            ResourceType.MONEY: -3500,
+                            ResourceType.RAW_BRONZE: -130,
+                            ResourceType.RAW_SILVER: -50,
+                            ResourceType.RAW_GOLD: -5,
+                        },
+                    },
+                    6: {
+                        "value": 40,
+                        "next": {
+                            ResourceType.MONEY: -5000,
+                            ResourceType.RAW_BRONZE: -150,
+                            ResourceType.RAW_SILVER: -75,
+                            ResourceType.RAW_GOLD: -15,
+                        },
+                    },
+                    7: {
+                        "value": 50,
+                        "next": {
+                            ResourceType.MONEY: -6000,
+                            ResourceType.RAW_BRONZE: -165,
+                            ResourceType.RAW_SILVER: -80,
+                            ResourceType.RAW_GOLD: -25,
+                        },
+                    },
+                    8: {
+                        "value": 70,
+                        "next": {
+                            ResourceType.MONEY: -7000,
+                            ResourceType.RAW_BRONZE: -200,
+                            ResourceType.RAW_SILVER: -100,
+                            ResourceType.RAW_GOLD: -45,
+                        },
+                    },
+                    9: {
+                        "value": 90,
+                        "next": {
+                            ResourceType.MONEY: -10000,
+                            ResourceType.RAW_BRONZE: -300,
+                            ResourceType.RAW_SILVER: -150,
+                            ResourceType.RAW_GOLD: -100,
+                        },
+                    },
+                    10: {"value": 200, "next": None},
+                },
+            },
+            UpgradeSubtype.RAW: {
+                "ordering": 2,
+                "title": "Запас чистых камней",
+                "upgrades": {
+                    0: {
+                        "value": 50,
+                        "next": {
+                            ResourceType.MONEY: -1000,
+                            ResourceType.CROPS: -500,
+                        },
+                    },
+                    1: {
+                        "value": 75,
+                        "next": {
+                            ResourceType.MONEY: -1500,
+                            ResourceType.CROPS: -700,
+                            ResourceType.WOOD: -400,
+                        },
+                    },
+                    2: {
+                        "value": 100,
+                        "next": {
+                            ResourceType.MONEY: -2000,
+                            ResourceType.CROPS: -1000,
+                            ResourceType.WOOD: -500,
+                            ResourceType.SILK: -5,
+                        },
+                    },
+                    3: {
+                        "value": 150,
+                        "next": {
+                            ResourceType.MONEY: -2500,
+                            ResourceType.CROPS: -1500,
+                            ResourceType.WOOD: -700,
+                            ResourceType.SILK: -8,
+                        },
+                    },
+                    4: {
+                        "value": 250,
+                        "next": {
+                            ResourceType.MONEY: -3000,
+                            ResourceType.CROPS: -2000,
+                            ResourceType.WOOD: -1200,
+                            ResourceType.SILK: -10,
+                        },
+                    },
+                    5: {
+                        "value": 400,
+                        "next": {
+                            ResourceType.MONEY: -3500,
+                            ResourceType.CROPS: -2400,
+                            ResourceType.WOOD: -1500,
+                            ResourceType.SILK: -12,
+                        },
+                    },
+                    6: {
+                        "value": 600,
+                        "next": {
+                            ResourceType.MONEY: -4000,
+                            ResourceType.CROPS: -2900,
+                            ResourceType.WOOD: -1700,
+                            ResourceType.SILK: -15,
+                        },
+                    },
+                    7: {
+                        "value": 800,
+                        "next": {
+                            ResourceType.MONEY: -4500,
+                            ResourceType.CROPS: -3300,
+                            ResourceType.WOOD: -2200,
+                            ResourceType.SILK: -18,
+                        },
+                    },
+                    8: {
+                        "value": 1000,
+                        "next": {
+                            ResourceType.MONEY: -5000,
+                            ResourceType.CROPS: -5000,
+                            ResourceType.WOOD: -3000,
+                            ResourceType.SILK: -25,
+                            ResourceType.RAW_GOLD: -50,
+                        },
+                    },
+                    9: {
+                        "value": 1500,
+                        "next": {
+                            ResourceType.MONEY: -10000,
+                            ResourceType.CROPS: -10000,
+                            ResourceType.WOOD: -5000,
+                            ResourceType.SILK: -50,
+                            ResourceType.RAW_GOLD: -100,
+                        },
+                    },
+                    10: {"value": 5000, "next": None},
+                },
+            },
+        },
+    },
+}

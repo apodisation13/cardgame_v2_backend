@@ -39,7 +39,7 @@ from lib.utils.schemas.game import (
     DEFAULT_WIN_LEVEL_REWARDS,
     LeaderboardGameMode,
     LevelDifficulty,
-    UserStatsRecordType,
+    UserStatsRecordType, DEFAULT_UPGRADES,
 )
 from services.api.app.apps.preferences.schemas import DEFAULT_PREFERENCES
 
@@ -71,6 +71,7 @@ class GameConstantsFactory(BaseModelFactory):
         "win_level_rewards": DEFAULT_WIN_LEVEL_REWARDS,
         "start_level_prices": DEFAULT_START_LEVEL_PRICES,
         "cards_resources_prices": DEFAULT_CARDS_PRICES,
+        "upgrades": DEFAULT_UPGRADES,
     }
 
 

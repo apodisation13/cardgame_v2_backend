@@ -10,6 +10,7 @@ from services.api.app.exceptions.exceptions import (
     ManageResourcesProcessError,
     ProductDoesNotExistError,
     PurchaseDoesNotExistError,
+    UpgradeMaxLevelReachedError,
     UserNotFoundError,
 )
 
@@ -223,6 +224,7 @@ def add_exceptions(app: FastAPI) -> FastAPI:
     app.add_exception_handler(UserNotFoundError, bad_request_global_exception_handler)
     app.add_exception_handler(ManageResourcesProcessError, bad_request_global_exception_handler)
     app.add_exception_handler(CraftMillCardProcessError, bad_request_global_exception_handler)
+    app.add_exception_handler(UpgradeMaxLevelReachedError, bad_request_global_exception_handler)
     app.add_exception_handler(ProductDoesNotExistError, not_found_exception_handler)
     app.add_exception_handler(PurchaseDoesNotExistError, not_found_exception_handler)
     app.add_exception_handler(Exception, global_exception_handler)
