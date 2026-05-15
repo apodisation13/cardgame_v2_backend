@@ -29,7 +29,7 @@ from lib.utils.models import (
     UserLevel,
     UserPreferences,
     UserSeason,
-    UserStats,
+    UserStats, UserUpgrades,
 )
 from lib.utils.schemas.game import (
     DEFAULT_CARDS_PRICES,
@@ -324,3 +324,11 @@ class UserStatsFactory(BaseModelFactory, TimeStampMixinFactory):
     faction_id = factory.SubFactory(FactionFactory)
     type = UserStatsRecordType.PLAY
     count = 1
+
+
+class UserUpgradesFactory(BaseModelFactory):
+    class Meta:
+        model = UserUpgrades
+
+    id = factory.SubFactory(UserFactory)
+    data = DEFAULT_PREFERENCES

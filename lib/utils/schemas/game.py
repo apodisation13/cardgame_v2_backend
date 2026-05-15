@@ -518,3 +518,54 @@ class LeaderboardGameMode(StrEnum):
 class UserStatsRecordType(StrEnum):
     PLAY = "play"
     WIN = "win"
+
+
+class UpgradeType(StrEnum):
+    RESOURCES = "resources"
+    SETTINGS = "settings"
+    GAME = "game"
+
+
+class UpgradeSubtype(StrEnum):
+    MAX_CARDS_IN_DECK = "max_cards_in_deck"
+    HAND_SIZE = "hand_size"
+    MAX_ARMOR = "max_armor"
+    MAX_HP = "max_hp"
+    MAX_DECKS = "max_decks"
+
+    AVATAR = "avatar"
+    THEME = "theme"
+
+    MONEY = "money"
+    SCRAPS = "scraps"
+    KEGS = "kegs"
+    SILK = "silk"
+    RARE_GEMS = "rare_gems"
+    WOOD = "wood"
+    INGOTS = "ingots"
+    RAW = "raw"
+
+
+DEFAULT_USER_UPGRADES = {
+    UpgradeType.RESOURCES: {
+        UpgradeSubtype.MAX_CARDS_IN_DECK: 0,
+        UpgradeSubtype.HAND_SIZE: 0,
+        UpgradeSubtype.MAX_ARMOR: 0,
+        UpgradeSubtype.MAX_HP: 0,
+        UpgradeSubtype.MAX_DECKS: 0,
+    },
+    UpgradeType.SETTINGS: {
+        UpgradeSubtype.AVATAR: 0,
+        UpgradeSubtype.THEME: 0,
+    },
+    UpgradeType.GAME: {
+        UpgradeSubtype.MONEY: 0,
+        UpgradeSubtype.SCRAPS: 0,
+        UpgradeSubtype.RARE_GEMS: 0,
+        UpgradeSubtype.WOOD: 0,
+        UpgradeSubtype.INGOTS: 0,
+        UpgradeSubtype.RAW: 0,
+        UpgradeSubtype.SILK: 0,
+        UpgradeSubtype.KEGS: 0,
+    }
+}
