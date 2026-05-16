@@ -221,11 +221,13 @@ class TestUserUpgradesAPI:
         response_json = response.json()
         assert response.status_code == 400
 
+        message = f"Scenario: Post upgrade: type {UpgradeType.RESOURCES}, subtype {UpgradeSubtype.MONEY}, user_id: {user_id}, resource: {ResourceType.MONEY} - insufficient resources (actual: {500-1000})"
+
         assert response_json == {
             'error': {
                 'code': 'BAD_REQUEST',
-                'message': 'Upgrade error: user 1 has insufficient money',
-                'details': "ManageResourcesProcessError('Upgrade error: user 1 has insufficient money')",
+                'message': message,
+                'details': f"NegativeResourcesError('{message}')",
             },
         }
 

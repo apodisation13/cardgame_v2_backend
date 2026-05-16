@@ -107,9 +107,9 @@ class TestManageResourcesLevelStartWinAPI:
 
         response_json = response.json()
         message = response_json["error"]["message"]
-        assert message == f"Can not process subtype {subtype} for user {user_id}, negative value: {-800} money"
+        assert message == f"Scenario: Manage resources: subtype {subtype}, user_id: {user_id}, resource: {ResourceType.MONEY} - insufficient resources (actual: {200-1000})"
 
-        # кейс 1 - грязный хак через постман - накручиваем положительные ресурсы
+        # кейс 2 - грязный хак через постман - накручиваем положительные ресурсы
         response = await client.patch(
             self.endpoint.format(user_id=user_id),
             json={

@@ -17,7 +17,7 @@ from services.api.app.apps.progress.schemas import (
     UserResources,
     UserSeason,
 )
-
+from services.api.app.exceptions.exceptions import ManageResourcesProcessError, NegativeResourcesError
 
 logger = logging.getLogger(__name__)
 
@@ -399,6 +399,7 @@ async def change_resources(
     connection: asyncpg.Connection,
     user_id: int,
     resources_to_change: dict,
+    scenario: str,
 ) -> UserResources:
     set_parts = []
     query_params = [user_id]
@@ -417,7 +418,49 @@ async def change_resources(
     """  # noqa: S608
 
     result = await connection.fetchrow(query, *query_params)
-    return UserResources.get_one(result)
+    user_resources: UserResources = UserResources.get_one(result)
+
+    # теперь каждый раз после изменения ресурсов будем их проверять на меньше 0 и больше чем левел апгрейда
+    validate_non_negative_values(
+        resources_to_change=resources_to_change,
+        user_resources=user_resources,
+        user_id=user_id,
+        scenario=scenario,
+    )
+    validate_max_values(
+        resources_to_change=resources_to_change,
+        user_resources=user_resources,
+        user_id=user_id,
+        scenario=scenario,
+    )
+
+    return user_resources
+
+
+def validate_non_negative_values(
+    resources_to_change: dict,
+    user_resources: UserResources,
+    user_id: int,
+    scenario: str,
+) -> None:
+    for r in resources_to_change:
+        actual_resource: int = getattr(user_resources, r)
+        if actual_resource < 0:
+            msg = "Scenario: %s, user_id: %s, resource: %s - insufficient resources (actual: %s)"
+            logger.error(msg, scenario, user_id, r, actual_resource)
+            raise NegativeResourcesError(
+                msg % (scenario, user_id, r, actual_resource),
+            )
+
+
+def validate_max_values(
+    resources_to_change: dict,
+    user_resources: UserResources,
+    user_id: int,
+    scenario: str,
+) -> None:
+    ...
+
 
 
 async def open_default_content(

@@ -99,7 +99,6 @@ class UpgradesService:
                     merged,
                 )
             user_upgrades = merged
-            print('102', user_upgrades)
 
             # 4. Достаем текущий уровень апгрейда юзера по нужному типу
             current_level: int = user_upgrades[upgrade_type][upgrade_subtype]
@@ -120,16 +119,10 @@ class UpgradesService:
                 connection=connection,
                 user_id=user_id,
                 resources_to_change=resources_to_change,
+                scenario=f"Post upgrade: type {upgrade_type}, subtype {upgrade_subtype}",
             )
 
-            # 8. Стандартная проверка, что после списания их не стало меньше 0
-            for r in resources_to_change:
-                if getattr(user_resources, r) < 0:
-                    msg = "Upgrade error: user %s has insufficient %s"
-                    logger.error(msg, user_id, r)
-                    raise ManageResourcesProcessError(msg % (user_id, r))
-
-            # 9. Проставляем юзеру в его апгрейды следующий уровень апгрейда
+            # 8. Проставляем юзеру в его апгрейды следующий уровень апгрейда
             new_level = current_level + 1
             updated_upgrades: dict = await connection.fetchval(
                 """

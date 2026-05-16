@@ -240,6 +240,7 @@ class UserProgressService:
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=resource_request.data,
+                        scenario=f"Manage resources: subtype {subtype}"
                     )
 
             case subtype.RESOURCE_TRANSITION:
@@ -300,16 +301,8 @@ class UserProgressService:
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=resources_to_change,
+                        scenario=f"Manage resources: subtype {subtype}, action {action}, recipe {recipe}"
                     )
-
-                    for r in resources_to_change:
-                        actual_resource: int = getattr(user_resources, r)
-                        if actual_resource < 0:
-                            msg = "User %s, resource: %s (quantity: %s), action: %s (recipe %s), ACTUAL: %s %s"
-                            logger.error(msg, user_id, resource, quantity, action, recipe, actual_resource, r)
-                            raise ManageResourcesProcessError(
-                                msg % (user_id, resource, quantity, action, recipe, actual_resource, r),
-                            )
 
                 return user_resources
 
@@ -331,14 +324,8 @@ class UserProgressService:
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=resource_request.data,
+                        scenario=f"Manage resources: subtype {subtype}",
                     )
-
-                    for resource in resource_request.data:
-                        actual_resource: int = getattr(user_resources, resource)
-                        if actual_resource < 0:
-                            msg = "Can not process subtype %s for user %s, negative value: %s %s"
-                            logger.error(msg, subtype, user_id, actual_resource, resource)
-                            raise ManageResourcesProcessError(msg % (subtype, user_id, actual_resource, resource))
 
                 return user_resources
 
@@ -393,15 +380,8 @@ class UserProgressService:
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=pay_resources,
+                        scenario=f"Subtype {subtype}"
                     )
-
-                    # 1.6. Проверяем, если какого-то ресурса стало 0, рейзим ошибку!
-                    for r in pay_resources:
-                        actual_resource: int = getattr(user_resources, r)
-                        if actual_resource < 0:
-                            msg = "Craft card error: user %s, ACTUAL: %s %s"
-                            logger.error(msg, user_id, actual_resource, r)
-                            raise ManageResourcesProcessError(msg % (user_id, actual_resource, r))
 
                     # 2. Создаем юзеру карту
                     # 2.1. Крафтим карту - пытаемся сделать инзерт, а если такая уже есть, делаем count += 1
@@ -461,15 +441,8 @@ class UserProgressService:
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=pay_resources,
+                        scenario=f"Subtype {subtype}"
                     )
-
-                    # 1.6. Проверяем, если какого-то ресурса стало 0, рейзим ошибку!
-                    for r in pay_resources:
-                        actual_resource: int = getattr(user_resources, r)
-                        if actual_resource < 0:
-                            msg = "Craft leader error: user %s, ACTUAL: %s %s"
-                            logger.error(msg, user_id, actual_resource, r)
-                            raise ManageResourcesProcessError(msg % (user_id, actual_resource, r))
 
                     # 2. Создаем юзеру карту лидера
                     # 2.1. Крафтим карту лидера - пытаемся сделать инзерт, а если такая уже есть, делаем count += 1
@@ -581,17 +554,8 @@ class UserProgressService:
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=pay_resources[0],
+                        scenario=f"Subtype {subtype}"
                     )
-
-                    # 2.4. Проверяем, что ресурса не стало меньше 0
-                    for r in pay_resources[0]:
-                        actual_resource: int = getattr(user_resources, r)
-                        if actual_resource < 0:
-                            msg = "Mill card error: user %s, ACTUAL: %s %s"
-                            logger.error(msg, user_id, actual_resource, r)
-                            raise ManageResourcesProcessError(
-                                msg % (user_id, actual_resource, r),
-                            )
 
                     # 3. Карту уничтожили, ресурсы добавили, можем собирать все карты юзера для ответа
                     user_cards: dict[int, UserCard] = await logic.get_user_cards(
@@ -667,17 +631,8 @@ class UserProgressService:
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=pay_resources[0],
+                        scenario=f"Subtype {subtype}"
                     )
-
-                    # 2.3. Проверяем, что не стало меньше 0 каких-то ресурсов
-                    for r in pay_resources[0]:
-                        actual_resource: int = getattr(user_resources, r)
-                        if actual_resource < 0:
-                            msg = "Mill leader error: user %s, ACTUAL: %s %s"
-                            logger.error(msg, user_id, actual_resource, r)
-                            raise ManageResourcesProcessError(
-                                msg % (user_id, actual_resource, r),
-                            )
 
                     # 3. Карту лидера уничтожили, ресурсы добавили, можем собирать все карты лидера юзера для ответа
                     user_leaders: dict[int, UserLeader] = await logic.get_user_leaders(

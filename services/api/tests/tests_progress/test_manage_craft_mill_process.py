@@ -75,7 +75,7 @@ class TestManageMillProcesAPI:
         assert response.status_code == 400
 
         response_json = response.json()
-        assert response_json["error"]["message"] == f"Mill leader error: user {user_id}, ACTUAL: -100 money"
+        assert response_json["error"]["message"] == f"Scenario: Subtype mill_leader, user_id: {user_id}, resource: {ResourceType.MONEY} - insufficient resources (actual: {100-200})"
 
         # кейс 4 - у юзера когда-то был этот лидер, потом стало 0, и его нельзя дальше миллить
         new_leader_2 = await leader_factory(
@@ -241,7 +241,7 @@ class TestManageMillProcesAPI:
         assert response.status_code == 400
 
         response_json = response.json()
-        assert response_json["error"]["message"] == f"Mill card error: user {user_id}, ACTUAL: -100 money"
+        assert response_json["error"]["message"] == f"Scenario: Subtype mill_card, user_id: {user_id}, resource: {ResourceType.MONEY} - insufficient resources (actual: {100-200})"
 
         # кейс 4 - у юзера когда-то была эта карта, потом стало 0, и ее нельзя дальше миллить
         new_card = await card_factory(
@@ -412,7 +412,7 @@ class TestManageCraftProcesAPI:
         assert response.status_code == 400
 
         response_json = response.json()
-        assert response_json["error"]["message"] == f"Craft leader error: user {user_id}, ACTUAL: -1 silver_ingots"
+        assert response_json["error"]["message"] == f"Scenario: Subtype craft_leader, user_id: {user_id}, resource: {ResourceType.SILVER_INGOTS} - insufficient resources (actual: {0-1})"
 
         # кейс 2 - прислали recipe, которого нет в конфиге
         recipe = {
@@ -617,7 +617,7 @@ class TestManageCraftProcesAPI:
         assert response.status_code == 400
 
         response_json = response.json()
-        assert response_json["error"]["message"] == f"Craft card error: user {user_id}, ACTUAL: -50 raw_bronze"
+        assert response_json["error"]["message"] == f"Scenario: Subtype craft_card, user_id: {user_id}, resource: {ResourceType.RAW_BRONZE} - insufficient resources (actual: {0-50})"
 
         # кейс 2 - прислали recipe, которого нет в конфиге
         recipe = {

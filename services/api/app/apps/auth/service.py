@@ -3,6 +3,8 @@ import logging
 from asyncpg import UniqueViolationError
 
 from fastapi import HTTPException, status
+
+from lib.utils.config.env_types import EnvType
 from lib.utils.db.pool import Database
 from lib.utils.events import event_sender
 from lib.utils.events.event_types import EventType
@@ -100,11 +102,12 @@ class AuthService:
         }
         logger.info("Successfully registered user %s", user_id)
 
-        await event_sender.create_event(
-            event_type=EventType.USER_REGISTRATION,
-            payload={"user_id": user_id},
-            config=self.config,
-        )
+        if self.config.ENV_TYPE in EnvType.send_user_registration_tg():
+            await event_sender.create_event(
+                event_type=EventType.USER_REGISTRATION,
+                payload={"user_id": user_id},
+                config=self.config,
+            )
 
         return UserRegisterResponse.model_validate(user_model)
 

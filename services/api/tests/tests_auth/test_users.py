@@ -120,12 +120,12 @@ class TestUserRegisterAPI:
                 crops=1000,
                 wood=1000,
                 silk=0,
-                kegs=3,
-                big_kegs=1,
+                kegs=0,
+                big_kegs=0,
                 chests=0,
-                keys=3,
+                keys=1,
                 rare_gem=0,
-                money=2000,
+                money=3000,
             ).model_dump()
         )
 

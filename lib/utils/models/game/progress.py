@@ -64,12 +64,12 @@ class UserResource(BaseModel, TimestampMixin):
     kegs: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
-        server_default="3",
+        server_default="0",
     )
     big_kegs: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
-        server_default="1",
+        server_default="0",
     )
     chests: Mapped[int] = mapped_column(
         Integer,
@@ -79,7 +79,7 @@ class UserResource(BaseModel, TimestampMixin):
     keys: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
-        server_default="3",
+        server_default="1",
     )
     rare_gem: Mapped[int] = mapped_column(
         Integer,
@@ -89,7 +89,7 @@ class UserResource(BaseModel, TimestampMixin):
     money: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
-        server_default="2000",
+        server_default="3000",
     )
 
 

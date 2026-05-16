@@ -49,4 +49,5 @@ class TestGetGameConstAPI:
             "win_level_rewards": ANY,
             "start_level_prices": ANY,
             "cards_resources_prices": ANY,
+            "upgrades": ANY,
         }

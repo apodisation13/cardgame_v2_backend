@@ -1,6 +1,7 @@
 import logging
 from typing import Any
 
+from elasticsearch import BadRequestError
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -11,7 +12,7 @@ from services.api.app.exceptions.exceptions import (
     ProductDoesNotExistError,
     PurchaseDoesNotExistError,
     UpgradeMaxLevelReachedError,
-    UserNotFoundError,
+    UserNotFoundError, NegativeResourcesError,
 )
 
 
@@ -222,6 +223,7 @@ def add_exceptions(app: FastAPI) -> FastAPI:
     app.add_exception_handler(RequestValidationError, validation_exception_handler)
     app.add_exception_handler(UserAlreadyExistsError, user_already_exists_exception_handler)
     app.add_exception_handler(UserNotFoundError, bad_request_global_exception_handler)
+    app.add_exception_handler(NegativeResourcesError, bad_request_global_exception_handler)
     app.add_exception_handler(ManageResourcesProcessError, bad_request_global_exception_handler)
     app.add_exception_handler(CraftMillCardProcessError, bad_request_global_exception_handler)
     app.add_exception_handler(UpgradeMaxLevelReachedError, bad_request_global_exception_handler)
