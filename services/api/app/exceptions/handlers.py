@@ -1,7 +1,6 @@
 import logging
 from typing import Any
 
-from elasticsearch import BadRequestError
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -9,10 +8,11 @@ from services.api.app.exceptions import UserAlreadyExistsError
 from services.api.app.exceptions.exceptions import (
     CraftMillCardProcessError,
     ManageResourcesProcessError,
+    NegativeResourcesError,
     ProductDoesNotExistError,
     PurchaseDoesNotExistError,
     UpgradeMaxLevelReachedError,
-    UserNotFoundError, NegativeResourcesError,
+    UserNotFoundError,
 )
 
 

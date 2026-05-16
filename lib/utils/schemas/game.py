@@ -567,7 +567,7 @@ DEFAULT_USER_UPGRADES = {
         UpgradeSubtype.RAW: 0,
         UpgradeSubtype.SILK: 0,
         UpgradeSubtype.KEGS: 0,
-    }
+    },
 }
 
 DEFAULT_UPGRADES: dict[UpgradeType, dict] = {

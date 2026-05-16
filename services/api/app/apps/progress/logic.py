@@ -17,7 +17,8 @@ from services.api.app.apps.progress.schemas import (
     UserResources,
     UserSeason,
 )
-from services.api.app.exceptions.exceptions import ManageResourcesProcessError, NegativeResourcesError
+from services.api.app.exceptions.exceptions import NegativeResourcesError
+
 
 logger = logging.getLogger(__name__)
 
@@ -458,9 +459,7 @@ def validate_max_values(
     user_resources: UserResources,
     user_id: int,
     scenario: str,
-) -> None:
-    ...
-
+) -> None: ...
 
 
 async def open_default_content(

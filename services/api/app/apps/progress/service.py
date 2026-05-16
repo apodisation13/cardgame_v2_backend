@@ -9,8 +9,8 @@ from lib.utils.schemas.game import (
     ResourceTransitionActionType,
     ResourceType,
 )
-from services.api.app.apps.progress import logic
 from services.api.app.apps.game_const import logic as game_const_logic
+from services.api.app.apps.progress import logic
 from services.api.app.apps.progress.schemas import (
     CardCraftBonusResponse,
     CardCraftMillResponse,
@@ -240,7 +240,7 @@ class UserProgressService:
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=resource_request.data,
-                        scenario=f"Manage resources: subtype {subtype}"
+                        scenario=f"Manage resources: subtype {subtype}",
                     )
 
             case subtype.RESOURCE_TRANSITION:
@@ -301,7 +301,7 @@ class UserProgressService:
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=resources_to_change,
-                        scenario=f"Manage resources: subtype {subtype}, action {action}, recipe {recipe}"
+                        scenario=f"Manage resources: subtype {subtype}, action {action}, recipe {recipe}",
                     )
 
                 return user_resources
@@ -380,7 +380,7 @@ class UserProgressService:
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=pay_resources,
-                        scenario=f"Subtype {subtype}"
+                        scenario=f"Subtype {subtype}",
                     )
 
                     # 2. Создаем юзеру карту
@@ -441,7 +441,7 @@ class UserProgressService:
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=pay_resources,
-                        scenario=f"Subtype {subtype}"
+                        scenario=f"Subtype {subtype}",
                     )
 
                     # 2. Создаем юзеру карту лидера
@@ -554,7 +554,7 @@ class UserProgressService:
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=pay_resources[0],
-                        scenario=f"Subtype {subtype}"
+                        scenario=f"Subtype {subtype}",
                     )
 
                     # 3. Карту уничтожили, ресурсы добавили, можем собирать все карты юзера для ответа
@@ -631,7 +631,7 @@ class UserProgressService:
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=pay_resources[0],
-                        scenario=f"Subtype {subtype}"
+                        scenario=f"Subtype {subtype}",
                     )
 
                     # 3. Карту лидера уничтожили, ресурсы добавили, можем собирать все карты лидера юзера для ответа

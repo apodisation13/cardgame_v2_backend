@@ -29,17 +29,19 @@ from lib.utils.models import (
     UserLevel,
     UserPreferences,
     UserSeason,
-    UserStats, UserUpgrades,
+    UserStats,
+    UserUpgrades,
 )
 from lib.utils.schemas.game import (
     DEFAULT_CARDS_PRICES,
     DEFAULT_KEY_REWARDS,
     DEFAULT_RESOURCES_TRANSITIONS,
     DEFAULT_START_LEVEL_PRICES,
+    DEFAULT_UPGRADES,
     DEFAULT_WIN_LEVEL_REWARDS,
     LeaderboardGameMode,
     LevelDifficulty,
-    UserStatsRecordType, DEFAULT_UPGRADES,
+    UserStatsRecordType,
 )
 from services.api.app.apps.preferences.schemas import DEFAULT_PREFERENCES
 

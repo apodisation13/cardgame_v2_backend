@@ -1,13 +1,18 @@
 import logging
+from typing import TYPE_CHECKING
 
 from lib.utils.db.pool import Database
-from lib.utils.schemas.game import DEFAULT_USER_UPGRADES, UpgradeType, UpgradeSubtype
+from lib.utils.schemas.game import DEFAULT_USER_UPGRADES, UpgradeSubtype, UpgradeType
 from services.api.app.apps.game_const import logic as game_const_logic
 from services.api.app.apps.progress import logic as progress_logic
-from services.api.app.apps.progress.schemas import UserResources
 from services.api.app.apps.upgrades.schemas import PostUpgradeResponse
 from services.api.app.config import Config
-from services.api.app.exceptions.exceptions import ManageResourcesProcessError, UpgradeMaxLevelReachedError
+from services.api.app.exceptions.exceptions import UpgradeMaxLevelReachedError
+
+
+if TYPE_CHECKING:
+    from services.api.app.apps.progress.schemas import UserResources
+
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +29,7 @@ class UpgradesService:
     async def get_user_upgrades(
         self,
         user_id: int,
-    ):
+    ) -> dict:
         async with self.db_pool.connection() as connection:
             upgrades: dict | None = await connection.fetchval(
                 """

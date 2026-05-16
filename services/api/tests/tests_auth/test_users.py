@@ -5,7 +5,6 @@ import pytest
 
 from freezegun import freeze_time
 from httpx import AsyncClient
-
 from lib.utils.events.event_types import EventType
 from services.api.app.apps.auth.lib import create_token, decode_token, get_password_hash
 from services.api.app.apps.auth.schemas import TokenType, UserRegisterResponse

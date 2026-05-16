@@ -3,7 +3,6 @@ import logging
 from asyncpg import UniqueViolationError
 
 from fastapi import HTTPException, status
-
 from lib.utils.config.env_types import EnvType
 from lib.utils.db.pool import Database
 from lib.utils.events import event_sender

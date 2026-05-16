@@ -4,6 +4,7 @@ from services.api.app.apps.upgrades.schemas import PostUpgradeRequest, PostUpgra
 from services.api.app.apps.upgrades.service import UpgradesService
 from services.api.app.dependencies import get_upgrades_service
 
+
 router = APIRouter()
 
 

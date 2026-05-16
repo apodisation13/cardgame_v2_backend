@@ -2,9 +2,9 @@ import copy
 from unittest.mock import patch
 
 import pytest
-from httpx import AsyncClient
 
-from lib.utils.schemas.game import DEFAULT_USER_UPGRADES, UpgradeType, UpgradeSubtype, DEFAULT_UPGRADES, ResourceType
+from httpx import AsyncClient
+from lib.utils.schemas.game import DEFAULT_UPGRADES, DEFAULT_USER_UPGRADES, ResourceType, UpgradeSubtype, UpgradeType
 
 
 class TestUserUpgradesAPI:
@@ -103,7 +103,7 @@ class TestUserUpgradesAPI:
             ResourceType.CROPS: -500,
             ResourceType.RAW_BRONZE: -30,
         },
-        
+
         А вот с уровня 1 на уровень 2:
         "next": {
             ResourceType.MONEY: -2000,
@@ -221,13 +221,17 @@ class TestUserUpgradesAPI:
         response_json = response.json()
         assert response.status_code == 400
 
-        message = f"Scenario: Post upgrade: type {UpgradeType.RESOURCES}, subtype {UpgradeSubtype.MONEY}, user_id: {user_id}, resource: {ResourceType.MONEY} - insufficient resources (actual: {500-1000})"
+        message = (
+            f"Scenario: Post upgrade: type {UpgradeType.RESOURCES}, subtype {UpgradeSubtype.MONEY}, "
+            f"user_id: {user_id}, "
+            f"resource: {ResourceType.MONEY} - insufficient resources (actual: {500 - 1000})"
+        )
 
         assert response_json == {
-            'error': {
-                'code': 'BAD_REQUEST',
-                'message': message,
-                'details': f"NegativeResourcesError('{message}')",
+            "error": {
+                "code": "BAD_REQUEST",
+                "message": message,
+                "details": f"NegativeResourcesError('{message}')",
             },
         }
 
@@ -272,10 +276,10 @@ class TestUserUpgradesAPI:
         assert response.status_code == 400
 
         assert response_json == {
-            'error': {
-                'code': 'BAD_REQUEST',
-                'message': 'User 1 already at max level for resources/money',
-                'details': "UpgradeMaxLevelReachedError('User 1 already at max level for resources/money')",
+            "error": {
+                "code": "BAD_REQUEST",
+                "message": "User 1 already at max level for resources/money",
+                "details": "UpgradeMaxLevelReachedError('User 1 already at max level for resources/money')",
             },
         }
 

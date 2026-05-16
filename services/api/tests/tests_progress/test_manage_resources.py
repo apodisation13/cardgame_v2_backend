@@ -107,7 +107,11 @@ class TestManageResourcesLevelStartWinAPI:
 
         response_json = response.json()
         message = response_json["error"]["message"]
-        assert message == f"Scenario: Manage resources: subtype {subtype}, user_id: {user_id}, resource: {ResourceType.MONEY} - insufficient resources (actual: {200-1000})"
+        assert (
+            message == f"Scenario: Manage resources: subtype {subtype},"
+            f" user_id: {user_id},"
+            f" resource: {ResourceType.MONEY} - insufficient resources (actual: {200 - 1000})"
+        )
 
         # кейс 2 - грязный хак через постман - накручиваем положительные ресурсы
         response = await client.patch(
