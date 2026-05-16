@@ -312,6 +312,7 @@ def user_upgrades_factory(db_connection):
 
 @pytest_asyncio.fixture
 async def init_db_cards(
+    game_constants_factory,
     faction_factory,
     color_factory,
     type_factory,
@@ -352,6 +353,8 @@ async def init_db_cards(
     - 4 уровня (2 открыты, 2 нет) (3 для сезона 1, 1 для сезона 2)
     - связи между сезоном и уровнем, уровнем и его детьми, уровнем и врагами
     """
+    await game_constants_factory()
+
     f1 = await faction_factory(name="Neutral")
     f2 = await faction_factory(name="Soldiers")
     c1 = await color_factory(name="Bronze")

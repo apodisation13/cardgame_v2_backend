@@ -15,7 +15,6 @@ class TestGetUserProgressAPI:
         user_login_fixture,
         # fixtures for test
         user_resource_factory,
-        game_constants_factory,
         user_level_factory,
         user_season_factory,
         user_deck_factory,
@@ -34,7 +33,6 @@ class TestGetUserProgressAPI:
         access_token = user_login_fixture["token"]["access_token"]
 
         await user_resource_factory(id=user_id)
-        await game_constants_factory()
 
         await user_level_factory(user_id=user_id, level_id=1)
         await user_season_factory(user_id=user_id, season_id=1)

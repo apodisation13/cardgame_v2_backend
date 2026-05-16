@@ -8,7 +8,6 @@ from httpx import AsyncClient
 class TestGetGameConstAPI:
     endpoint = "game_const"
 
-    @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
     async def test_get_game_const(
         self,

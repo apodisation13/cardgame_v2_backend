@@ -269,7 +269,7 @@ class UserProgressService:
 
                     # это те ресурсы, которые из констант - цена милла/крафта итп
                     # они там с правильным знаком, плюс или минус, списать или начислить
-                    resources_to_change = {}
+                    resources_to_change: dict[ResourceType, int] = {}
                     all_recipes: list = resources_transitions[resource][action]
                     for r_ in all_recipes:
                         if r_ == recipe:
@@ -364,7 +364,7 @@ class UserProgressService:
                     craft_card_recipes: list[dict] = card_resources[CardActionSubtype.CRAFT_CARD]
 
                     # 1.3. Тут ищем, какую конкретно формулу крафта выбрал юзер (пришла с фронта)
-                    pay_resources = {}
+                    pay_resources: dict[ResourceType, int] = {}
                     for r in craft_card_recipes:
                         if r == recipe:
                             pay_resources = recipe
@@ -425,7 +425,7 @@ class UserProgressService:
                     craft_leader_recipes: list[dict] = leader_resources[CardActionSubtype.CRAFT_LEADER]
 
                     # 1.3. Тут ищем, какую конкретно формулу крафта выбрал юзер (пришла с фронта)
-                    pay_resources = {}
+                    pay_resources: dict[ResourceType, int] = {}
                     for r in craft_leader_recipes:
                         if r == recipe:
                             pay_resources = recipe
@@ -547,7 +547,9 @@ class UserProgressService:
                     )
 
                     # здесь для порядка список из 1 элемента, мы возьмем первый (единственный)
-                    pay_resources = game_constants["cards_resources_prices"][card_color][CardActionSubtype.MILL_CARD]
+                    pay_resources: list[dict[ResourceType, int]] = game_constants["cards_resources_prices"][card_color][
+                        CardActionSubtype.MILL_CARD
+                    ]
 
                     # 2.3. Добавляем тут юзеру ресурсы
                     user_resources: UserResources = await logic.change_resources(
@@ -624,7 +626,9 @@ class UserProgressService:
                     )
 
                     # вот тут для порядка - список, но там только 1 элемент, его мы и возьмем
-                    pay_resources = game_constants["cards_resources_prices"]["leader"][CardActionSubtype.MILL_LEADER]
+                    pay_resources: list[dict[ResourceType, int]] = game_constants["cards_resources_prices"]["leader"][
+                        CardActionSubtype.MILL_LEADER
+                    ]
 
                     # 2.2. Добавляем тут юзеру ресурсы
                     user_resources: UserResources = await logic.change_resources(

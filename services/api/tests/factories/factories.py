@@ -38,6 +38,7 @@ from lib.utils.schemas.game import (
     DEFAULT_RESOURCES_TRANSITIONS,
     DEFAULT_START_LEVEL_PRICES,
     DEFAULT_UPGRADES,
+    DEFAULT_USER_UPGRADES,
     DEFAULT_WIN_LEVEL_REWARDS,
     LeaderboardGameMode,
     LevelDifficulty,
@@ -334,4 +335,4 @@ class UserUpgradesFactory(BaseModelFactory):
         model = UserUpgrades
 
     id = factory.SubFactory(UserFactory)
-    data = DEFAULT_PREFERENCES
+    data = DEFAULT_USER_UPGRADES

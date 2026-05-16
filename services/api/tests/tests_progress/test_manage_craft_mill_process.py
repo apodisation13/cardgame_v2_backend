@@ -1,7 +1,9 @@
+import copy
+
 import pytest
 
 from httpx import AsyncClient
-from lib.utils.schemas.game import CardActionSubtype, ResourceType
+from lib.utils.schemas.game import DEFAULT_USER_UPGRADES, CardActionSubtype, ResourceType, UpgradeSubtype, UpgradeType
 
 
 class TestManageMillProcesAPI:
@@ -15,13 +17,15 @@ class TestManageMillProcesAPI:
         client: AsyncClient,
         user_login_fixture,
         # fixtures for test
-        game_constants_factory,
         user_resource_factory,
+        user_upgrades_factory,
         user_leader_factory,
         leader_factory,
     ):
         user_id = user_login_fixture["id"]
         access_token = user_login_fixture["token"]["access_token"]
+
+        await user_upgrades_factory(id=user_id)
 
         # кейс 1 - такого лидера у юзера вообще нет
         response = await client.post(
@@ -61,8 +65,6 @@ class TestManageMillProcesAPI:
         )
         await user_leader_factory(leader_id=new_leader.id, user_id=user_id, count=1)
         await user_resource_factory(id=user_id, money=100)  # а там на милл нужно 200
-
-        await game_constants_factory()
 
         response = await client.post(
             self.endpoint.format(user_id=user_id, card_id=new_leader.id),
@@ -112,13 +114,15 @@ class TestManageMillProcesAPI:
         db_connection,
         user_login_fixture,
         # fixtures for test
-        game_constants_factory,
         user_resource_factory,
+        user_upgrades_factory,
         user_leader_factory,
         leader_factory,
     ):
         user_id = user_login_fixture["id"]
         access_token = user_login_fixture["token"]["access_token"]
+
+        await user_upgrades_factory(id=user_id)
 
         new_leader = await leader_factory(
             faction_id=1,
@@ -136,8 +140,6 @@ class TestManageMillProcesAPI:
             money=400,
             scraps=1000,
         )
-
-        await game_constants_factory()
 
         response = await client.post(
             self.endpoint.format(user_id=user_id, card_id=new_leader.id),
@@ -190,13 +192,15 @@ class TestManageMillProcesAPI:
         client: AsyncClient,
         user_login_fixture,
         # fixtures for test
-        game_constants_factory,
         user_resource_factory,
+        user_upgrades_factory,
         user_card_factory,
         card_factory,
     ):
         user_id = user_login_fixture["id"]
         access_token = user_login_fixture["token"]["access_token"]
+
+        await user_upgrades_factory(id=user_id)
 
         # кейс 1 - такой карты у юзера вообще нет
         response = await client.post(
@@ -231,8 +235,6 @@ class TestManageMillProcesAPI:
         # кейс 3 - не хватает денег на милл карты
         await user_card_factory(card_id=3, user_id=user_id, count=1)
         await user_resource_factory(id=user_id, money=100)  # а там на милл нужно всегда 200
-
-        await game_constants_factory()
 
         response = await client.post(
             self.endpoint.format(user_id=user_id, card_id=3),
@@ -295,13 +297,17 @@ class TestManageMillProcesAPI:
         db_connection,
         user_login_fixture,
         # fixtures for test
-        game_constants_factory,
         user_resource_factory,
+        user_upgrades_factory,
         user_card_factory,
         card_factory,
     ):
         user_id = user_login_fixture["id"]
         access_token = user_login_fixture["token"]["access_token"]
+
+        user_upgrades = copy.deepcopy(DEFAULT_USER_UPGRADES)
+        user_upgrades[UpgradeType.RESOURCES][UpgradeSubtype.INGOTS] = 1
+        await user_upgrades_factory(id=user_id, data=user_upgrades)
 
         new_card = await card_factory(
             faction_id=1,
@@ -324,8 +330,6 @@ class TestManageMillProcesAPI:
             silver_ingots=0,
             gold_ingots=0,
         )
-
-        await game_constants_factory()
 
         response = await client.post(
             self.endpoint.format(user_id=user_id, card_id=new_card.id),
@@ -384,13 +388,10 @@ class TestManageCraftProcesAPI:
         client: AsyncClient,
         user_login_fixture,
         # fixtures for test
-        game_constants_factory,
         user_resource_factory,
     ):
         user_id = user_login_fixture["id"]
         access_token = user_login_fixture["token"]["access_token"]
-
-        await game_constants_factory()
 
         await user_resource_factory(
             id=user_id,
@@ -458,7 +459,6 @@ class TestManageCraftProcesAPI:
         db_connection,
         user_login_fixture,
         # fixtures for test
-        game_constants_factory,
         user_resource_factory,
         user_leader_factory,
         leader_factory,
@@ -467,8 +467,6 @@ class TestManageCraftProcesAPI:
         access_token = user_login_fixture["token"]["access_token"]
 
         await user_leader_factory(leader_id=1, user_id=user_id)
-
-        await game_constants_factory()
 
         await user_resource_factory(
             id=user_id,
@@ -597,13 +595,10 @@ class TestManageCraftProcesAPI:
         client: AsyncClient,
         user_login_fixture,
         # fixtures for test
-        game_constants_factory,
         user_resource_factory,
     ):
         user_id = user_login_fixture["id"]
         access_token = user_login_fixture["token"]["access_token"]
-
-        await game_constants_factory()
 
         await user_resource_factory(
             id=user_id,
@@ -712,7 +707,6 @@ class TestManageCraftProcesAPI:
         db_connection,
         user_login_fixture,
         # fixtures for test
-        game_constants_factory,
         user_resource_factory,
         user_card_factory,
         card_factory,
@@ -738,8 +732,6 @@ class TestManageCraftProcesAPI:
             bronze_ingots=3,
             rare_gem=1,
         )
-
-        await game_constants_factory()
 
         # 1й запрос - карты еще нету у юзера
         response = await client.post(

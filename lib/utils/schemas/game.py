@@ -562,11 +562,11 @@ DEFAULT_USER_UPGRADES = {
         UpgradeSubtype.MONEY: 0,
         UpgradeSubtype.SCRAPS: 0,
         UpgradeSubtype.RARE_GEMS: 0,
-        UpgradeSubtype.WOOD: 0,
-        UpgradeSubtype.INGOTS: 0,
-        UpgradeSubtype.RAW: 0,
+        UpgradeSubtype.WOOD: 0,  # WOOD + CROPS
+        UpgradeSubtype.INGOTS: 0,  # all 3 ingots
+        UpgradeSubtype.RAW: 0,  # all 3 raw
         UpgradeSubtype.SILK: 0,
-        UpgradeSubtype.KEGS: 0,
+        UpgradeSubtype.KEGS: 0,  # KEGS, BIG_KEGS, CHESTS
     },
 }
 

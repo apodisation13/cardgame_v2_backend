@@ -43,7 +43,7 @@ class UpgradesService:
             )
 
             if not upgrades:
-                logger.info("User %s preferences not found, gotta insert new", user_id)
+                logger.info("User %s upgrades not found, gotta insert new", user_id)
                 upgrades = await connection.fetchval(
                     """
                         INSERT INTO user_upgrades
@@ -109,7 +109,7 @@ class UpgradesService:
             current_level: int = user_upgrades[upgrade_type][upgrade_subtype]
 
             # 5. Смотрим, а какие ресурсы нужны для следующего уровня апгрейда
-            level_data = upgrades[upgrade_type]["upgrades"][upgrade_subtype]["upgrades"][str(current_level)]
+            level_data: dict = upgrades[upgrade_type]["upgrades"][upgrade_subtype]["upgrades"][str(current_level)]
 
             # 6. Если достигнут последний уровень, то мы не должны ничего апгрейдить
             # такая проверка есть на фронте, так что это скорее запрос из постмана
