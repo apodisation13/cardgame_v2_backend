@@ -107,9 +107,9 @@ class EventProcessor:
         async with self.db.connection() as connection:
             await connection.execute(
                 """
-                UPDATE 
+                UPDATE
                     event_log
-                SET 
+                SET
                     state = $2,
                     updated_at = NOW()
                 WHERE id = $1
