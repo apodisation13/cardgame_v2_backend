@@ -38,6 +38,7 @@ class EventProcessor:
                 """select processing::jsonb from events where type = $1""",
                 event_type,
             )
+            logger.info("Got config %s for event %s", event_config, event_message)
 
         if not event_config:
             raise ValueError(f"Event config not found for {event_type}")
@@ -91,6 +92,7 @@ class EventProcessor:
 
         try:
             if action_instance.check_conditions():
+                logger.info("Executing action %s", action_class)
                 await action_instance.execute()
             else:
                 print("failed conditions")

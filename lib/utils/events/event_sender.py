@@ -1,10 +1,14 @@
 import json
+import logging
 
 from aiokafka import AIOKafkaProducer
 from lib.utils.config.base import BaseConfig
 from lib.utils.db.pool import Database
 from lib.utils.events.event_types import EventProcessingState, EventType
 from lib.utils.schemas.events import EventMessage
+
+
+logger = logging.getLogger(__name__)
 
 
 class EventSender:
@@ -35,6 +39,7 @@ class EventSender:
         payload: dict,
     ) -> None:
         """Отправка события в Kafka"""
+        logger.info("Sending event %s", event_type)
         await self._ensure_initialized()
 
         message = EventMessage(
@@ -46,6 +51,7 @@ class EventSender:
         try:
             await self._producer.send_and_wait(topic, message.model_dump(mode="json"))
             await self._log_event(message=message, payload=payload)
+            logger.info("Event %s has been sent", message)
         except Exception as e:
             # При ошибке сбрасываем состояние и пробуем переинициализировать при следующем вызове
             self._initialized = False

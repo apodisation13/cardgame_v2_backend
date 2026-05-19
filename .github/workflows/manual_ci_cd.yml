@@ -66,6 +66,9 @@ jobs:
           DOMAIN_NAME=${{ secrets.DOMAIN_NAME }}
           LETSENCRYPT_EMAIL=${{ secrets.LETSENCRYPT_EMAIL }}
           
+          TG_CHAT_ID=${{ secrets.TG_CHAT_ID }}
+          TG_TOKEN=${{ secrets.TG_TOKEN }}
+          
           EOF
           
           echo "✅ .env создан для Environment: ${{ env.MODE }}"
@@ -136,6 +139,9 @@ jobs:
             
             DOMAIN_NAME=${{ secrets.DOMAIN_NAME }}
             LETSENCRYPT_EMAIL=${{ secrets.LETSENCRYPT_EMAIL }}
+            
+            TG_CHAT_ID=${{ secrets.TG_CHAT_ID }}
+            TG_TOKEN=${{ secrets.TG_TOKEN }}
 
         with:
           host: ${{ secrets.SSH_SERVER }}
