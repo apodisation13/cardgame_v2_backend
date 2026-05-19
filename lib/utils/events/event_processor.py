@@ -33,27 +33,27 @@ class EventProcessor:
             state=EventProcessingState.IN_PROGRESS,
         )
 
-        async with self.db.connection() as conn:
-            event_config = await conn.fetchrow(
-                """select processing::jsonb from events where type = $1""",
-                event_type,
-            )
-            logger.info("Got config %s for event %s", event_config, event_message)
-
-        if not event_config:
-            raise ValueError(f"Event config not found for {event_type}")
-
-        processing: list[ActionConfigData] = [
-            ActionConfigData(
-                type=item["type"],
-                conditions=item["conditions"],
-                receiver=item.get("receiver"),
-                message=item.get("message"),
-            )
-            for item in event_config["processing"]
-        ]
-
         try:
+            async with self.db.connection() as conn:
+                event_config = await conn.fetchrow(
+                    """select processing::jsonb from events where type = $1""",
+                    event_type,
+                )
+                logger.info("Got config %s for event %s", event_config, event_message)
+
+            if not event_config:
+                raise ValueError(f"Event config not found for {event_type}")
+
+            processing: list[ActionConfigData] = [
+                ActionConfigData(
+                    type=item["type"],
+                    conditions=item["conditions"],
+                    receiver=item.get("receiver"),
+                    message=item.get("message"),
+                )
+                for item in event_config["processing"]
+            ]
+
             for action_config_data in processing:
                 await self._execute_action(
                     action_config=action_config_data,
@@ -107,8 +107,11 @@ class EventProcessor:
         async with self.db.connection() as connection:
             await connection.execute(
                 """
-                UPDATE event_log
-                SET state = $2
+                UPDATE 
+                    event_log
+                SET 
+                    state = $2,
+                    updated_at = NOW()
                 WHERE id = $1
                 """,
                 event_id,

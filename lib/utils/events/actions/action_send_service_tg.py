@@ -12,6 +12,7 @@ from lib.utils.schemas.events import ActionConfigData
         "message": "user {{ payload.user_id }} зарегистрирован",
         "conditions": true
     }
+    payload: {user_id: int}
 """
 
 

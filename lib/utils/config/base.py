@@ -61,8 +61,9 @@ class BaseConfig:
     EMAIL_PASSWORD: str = get_secret("EMAIL_PASSWORD")
 
     # TG
-    TG_TOKEN: str = get_secret("TG_TOKEN")
-    TG_CHAT_ID: str = get_secret("TG_CHAT_ID")
+    TG_BASE_URL: str = get_secret("TG_BASE_URL", cast=str)
+    TG_TOKEN: str = get_secret("TG_TOKEN", cast=str)
+    TG_CHAT_ID: str = get_secret("TG_CHAT_ID", cast=str)
 
     # SMS
     SMS_TOKEN: str = get_secret("SMS_TOKEN")
