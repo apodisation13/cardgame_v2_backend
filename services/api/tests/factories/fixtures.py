@@ -26,9 +26,9 @@ from lib.utils.models import (
     UserLeader,
     UserLevel,
     UserPreferences,
-    UserResource,
     UserSeason,
     UserStats,
+    UserUpgrades,
 )
 from lib.utils.schemas.game import LevelDifficulty
 import pytest_asyncio
@@ -52,8 +52,6 @@ from services.api.tests.factories.factories import (
     LevelRelatedLevelsFactory,
     MoveFactory,
     PassiveAbilityFactory,
-    ProductFactory,
-    PurchaseFactory,
     SeasonFactory,
     SeasonRelatedSeasonsFactory,
     TypeFactory,
@@ -62,9 +60,9 @@ from services.api.tests.factories.factories import (
     UserLeaderFactory,
     UserLevelFactory,
     UserPreferenceFactory,
-    UserResourceFactory,
     UserSeasonFactory,
     UserStatsFactory,
+    UserUpgradesFactory,
 )
 
 
@@ -240,15 +238,6 @@ def level_enemy_factory(db_connection):
     return factory
 
 
-# Пользовательские данные
-@pytest_asyncio.fixture
-def user_resource_factory(db_connection):
-    async def factory(**kwargs) -> UserResource:
-        return await UserResourceFactory.create_in_db(conn=db_connection, **kwargs)
-
-    return factory
-
-
 @pytest_asyncio.fixture
 def user_card_factory(db_connection):
     async def factory(**kwargs) -> UserCard:
@@ -314,23 +303,16 @@ def user_stats_factory(db_connection):
 
 
 @pytest_asyncio.fixture
-def product_factory(db_connection):
-    async def factory(**kwargs) -> Type:
-        return await ProductFactory.create_in_db(conn=db_connection, **kwargs)
-
-    return factory
-
-
-@pytest_asyncio.fixture
-def purchase_factory(db_connection):
-    async def factory(**kwargs) -> Type:
-        return await PurchaseFactory.create_in_db(conn=db_connection, **kwargs)
+def user_upgrades_factory(db_connection):
+    async def factory(**kwargs) -> UserUpgrades:
+        return await UserUpgradesFactory.create_in_db(conn=db_connection, **kwargs)
 
     return factory
 
 
 @pytest_asyncio.fixture
 async def init_db_cards(
+    game_constants_factory,
     faction_factory,
     color_factory,
     type_factory,
@@ -371,6 +353,8 @@ async def init_db_cards(
     - 4 уровня (2 открыты, 2 нет) (3 для сезона 1, 1 для сезона 2)
     - связи между сезоном и уровнем, уровнем и его детьми, уровнем и врагами
     """
+    await game_constants_factory()
+
     f1 = await faction_factory(name="Neutral")
     f2 = await faction_factory(name="Soldiers")
     c1 = await color_factory(name="Bronze")

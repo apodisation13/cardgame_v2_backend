@@ -3,12 +3,11 @@ import logging.config
 import os
 import sys
 
-from lib.utils.elk.elastic_logger import ElasticLoggerManager
-
 
 # Добавляем корневую директорию проекта в Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 
+from lib.utils.elk.elastic_logger import ElasticLoggerManager
 from lib.utils.events.event_consumer import EventConsumer
 from services.events.app.config import get_config
 

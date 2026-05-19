@@ -1,7 +1,13 @@
-from abc import ABC, abstractmethod
+from __future__ import annotations
 
-from lib.utils.config.base import BaseConfig
-from lib.utils.schemas.events import ActionConfigData
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
+
+
+if TYPE_CHECKING:
+    from lib.utils.config.base import BaseConfig
+    from lib.utils.db.pool import Database
+    from lib.utils.schemas.events import ActionConfigData
 
 
 class ActionBase(ABC):
@@ -10,16 +16,15 @@ class ActionBase(ABC):
         config: BaseConfig,
         action_config: ActionConfigData,
         payload: dict,
+        db: Database | None = None,
     ):
         self.config = config
         self.action_config = action_config
         self.payload = payload
+        self.db = db
 
     @abstractmethod
-    async def execute(
-        self,
-        payload: dict,
-    ) -> None:
+    async def execute(self) -> None:
         pass
 
     def check_conditions(self) -> bool:

@@ -14,6 +14,7 @@ class TestProductsAPI:
         # service fixtures
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         product_factory,
     ):
         access_token = user_login_fixture["token"]["access_token"]

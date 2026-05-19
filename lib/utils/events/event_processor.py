@@ -1,4 +1,3 @@
-import json
 import logging
 from uuid import UUID
 
@@ -40,17 +39,18 @@ class EventProcessor:
                 event_type,
             )
 
-            processing: list[ActionConfigData] = [
-                ActionConfigData(
-                    type=item["type"],
-                    conditions=item["conditions"],
-                    receiver=item["receiver"],
-                )
-                for item in json.loads(event_config["processing"])
-            ]
-
         if not event_config:
             raise ValueError(f"Event config not found for {event_type}")
+
+        processing: list[ActionConfigData] = [
+            ActionConfigData(
+                type=item["type"],
+                conditions=item["conditions"],
+                receiver=item.get("receiver"),
+                message=item.get("message"),
+            )
+            for item in event_config["processing"]
+        ]
 
         try:
             for action_config_data in processing:
@@ -59,8 +59,8 @@ class EventProcessor:
                     payload=payload,
                 )
 
-        except Exception:
-            logger.error("Failed to process %s", event_type)
+        except Exception as e:
+            logger.error("Failed to process %s, %s", event_type, e)
             await self._update_processing_state(
                 event_id=event_message.id,
                 state=EventProcessingState.FAILED,
@@ -86,11 +86,12 @@ class EventProcessor:
             config=self.config,
             action_config=action_config,
             payload=payload,
+            db=self.db,
         )
 
         try:
             if action_instance.check_conditions():
-                await action_instance.execute(payload=payload)
+                await action_instance.execute()
             else:
                 print("failed conditions")
         except RuntimeError as e:

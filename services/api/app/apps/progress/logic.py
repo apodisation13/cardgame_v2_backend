@@ -2,8 +2,9 @@ import logging
 
 import asyncpg
 
-from lib.utils.schemas.game import LevelDifficulty
+from lib.utils.schemas.game import LevelDifficulty, ResourceType, UpgradeSubtype, UpgradeType
 from services.api.app.apps.cards.schemas import Deck
+from services.api.app.apps.game_const import logic as game_const_logic
 from services.api.app.apps.progress.schemas import (
     Level,
     LevelRelatedLevel,
@@ -17,6 +18,7 @@ from services.api.app.apps.progress.schemas import (
     UserResources,
     UserSeason,
 )
+from services.api.app.exceptions.exceptions import NegativeResourcesError
 
 
 logger = logging.getLogger(__name__)
@@ -395,11 +397,124 @@ async def get_user_resources(
     return UserResources.get_one(user_resources)
 
 
-async def get_game_constants(
+async def change_resources(
     connection: asyncpg.Connection,
-) -> dict:
-    game_constants: dict = await connection.fetchval("""SELECT data::jsonb FROM game_constants""")
-    return game_constants
+    user_id: int,
+    resources_to_change: dict[ResourceType, int],
+    scenario: str,
+) -> UserResources:
+    if any(delta > 0 for delta in resources_to_change.values()):
+        current_resources: UserResources = await get_user_resources(
+            connection=connection,
+            user_id=user_id,
+        )
+        resources_to_change = await cap_resources_to_max(
+            connection=connection,
+            resources_to_change=resources_to_change,
+            current_resources=current_resources,
+            user_id=user_id,
+        )
+
+    set_parts = []
+    query_params = [user_id]
+
+    for i, (resource, delta) in enumerate(resources_to_change.items(), start=2):
+        set_parts.append(f"{resource} = {resource} + ${i}")
+        query_params.append(delta)
+
+    set_parts.append("updated_at = NOW()")
+
+    query = f"""
+        UPDATE user_resources
+        SET {", ".join(set_parts)}
+        WHERE id = $1
+        RETURNING *
+    """  # noqa: S608
+
+    result = await connection.fetchrow(query, *query_params)
+    user_resources: UserResources = UserResources.get_one(result)
+
+    await validate_non_negative_values(
+        resources_to_change=resources_to_change,
+        user_resources=user_resources,
+        user_id=user_id,
+        scenario=scenario,
+    )
+
+    return user_resources
+
+
+async def validate_non_negative_values(
+    resources_to_change: dict,
+    user_resources: UserResources,
+    user_id: int,
+    scenario: str,
+) -> None:
+    for r in resources_to_change:
+        actual_resource: int = getattr(user_resources, r)
+        if actual_resource < 0:
+            msg = "Scenario: %s, user_id: %s, resource: %s - insufficient resources (actual: %s)"
+            logger.error(msg, scenario, user_id, r, actual_resource)
+            raise NegativeResourcesError(
+                msg % (scenario, user_id, r, actual_resource),
+            )
+
+
+async def cap_resources_to_max(
+    connection: asyncpg.Connection,
+    resources_to_change: dict[ResourceType, int],
+    current_resources: UserResources,
+    user_id: int,
+) -> dict[ResourceType, int]:
+    user_upgrades: dict = await connection.fetchval(
+        """
+            SELECT
+                user_upgrades.data::jsonb
+            FROM
+                user_upgrades
+            WHERE user_upgrades.id = $1
+        """,
+        user_id,
+    )
+    game_const: dict = await game_const_logic.get_game_constants(
+        connection=connection,
+    )
+    upgrades_config: dict = game_const["upgrades"]
+
+    adjusted = dict(resources_to_change)
+    for resource_type, delta in resources_to_change.items():
+        if delta <= 0 or resource_type == ResourceType.KEYS:
+            continue
+
+        if resource_type == ResourceType.MONEY:
+            correct_upgrade_subtype = UpgradeSubtype.MONEY
+        elif resource_type == ResourceType.SCRAPS:
+            correct_upgrade_subtype = UpgradeSubtype.SCRAPS
+        elif resource_type == ResourceType.SILK:
+            correct_upgrade_subtype = UpgradeSubtype.SILK
+        elif resource_type == ResourceType.RARE_GEM:
+            correct_upgrade_subtype = UpgradeSubtype.RARE_GEMS
+        elif resource_type in (ResourceType.CROPS, ResourceType.WOOD):
+            correct_upgrade_subtype = UpgradeSubtype.WOOD
+        elif resource_type in (ResourceType.BRONZE_INGOTS, ResourceType.SILVER_INGOTS, ResourceType.GOLD_INGOTS):
+            correct_upgrade_subtype = UpgradeSubtype.INGOTS
+        elif resource_type in (ResourceType.RAW_BRONZE, ResourceType.RAW_SILVER, ResourceType.RAW_GOLD):
+            correct_upgrade_subtype = UpgradeSubtype.RAW
+        elif resource_type in (ResourceType.KEGS, ResourceType.BIG_KEGS, ResourceType.CHESTS):
+            correct_upgrade_subtype = UpgradeSubtype.KEGS
+        else:
+            raise ValueError(f"Unknown resource type for max cap: {resource_type}")
+
+        user_upgrade_level: int = user_upgrades[UpgradeType.RESOURCES][correct_upgrade_subtype]
+        level_data: dict = upgrades_config[UpgradeType.RESOURCES]["upgrades"][correct_upgrade_subtype]["upgrades"][
+            str(user_upgrade_level)
+        ]
+        max_value: int = level_data["value"]
+
+        current_value: int = getattr(current_resources, resource_type)
+        adjusted[resource_type] = min(delta, max(0, max_value - current_value))
+
+    return adjusted
 
 
 async def open_default_content(

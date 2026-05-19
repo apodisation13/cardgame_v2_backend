@@ -51,8 +51,8 @@ def app_config() -> Config:
 
 @pytest_asyncio.fixture
 async def user_login_fixture(
-    user_factory,
     client: AsyncClient,
+    user_factory,
 ) -> dict:
     plain_password = "password"
     user = await user_factory(

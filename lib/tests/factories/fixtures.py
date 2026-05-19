@@ -1,5 +1,9 @@
+import pytest
+
 from lib.tests.factories import UserFactory
-from lib.utils.models import User
+from lib.tests.factories.factories import EventMessageFactory, ProductFactory, PurchaseFactory, UserResourceFactory
+from lib.utils.models import Product, Purchase, User, UserResource
+from lib.utils.schemas.events import EventMessage
 import pytest_asyncio
 
 
@@ -7,5 +11,37 @@ import pytest_asyncio
 def user_factory(db_connection):
     async def factory(**kwargs) -> User:
         return await UserFactory.create_in_db(conn=db_connection, **kwargs)
+
+    return factory
+
+
+@pytest_asyncio.fixture
+def user_resource_factory(db_connection):
+    async def factory(**kwargs) -> UserResource:
+        return await UserResourceFactory.create_in_db(conn=db_connection, **kwargs)
+
+    return factory
+
+
+@pytest.fixture
+def event_message_factory():
+    def factory(**kwargs) -> EventMessage:
+        return EventMessageFactory.build(**kwargs)
+
+    return factory
+
+
+@pytest_asyncio.fixture
+def product_factory(db_connection):
+    async def factory(**kwargs) -> Product:
+        return await ProductFactory.create_in_db(conn=db_connection, **kwargs)
+
+    return factory
+
+
+@pytest_asyncio.fixture
+def purchase_factory(db_connection):
+    async def factory(**kwargs) -> Purchase:
+        return await PurchaseFactory.create_in_db(conn=db_connection, **kwargs)
 
     return factory

@@ -1,10 +1,9 @@
 from lib.utils.events.action_types import ActionType
-from lib.utils.events.actions.action_one import SendSmsAction
-from lib.utils.events.actions.action_two import SendEmailAction
+from lib.utils.events.actions.action_add_resources import ActionAddResources
+from lib.utils.events.actions.action_send_service_tg import ActionSendServiceTg
 
 
 ACTION_REGISTRY = {
-    ActionType.SEND_SMS: SendSmsAction,
-    ActionType.SEND_EMAIL: SendEmailAction,
-    # ActionType.WEBHOOK: WebhookAction,
+    ActionType.ADD_RESOURCES: ActionAddResources,
+    ActionType.SEND_SERVICE_TG: ActionSendServiceTg,
 }

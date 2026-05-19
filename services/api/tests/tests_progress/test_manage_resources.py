@@ -1,11 +1,16 @@
+import copy
+
 import pytest
 
 from httpx import AsyncClient
 from lib.utils.schemas.game import (
     DEFAULT_RESOURCES_TRANSITIONS,
+    DEFAULT_USER_UPGRADES,
     ResourceActionSubtype,
     ResourceTransitionActionType,
     ResourceType,
+    UpgradeSubtype,
+    UpgradeType,
 )
 from services.api.app.apps.progress.schemas import UserResources
 
@@ -107,9 +112,13 @@ class TestManageResourcesLevelStartWinAPI:
 
         response_json = response.json()
         message = response_json["error"]["message"]
-        assert message == f"Can not process subtype {subtype} for user {user_id}, negative value: {-800} money"
+        assert (
+            message == f"Scenario: Manage resources: subtype {subtype},"
+            f" user_id: {user_id},"
+            f" resource: {ResourceType.MONEY} - insufficient resources (actual: {200 - 1000})"
+        )
 
-        # кейс 1 - грязный хак через постман - накручиваем положительные ресурсы
+        # кейс 2 - грязный хак через постман - накручиваем положительные ресурсы
         response = await client.patch(
             self.endpoint.format(user_id=user_id),
             json={
@@ -148,10 +157,13 @@ class TestManageResourcesLevelStartWinAPI:
         client: AsyncClient,
         user_login_fixture,
         # fixtures for test
+        user_upgrades_factory,
         user_resource_factory,
     ):
         user_id = user_login_fixture["id"]
         access_token = user_login_fixture["token"]["access_token"]
+
+        await user_upgrades_factory(id=user_id)
 
         user_resources = await user_resource_factory(id=user_id)
 
@@ -367,13 +379,14 @@ class TestManageResourcesTransitionAPI:
         user_login_fixture,
         # fixtures for test
         user_resource_factory,
-        game_constants_factory,
+        user_upgrades_factory,
     ):
         user_id = user_login_fixture["id"]
         access_token = user_login_fixture["token"]["access_token"]
 
+        await user_upgrades_factory(id=user_id)
+
         user_resources = await user_resource_factory(id=user_id)
-        await game_constants_factory()
 
         response = await client.patch(
             self.endpoint.format(user_id=user_id),
@@ -437,13 +450,13 @@ class TestManageResourcesTransitionAPI:
         user_login_fixture,
         # fixtures for test
         user_resource_factory,
-        game_constants_factory,
+        user_upgrades_factory,
     ):
         user_id = user_login_fixture["id"]
         access_token = user_login_fixture["token"]["access_token"]
 
+        await user_upgrades_factory(id=user_id)
         await user_resource_factory(id=user_id)
-        await game_constants_factory()
 
         response = await client.patch(
             self.endpoint.format(user_id=user_id),
@@ -490,13 +503,11 @@ class TestManageResourcesTransitionAPI:
         user_login_fixture,
         # fixtures for test
         user_resource_factory,
-        game_constants_factory,
     ):
         user_id = user_login_fixture["id"]
         access_token = user_login_fixture["token"]["access_token"]
 
         await user_resource_factory(id=user_id)
-        await game_constants_factory()
 
         response = await client.patch(
             self.endpoint.format(user_id=user_id),
@@ -533,16 +544,19 @@ class TestManageResourcesTransitionAPI:
         user_login_fixture,
         # fixtures for test
         user_resource_factory,
-        game_constants_factory,
+        user_upgrades_factory,
     ):
         user_id = user_login_fixture["id"]
         access_token = user_login_fixture["token"]["access_token"]
+
+        user_upgrades = copy.deepcopy(DEFAULT_USER_UPGRADES)
+        user_upgrades[UpgradeType.RESOURCES][UpgradeSubtype.INGOTS] = 1
+        await user_upgrades_factory(id=user_id, data=user_upgrades)
 
         user_resources = await user_resource_factory(
             id=user_id,
             raw_bronze=251,  # потребуется для крафта бронзовых слитков
         )
-        await game_constants_factory()
 
         resource = ResourceType.BRONZE_INGOTS
         action = ResourceTransitionActionType.CRAFT
@@ -608,18 +622,20 @@ class TestManageResourcesTransitionAPI:
         user_login_fixture,
         # fixtures for test
         user_resource_factory,
-        game_constants_factory,
+        user_upgrades_factory,
     ):
         user_id = user_login_fixture["id"]
         access_token = user_login_fixture["token"]["access_token"]
 
+        user_upgrades = copy.deepcopy(DEFAULT_USER_UPGRADES)
+        user_upgrades[UpgradeType.RESOURCES][UpgradeSubtype.SILK] = 1
+        await user_upgrades_factory(id=user_id, data=user_upgrades)
         user_resources = await user_resource_factory(
             id=user_id,
             raw_gold=4,
             scraps=2000,
             money=2000,
         )
-        await game_constants_factory()
 
         response = await client.patch(
             self.endpoint.format(user_id=user_id),
@@ -682,10 +698,12 @@ class TestManageResourcesTransitionAPI:
         user_login_fixture,
         # fixtures for test
         user_resource_factory,
-        game_constants_factory,
+        user_upgrades_factory,
     ):
         user_id = user_login_fixture["id"]
         access_token = user_login_fixture["token"]["access_token"]
+
+        await user_upgrades_factory(id=user_id)
 
         user_resources = await user_resource_factory(
             id=user_id,
@@ -694,7 +712,6 @@ class TestManageResourcesTransitionAPI:
             scraps=0,
             raw_gold=0,
         )
-        await game_constants_factory()
 
         response = await client.patch(
             self.endpoint.format(user_id=user_id),
@@ -758,10 +775,12 @@ class TestManageResourcesTransitionAPI:
         user_login_fixture,
         # fixtures for test
         user_resource_factory,
-        game_constants_factory,
+        user_upgrades_factory,
     ):
         user_id = user_login_fixture["id"]
         access_token = user_login_fixture["token"]["access_token"]
+
+        await user_upgrades_factory(id=user_id)
 
         await user_resource_factory(
             id=user_id,
@@ -769,7 +788,6 @@ class TestManageResourcesTransitionAPI:
             scraps=starting_scraps,
             money=starting_money,
         )
-        await game_constants_factory()
 
         response = await client.patch(
             self.endpoint.format(user_id=user_id),
@@ -829,10 +847,14 @@ class TestManageResourcesTransitionAPI:
         user_login_fixture,
         # fixtures for test
         user_resource_factory,
-        game_constants_factory,
+        user_upgrades_factory,
     ):
         user_id = user_login_fixture["id"]
         access_token = user_login_fixture["token"]["access_token"]
+
+        user_upgrades = copy.deepcopy(DEFAULT_USER_UPGRADES)
+        user_upgrades[UpgradeType.RESOURCES][UpgradeSubtype.KEGS] = 3
+        await user_upgrades_factory(id=user_id, data=user_upgrades)
 
         user_resources = await user_resource_factory(
             id=user_id,
@@ -843,7 +865,6 @@ class TestManageResourcesTransitionAPI:
             money=3000,
             kegs=0,  # изначально их было 0
         )
-        await game_constants_factory()
 
         action = ResourceTransitionActionType.CRAFT
         kegs = ResourceType.KEGS

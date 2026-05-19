@@ -14,6 +14,14 @@ class ManageResourcesProcessError(Exception):
     pass
 
 
+class NegativeResourcesError(Exception):
+    pass
+
+
+class UpgradeMaxLevelReachedError(Exception):
+    pass
+
+
 class CraftMillCardProcessError(Exception):
     pass
 

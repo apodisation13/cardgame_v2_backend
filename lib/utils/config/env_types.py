@@ -27,6 +27,14 @@ class EnvType(StrEnum):
             cls.DOCKER_LOCAL,
         ]
 
+    @classmethod
+    def send_user_registration_tg(cls) -> list:
+        return [
+            cls.TESTING,
+            cls.PRODUCTION,
+            cls.TEST_LOCAL,
+        ]
+
 
 def get_secret(
     secret_name: str,

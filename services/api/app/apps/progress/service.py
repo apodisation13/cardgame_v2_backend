@@ -1,8 +1,6 @@
 import logging
 from typing import TYPE_CHECKING
 
-import asyncpg
-
 from lib.utils.db.pool import Database
 from lib.utils.schemas.game import (
     CardActionSubtype,
@@ -11,6 +9,7 @@ from lib.utils.schemas.game import (
     ResourceTransitionActionType,
     ResourceType,
 )
+from services.api.app.apps.game_const import logic as game_const_logic
 from services.api.app.apps.progress import logic
 from services.api.app.apps.progress.schemas import (
     CardCraftBonusResponse,
@@ -237,10 +236,11 @@ class UserProgressService:
                 Тут придет словарь с ресурсами, которые нужно начислить
                 """
                 async with self.db_pool.connection() as connection:
-                    return await self._change_resources(
+                    return await logic.change_resources(
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=resource_request.data,
+                        scenario=f"Manage resources: subtype {subtype}",
                     )
 
             case subtype.RESOURCE_TRANSITION:
@@ -249,7 +249,7 @@ class UserProgressService:
                 Тут придет словарь с ресурсами, которые нужно списать или наоборот начислить
                 """
                 async with self.db_pool.transaction() as connection:
-                    game_constants: dict = await logic.get_game_constants(
+                    game_constants: dict = await game_const_logic.get_game_constants(
                         connection=connection,
                     )
                     resources_transitions: dict = game_constants["resources_transitions"]
@@ -269,7 +269,7 @@ class UserProgressService:
 
                     # это те ресурсы, которые из констант - цена милла/крафта итп
                     # они там с правильным знаком, плюс или минус, списать или начислить
-                    resources_to_change = {}
+                    resources_to_change: dict[ResourceType, int] = {}
                     all_recipes: list = resources_transitions[resource][action]
                     for r_ in all_recipes:
                         if r_ == recipe:
@@ -297,20 +297,12 @@ class UserProgressService:
 
                     logger.info("Resources to change: %s for user %s", resources_to_change, user_id)
 
-                    user_resources: UserResources = await self._change_resources(
+                    user_resources: UserResources = await logic.change_resources(
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=resources_to_change,
+                        scenario=f"Manage resources: subtype {subtype}, action {action}, recipe {recipe}",
                     )
-
-                    for r in resources_to_change:
-                        actual_resource: int = getattr(user_resources, r)
-                        if actual_resource < 0:
-                            msg = "User %s, resource: %s (quantity: %s), action: %s (recipe %s), ACTUAL: %s %s"
-                            logger.error(msg, user_id, resource, quantity, action, recipe, actual_resource, r)
-                            raise ManageResourcesProcessError(
-                                msg % (user_id, resource, quantity, action, recipe, actual_resource, r),
-                            )
 
                 return user_resources
 
@@ -328,48 +320,17 @@ class UserProgressService:
                         raise ManageResourcesProcessError(msg % (subtype, user_id, value, resource))
 
                 async with self.db_pool.transaction() as connection:
-                    user_resources: UserResources = await self._change_resources(
+                    user_resources: UserResources = await logic.change_resources(
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=resource_request.data,
+                        scenario=f"Manage resources: subtype {subtype}",
                     )
-
-                    for resource in resource_request.data:
-                        actual_resource: int = getattr(user_resources, resource)
-                        if actual_resource < 0:
-                            msg = "Can not process subtype %s for user %s, negative value: %s %s"
-                            logger.error(msg, subtype, user_id, actual_resource, resource)
-                            raise ManageResourcesProcessError(msg % (subtype, user_id, actual_resource, resource))
 
                 return user_resources
 
             case _:
                 raise TypeError(f"Invalid subtype {subtype}")
-
-    async def _change_resources(
-        self,
-        connection: asyncpg.Connection,
-        user_id: int,
-        resources_to_change: dict[ResourceType:int],
-    ) -> UserResources:
-        set_parts = []
-        query_params = [user_id]
-
-        for i, (resource, delta) in enumerate(resources_to_change.items(), start=2):
-            set_parts.append(f"{resource} = {resource} + ${i}")
-            query_params.append(delta)
-
-        set_parts.append("updated_at = NOW()")
-
-        query = f"""
-            UPDATE user_resources
-            SET {", ".join(set_parts)}
-            WHERE id = $1
-            RETURNING *
-        """  # noqa: S608
-
-        result = await connection.fetchrow(query, *query_params)
-        return UserResources.get_one(result)
 
     async def manage_craft_mill_process(
         self,
@@ -395,7 +356,7 @@ class UserProgressService:
                     )
 
                     # 1.2. В константах лежат параметры, сколько списать за крафт той или иной карты
-                    game_constants: dict = await logic.get_game_constants(
+                    game_constants: dict = await game_const_logic.get_game_constants(
                         connection=connection,
                     )
 
@@ -403,7 +364,7 @@ class UserProgressService:
                     craft_card_recipes: list[dict] = card_resources[CardActionSubtype.CRAFT_CARD]
 
                     # 1.3. Тут ищем, какую конкретно формулу крафта выбрал юзер (пришла с фронта)
-                    pay_resources = {}
+                    pay_resources: dict[ResourceType, int] = {}
                     for r in craft_card_recipes:
                         if r == recipe:
                             pay_resources = recipe
@@ -415,19 +376,12 @@ class UserProgressService:
                         raise ManageResourcesProcessError(msg % (recipe, user_id))
 
                     # 1.5. Попытались списать ресурсы
-                    user_resources: UserResources = await self._change_resources(
+                    user_resources: UserResources = await logic.change_resources(
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=pay_resources,
+                        scenario=f"Subtype {subtype}",
                     )
-
-                    # 1.6. Проверяем, если какого-то ресурса стало 0, рейзим ошибку!
-                    for r in pay_resources:
-                        actual_resource: int = getattr(user_resources, r)
-                        if actual_resource < 0:
-                            msg = "Craft card error: user %s, ACTUAL: %s %s"
-                            logger.error(msg, user_id, actual_resource, r)
-                            raise ManageResourcesProcessError(msg % (user_id, actual_resource, r))
 
                     # 2. Создаем юзеру карту
                     # 2.1. Крафтим карту - пытаемся сделать инзерт, а если такая уже есть, делаем count += 1
@@ -462,7 +416,7 @@ class UserProgressService:
                 async with self.db_pool.transaction() as connection:
                     # 1. Спишем ресурсы за карту лидера
                     # 1.1. Берем опять же игровые константы
-                    game_constants: dict = await logic.get_game_constants(
+                    game_constants: dict = await game_const_logic.get_game_constants(
                         connection=connection,
                     )
 
@@ -471,7 +425,7 @@ class UserProgressService:
                     craft_leader_recipes: list[dict] = leader_resources[CardActionSubtype.CRAFT_LEADER]
 
                     # 1.3. Тут ищем, какую конкретно формулу крафта выбрал юзер (пришла с фронта)
-                    pay_resources = {}
+                    pay_resources: dict[ResourceType, int] = {}
                     for r in craft_leader_recipes:
                         if r == recipe:
                             pay_resources = recipe
@@ -483,19 +437,12 @@ class UserProgressService:
                         raise ManageResourcesProcessError(msg % (recipe, user_id))
 
                     # 1.5. Попытались списать ресурсы
-                    user_resources: UserResources = await self._change_resources(
+                    user_resources: UserResources = await logic.change_resources(
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=pay_resources,
+                        scenario=f"Subtype {subtype}",
                     )
-
-                    # 1.6. Проверяем, если какого-то ресурса стало 0, рейзим ошибку!
-                    for r in pay_resources:
-                        actual_resource: int = getattr(user_resources, r)
-                        if actual_resource < 0:
-                            msg = "Craft leader error: user %s, ACTUAL: %s %s"
-                            logger.error(msg, user_id, actual_resource, r)
-                            raise ManageResourcesProcessError(msg % (user_id, actual_resource, r))
 
                     # 2. Создаем юзеру карту лидера
                     # 2.1. Крафтим карту лидера - пытаемся сделать инзерт, а если такая уже есть, делаем count += 1
@@ -595,29 +542,22 @@ class UserProgressService:
                     )
 
                     # 2.2. Достаем игровые константы
-                    game_constants: dict = await logic.get_game_constants(
+                    game_constants: dict = await game_const_logic.get_game_constants(
                         connection=connection,
                     )
 
                     # здесь для порядка список из 1 элемента, мы возьмем первый (единственный)
-                    pay_resources = game_constants["cards_resources_prices"][card_color][CardActionSubtype.MILL_CARD]
+                    pay_resources: list[dict[ResourceType, int]] = game_constants["cards_resources_prices"][card_color][
+                        CardActionSubtype.MILL_CARD
+                    ]
 
                     # 2.3. Добавляем тут юзеру ресурсы
-                    user_resources: UserResources = await self._change_resources(
+                    user_resources: UserResources = await logic.change_resources(
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=pay_resources[0],
+                        scenario=f"Subtype {subtype}",
                     )
-
-                    # 2.4. Проверяем, что ресурса не стало меньше 0
-                    for r in pay_resources[0]:
-                        actual_resource: int = getattr(user_resources, r)
-                        if actual_resource < 0:
-                            msg = "Mill card error: user %s, ACTUAL: %s %s"
-                            logger.error(msg, user_id, actual_resource, r)
-                            raise ManageResourcesProcessError(
-                                msg % (user_id, actual_resource, r),
-                            )
 
                     # 3. Карту уничтожили, ресурсы добавили, можем собирать все карты юзера для ответа
                     user_cards: dict[int, UserCard] = await logic.get_user_cards(
@@ -681,29 +621,22 @@ class UserProgressService:
 
                     # 2. А теперь начисляем ресурсы за униточженную карту лидера
                     # 2.1. С лидером проще - за него всегда одна и та же сумма
-                    game_constants: dict = await logic.get_game_constants(
+                    game_constants: dict = await game_const_logic.get_game_constants(
                         connection=connection,
                     )
 
                     # вот тут для порядка - список, но там только 1 элемент, его мы и возьмем
-                    pay_resources = game_constants["cards_resources_prices"]["leader"][CardActionSubtype.MILL_LEADER]
+                    pay_resources: list[dict[ResourceType, int]] = game_constants["cards_resources_prices"]["leader"][
+                        CardActionSubtype.MILL_LEADER
+                    ]
 
                     # 2.2. Добавляем тут юзеру ресурсы
-                    user_resources: UserResources = await self._change_resources(
+                    user_resources: UserResources = await logic.change_resources(
                         connection=connection,
                         user_id=user_id,
                         resources_to_change=pay_resources[0],
+                        scenario=f"Subtype {subtype}",
                     )
-
-                    # 2.3. Проверяем, что не стало меньше 0 каких-то ресурсов
-                    for r in pay_resources[0]:
-                        actual_resource: int = getattr(user_resources, r)
-                        if actual_resource < 0:
-                            msg = "Mill leader error: user %s, ACTUAL: %s %s"
-                            logger.error(msg, user_id, actual_resource, r)
-                            raise ManageResourcesProcessError(
-                                msg % (user_id, actual_resource, r),
-                            )
 
                     # 3. Карту лидера уничтожили, ресурсы добавили, можем собирать все карты лидера юзера для ответа
                     user_leaders: dict[int, UserLeader] = await logic.get_user_leaders(

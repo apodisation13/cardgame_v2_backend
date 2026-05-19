@@ -7,6 +7,7 @@ from .game.preferences import UserPreferences
 from .game.progress import UserCard, UserDeck, UserLeader, UserLevel, UserResource, UserSeason
 from .game.seasons import Level, LevelEnemy, LevelRelatedLevels, Season, SeasonRelatedSeasons
 from .game.stats import Leaderboard, UserStats
+from .game.upgrades import UserUpgrades
 from .news import News
 from .products import Product, Purchase
 from .tasks import CronTask
@@ -54,4 +55,5 @@ __all__ = [
     "UserResource",
     "UserSeason",
     "UserStats",
+    "UserUpgrades",
 ]

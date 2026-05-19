@@ -20,8 +20,6 @@ from lib.utils.models import (
     LevelRelatedLevels,
     Move,
     PassiveAbility,
-    Product,
-    Purchase,
     Season,
     SeasonRelatedSeasons,
     Type,
@@ -30,22 +28,22 @@ from lib.utils.models import (
     UserLeader,
     UserLevel,
     UserPreferences,
-    UserResource,
     UserSeason,
     UserStats,
+    UserUpgrades,
 )
 from lib.utils.schemas.game import (
     DEFAULT_CARDS_PRICES,
     DEFAULT_KEY_REWARDS,
     DEFAULT_RESOURCES_TRANSITIONS,
     DEFAULT_START_LEVEL_PRICES,
+    DEFAULT_UPGRADES,
+    DEFAULT_USER_UPGRADES,
     DEFAULT_WIN_LEVEL_REWARDS,
     LeaderboardGameMode,
     LevelDifficulty,
-    ResourceType,
     UserStatsRecordType,
 )
-from lib.utils.schemas.products import ProductType, PurchaseStatus
 from services.api.app.apps.preferences.schemas import DEFAULT_PREFERENCES
 
 
@@ -76,6 +74,7 @@ class GameConstantsFactory(BaseModelFactory):
         "win_level_rewards": DEFAULT_WIN_LEVEL_REWARDS,
         "start_level_prices": DEFAULT_START_LEVEL_PRICES,
         "cards_resources_prices": DEFAULT_CARDS_PRICES,
+        "upgrades": DEFAULT_UPGRADES,
     }
 
 
@@ -259,29 +258,6 @@ class LevelEnemyFactory(BaseModelFactory):
     enemy_id = factory.SubFactory(EnemyFactory)
 
 
-class UserResourceFactory(BaseModelFactory):
-    class Meta:
-        model = UserResource
-
-    id = factory.SubFactory(UserFactory)
-    scraps = 1000
-    raw_bronze = 0
-    raw_silver = 0
-    raw_gold = 0
-    bronze_ingots = 0
-    silver_ingots = 0
-    gold_ingots = 0
-    crops = 1000
-    wood = 1000
-    silk = 0
-    kegs = 3
-    big_kegs = 1
-    chests = 0
-    keys = 3
-    rare_gem = 0
-    money = 2000
-
-
 class UserCardFactory(BaseModelFactory):
     class Meta:
         model = UserCard
@@ -354,31 +330,9 @@ class UserStatsFactory(BaseModelFactory, TimeStampMixinFactory):
     count = 1
 
 
-class ProductFactory(BaseModelFactory, TimeStampMixinFactory):
+class UserUpgradesFactory(BaseModelFactory):
     class Meta:
-        model = Product
+        model = UserUpgrades
 
-    title = "title"
-    is_active = True
-    type = ProductType.RESOURCE
-    priority = 999
-    price = 100.43
-    data = {
-        "resources": {
-            ResourceType.MONEY: 2000,
-            ResourceType.WOOD: 1000,
-            ResourceType.SCRAPS: 1500,
-        },
-    }
-
-
-class PurchaseFactory(BaseModelFactory, TimeStampMixinFactory):
-    class Meta:
-        model = Purchase
-
-    user_id = factory.SubFactory(UserFactory)
-    product_id = factory.SubFactory(ProductFactory)
-    status = PurchaseStatus.PENDING
-    amount = 0
-    transaction_id = None
-    response_description = None
+    id = factory.SubFactory(UserFactory)
+    data = DEFAULT_USER_UPGRADES

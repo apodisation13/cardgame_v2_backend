@@ -8,13 +8,13 @@ from httpx import AsyncClient
 class TestGetGameConstAPI:
     endpoint = "game_const"
 
-    @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
     async def test_get_game_const(
         self,
         # service fixtures
         client: AsyncClient,
         user_login_fixture,
+        # fixtures for test
         game_constants_factory,
     ):
         access_token = user_login_fixture["token"]["access_token"]
@@ -48,4 +48,5 @@ class TestGetGameConstAPI:
             "win_level_rewards": ANY,
             "start_level_prices": ANY,
             "cards_resources_prices": ANY,
+            "upgrades": ANY,
         }

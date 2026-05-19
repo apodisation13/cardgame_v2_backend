@@ -5,6 +5,7 @@ import pytest
 
 from freezegun import freeze_time
 from httpx import AsyncClient
+from lib.utils.events.event_types import EventType
 from services.api.app.apps.auth.lib import create_token, decode_token, get_password_hash
 from services.api.app.apps.auth.schemas import TokenType, UserRegisterResponse
 from services.api.app.apps.progress.schemas import UserResources
@@ -35,6 +36,7 @@ class TestUserRegisterAPI:
     async def test_register_user_success(
         self,
         # service fixtures
+        event_sender_mock,
         client: AsyncClient,
         db_connection,
     ):
@@ -117,18 +119,22 @@ class TestUserRegisterAPI:
                 crops=1000,
                 wood=1000,
                 silk=0,
-                kegs=3,
-                big_kegs=1,
+                kegs=0,
+                big_kegs=0,
                 chests=0,
-                keys=3,
+                keys=1,
                 rare_gem=0,
-                money=2000,
+                money=3000,
             ).model_dump()
         )
+
+        assert event_sender_mock.call_args.kwargs["event_type"] == EventType.USER_REGISTRATION
+        assert event_sender_mock.call_args.kwargs["payload"] == {"user_id": 1}
 
     @pytest.mark.asyncio
     async def test_register_user_incorrect_data(
         self,
+        # service fixtures
         client: AsyncClient,
     ):
         response = await client.post(
