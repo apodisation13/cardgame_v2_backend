@@ -206,8 +206,9 @@ class EventProcessor:
 
         try:
             if action_instance.check_conditions():
-                logger.info("Executing action %s", action_class)
+                logger.info("Executing action %s", action_instance)
                 await action_instance.execute()
+                logger.info("Action %s marked as success", action_instance)
                 return EventProcessingActionStatus.SUCCESS
             else:
                 return EventProcessingActionStatus.CONDITIONS_FALSE
