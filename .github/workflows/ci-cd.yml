@@ -257,6 +257,7 @@ jobs:
           TG_CHAT_ID=${{ secrets.TG_CHAT_ID }}
           TG_TOKEN=${{ secrets.TG_TOKEN }}
           TG_BASE_URL=${{ secrets.TG_BASE_URL }}
+          TG_PROXY_SECRET=${{ secrets.TG_PROXY_SECRET }}
 
           EOF
 
@@ -323,6 +324,7 @@ jobs:
             TG_CHAT_ID=${{ secrets.TG_CHAT_ID }}
             TG_TOKEN=${{ secrets.TG_TOKEN }}
             TG_BASE_URL=${{ secrets.TG_BASE_URL }}
+            TG_PROXY_SECRET=${{ secrets.TG_PROXY_SECRET }}
 
         with:
           host: ${{ secrets.SSH_SERVER }}
