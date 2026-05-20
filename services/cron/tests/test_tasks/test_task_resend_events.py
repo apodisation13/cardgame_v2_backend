@@ -1,7 +1,7 @@
 import pytest
 
 from lib.utils.events.action_types import ActionType
-from lib.utils.events.event_types import EventType, EventProcessingState, EventProcessingActionStatus
+from lib.utils.events.event_types import EventProcessingActionStatus, EventProcessingState, EventType
 from services.cron.app.tasks import TaskResendEvents
 
 
@@ -21,7 +21,7 @@ async def test_task_resend_events(
         type=EventType.EVENT_1,
         processing=[
             {"type": ActionType.ADD_RESOURCES, "conditions": True},
-            {"type": ActionType.SEND_SERVICE_TG, "conditions": True}
+            {"type": ActionType.SEND_SERVICE_TG, "conditions": True},
         ],
     )
 
