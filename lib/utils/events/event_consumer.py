@@ -4,6 +4,7 @@ import logging
 from aiokafka import AIOKafkaConsumer
 from lib.utils.config.base import BaseConfig
 from lib.utils.db.pool import Database
+from lib.utils.elk.request_id import request_id_var
 from lib.utils.events.event_processor import EventProcessor
 from lib.utils.schemas.events import EventMessage
 
@@ -48,12 +49,12 @@ class EventConsumer:
 
                 try:
                     message_value: dict = message.value
-                    print("STR51", type(message_value), message_value)
                     event_message = EventMessage(
                         id=message_value["id"],
                         event_type=message_value["event_type"],
                         payload=message_value["payload"],
                     )
+                    request_id_var.set(str(event_message.id))
                     await self.process_message(event_message)
                     logger.info("Processed event: %s", event_message.event_type)
 

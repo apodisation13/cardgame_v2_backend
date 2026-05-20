@@ -2,8 +2,9 @@ import hashlib
 
 import factory
 from lib.tests.factories.base import AsyncFactory, BaseModelFactory, TimeStampMixinFactory
-from lib.utils.events.event_types import EventType
+from lib.utils.events.event_types import EventProcessingState, EventType
 from lib.utils.models import Product, Purchase, User, UserResource
+from lib.utils.models.events import Event, EventLog
 from lib.utils.schemas.events import EventMessage
 from lib.utils.schemas.game import ResourceType
 from lib.utils.schemas.products import ProductType, PurchaseStatus
@@ -81,3 +82,22 @@ class PurchaseFactory(BaseModelFactory, TimeStampMixinFactory):
     amount = 0
     transaction_id = None
     response_description = None
+
+
+class EventFactory(BaseModelFactory):
+    class Meta:
+        model = Event
+
+    type = EventType.EVENT_1
+    processing = factory.LazyFunction(list)
+
+
+class EventLogFactory(BaseModelFactory, TimeStampMixinFactory):
+    class Meta:
+        model = EventLog
+
+    type = EventType.EVENT_1
+    state = EventProcessingState.SENT
+    payload = factory.LazyFunction(dict)
+    actions_log = factory.LazyFunction(list)
+    retry_count = 0

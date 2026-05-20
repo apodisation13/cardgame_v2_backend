@@ -64,8 +64,6 @@ class SmsClient(BaseClient):
 
             # mts_email = f"{to}@sms.mts.ru"
 
-            print(555555555555555555555555, sms_email)
-
             # Создаем сообщение
             msg = MIMEMultipart()
             msg["From"] = self.config.EMAIL_USER
@@ -113,10 +111,6 @@ class TelegramClient(BaseClient):
                 "text": message,
                 "parse_mode": "HTML",
             }
-            logger.info("type of token: %s", type(self.config.TG_TOKEN))
-            logger.info("tg base url: %s", self.config.TG_BASE_URL)
-            if isinstance(self.config.TG_TOKEN, str):
-                logger.info("token: %s", self.config.TG_TOKEN[:5])
 
             # Отправка запроса на Cloudflare чтобы оттуда редиректить на тг
             headers = {"X-Secret": self.config.TG_PROXY_SECRET}

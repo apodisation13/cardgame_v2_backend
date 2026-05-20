@@ -98,6 +98,8 @@ class ElasticsearchHandler(logging.Handler):
                 "message": record.getMessage(),
                 "service": self.service_name,
                 "logger": record.name,
+                "lineno": record.lineno,
+                "func": record.funcName,
                 "hostname": os.getenv("HOSTNAME", "unknown"),
                 "timestamp": datetime.fromtimestamp(record.created).isoformat(),
                 "request_id": request_id if request_id else "system",

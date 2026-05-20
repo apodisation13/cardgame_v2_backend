@@ -10,6 +10,7 @@ import pytest
 from lib.utils.config.base import BaseConfig, BaseTestLocalConfig, get_config
 from lib.utils.config.env_types import EnvType
 from lib.utils.db.pool import Database
+from lib.utils.events.event_processor import EventProcessor
 from lib.utils.models import Base
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import create_async_engine
@@ -169,3 +170,8 @@ def event_sender_mock():
     with patch("lib.utils.events.event_sender.create_event", new_callable=AsyncMock) as mock:
         mock.return_value = True
         yield mock
+
+
+@pytest.fixture
+def processor(db, config):
+    return EventProcessor(db=db, config=config)
