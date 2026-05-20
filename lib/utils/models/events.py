@@ -36,3 +36,13 @@ class EventLog(BaseModel, TimestampMixin):
         server_default="{}",
         nullable=False,
     )
+    actions_log: Mapped[list[dict[str, Any]]] = mapped_column(
+        JSONB,
+        server_default="[]",
+        nullable=False,
+    )
+    retry_count: Mapped[int] = mapped_column(
+        Integer,
+        server_default="0",
+        nullable=False,
+    )

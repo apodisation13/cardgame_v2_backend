@@ -20,3 +20,9 @@ class EventProcessingState(StrEnum):
     IN_PROGRESS = "in_progress"
     SUCCESS = "success"
     FAILED = "failed"
+
+
+class EventProcessingActionStatus(StrEnum):
+    SUCCESS = "success"
+    FAILED = "failed"
+    CONDITIONS_FALSE = "conditions_false"

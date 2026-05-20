@@ -162,7 +162,7 @@ class TaskScheduler:
 
     async def reload_tasks(self) -> None:
         """Перезагружает задачи из базы данных"""
-        logger.info("Reloading tasks from database!!!!!!!!!!!!!!!!!!!!!!!")
+        logger.info("Reloading tasks from database")
 
         try:
             db_tasks = await self._get_active_tasks()

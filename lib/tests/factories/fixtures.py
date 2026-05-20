@@ -1,10 +1,18 @@
 import pytest
+import pytest_asyncio
 
 from lib.tests.factories import UserFactory
-from lib.tests.factories.factories import EventMessageFactory, ProductFactory, PurchaseFactory, UserResourceFactory
+from lib.tests.factories.factories import (
+    EventFactory,
+    EventLogFactory,
+    EventMessageFactory,
+    ProductFactory,
+    PurchaseFactory,
+    UserResourceFactory,
+)
 from lib.utils.models import Product, Purchase, User, UserResource
+from lib.utils.models.events import Event, EventLog
 from lib.utils.schemas.events import EventMessage
-import pytest_asyncio
 
 
 @pytest_asyncio.fixture
@@ -43,5 +51,21 @@ def product_factory(db_connection):
 def purchase_factory(db_connection):
     async def factory(**kwargs) -> Purchase:
         return await PurchaseFactory.create_in_db(conn=db_connection, **kwargs)
+
+    return factory
+
+
+@pytest_asyncio.fixture
+def event_config_factory(db_connection):
+    async def factory(**kwargs) -> Event:
+        return await EventFactory.create_in_db(conn=db_connection, **kwargs)
+
+    return factory
+
+
+@pytest_asyncio.fixture
+def event_log_factory(db_connection):
+    async def factory(**kwargs) -> EventLog:
+        return await EventLogFactory.create_in_db(conn=db_connection, **kwargs)
 
     return factory
