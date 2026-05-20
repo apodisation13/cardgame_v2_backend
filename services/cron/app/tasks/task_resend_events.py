@@ -17,12 +17,12 @@ class TaskResendEvents(TaskBase):
         async with self.db.connection() as connection:
             failed_events: list[dict] = await connection.fetch(
                 """
-                SELECT 
-                    id, 
-                    type, 
-                    payload, 
+                SELECT
+                    id,
+                    type,
+                    payload,
                     actions_log
-                FROM 
+                FROM
                     event_log
                 WHERE
                     state = $1
@@ -55,7 +55,7 @@ class TaskResendEvents(TaskBase):
                 SET
                     retry_count = retry_count + 1,
                     updated_at = NOW()
-                WHERE 
+                WHERE
                     id = $1
                 """,
                 event_id,

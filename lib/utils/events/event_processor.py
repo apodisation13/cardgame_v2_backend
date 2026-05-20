@@ -1,11 +1,10 @@
-import json
 import logging
 from uuid import UUID
 
 from lib.utils.config.base import BaseConfig
 from lib.utils.db.pool import Database
 from lib.utils.events.actions import ACTION_REGISTRY
-from lib.utils.events.event_types import EventProcessingState, EventType, EventProcessingActionStatus
+from lib.utils.events.event_types import EventProcessingActionStatus, EventProcessingState, EventType
 from lib.utils.schemas.events import ActionConfigData, EventMessage
 
 
@@ -243,7 +242,7 @@ class EventProcessor:
         async with self.db.connection() as connection:
             await connection.execute(
                 """
-                UPDATE 
+                UPDATE
                     event_log
                 SET
                     state = $2,

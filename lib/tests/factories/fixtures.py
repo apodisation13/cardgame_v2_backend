@@ -1,5 +1,4 @@
 import pytest
-import pytest_asyncio
 
 from lib.tests.factories import UserFactory
 from lib.tests.factories.factories import (
@@ -13,6 +12,7 @@ from lib.tests.factories.factories import (
 from lib.utils.models import Product, Purchase, User, UserResource
 from lib.utils.models.events import Event, EventLog
 from lib.utils.schemas.events import EventMessage
+import pytest_asyncio
 
 
 @pytest_asyncio.fixture

@@ -61,8 +61,8 @@ async def test_process_event_success(
     assert row["retry_count"] == 0
     assert row["actions_log"] == [
         {
-            'type': ActionType.ADD_RESOURCES,
-            'state': EventProcessingActionStatus.SUCCESS,
+            "type": ActionType.ADD_RESOURCES,
+            "state": EventProcessingActionStatus.SUCCESS,
         },
     ]
 
@@ -98,8 +98,8 @@ async def test_process_event_action_raises_marks_failed(
     assert row["retry_count"] == 0
     assert row["actions_log"] == [
         {
-            'type': ActionType.ADD_RESOURCES,
-            'state': EventProcessingActionStatus.FAILED,
+            "type": ActionType.ADD_RESOURCES,
+            "state": EventProcessingActionStatus.FAILED,
             "error": "boom",
         },
     ]
@@ -195,9 +195,9 @@ async def test_process_event_unknown_action_type(
     assert row["state"] == EventProcessingState.FAILED
     assert row["actions_log"] == [
         {
-            'type': ActionType.ADD_RESOURCES,
-            'error': 'Unknown action type: ActionAddResources',
-            'state': EventProcessingActionStatus.FAILED,
+            "type": ActionType.ADD_RESOURCES,
+            "error": "Unknown action type: ActionAddResources",
+            "state": EventProcessingActionStatus.FAILED,
         },
     ]
 
@@ -233,8 +233,8 @@ async def test_process_event_condition_false_skips_execute(
     assert row["state"] == EventProcessingState.SUCCESS
     assert row["actions_log"] == [
         {
-            'type': ActionType.ADD_RESOURCES,
-            'state': EventProcessingActionStatus.CONDITIONS_FALSE,
+            "type": ActionType.ADD_RESOURCES,
+            "state": EventProcessingActionStatus.CONDITIONS_FALSE,
         },
     ]
 
@@ -329,9 +329,9 @@ async def test_retry_success(
     assert "error" not in _actions_log(row)[0]
     assert row["actions_log"] == [
         {
-            'type': ActionType.ADD_RESOURCES,
-            'state': EventProcessingActionStatus.SUCCESS,
-        }
+            "type": ActionType.ADD_RESOURCES,
+            "state": EventProcessingActionStatus.SUCCESS,
+        },
     ]
 
 
@@ -460,8 +460,8 @@ async def test_retry_skips_successful_actions(
     row = await db_connection.fetchrow("SELECT * FROM event_log WHERE id = $1", event.id)
     assert row["state"] == EventProcessingState.SUCCESS
     assert row["actions_log"] == [
-        {'type': ActionType.ADD_RESOURCES, 'state': EventProcessingActionStatus.SUCCESS},
-        {'type': ActionType.SEND_SERVICE_TG, 'state': EventProcessingActionStatus.SUCCESS},
+        {"type": ActionType.ADD_RESOURCES, "state": EventProcessingActionStatus.SUCCESS},
+        {"type": ActionType.SEND_SERVICE_TG, "state": EventProcessingActionStatus.SUCCESS},
     ]
 
 
