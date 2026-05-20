@@ -8,8 +8,11 @@ from lib.utils.schemas.game import ResourceType
 _RESOURCE_FIELDS = frozenset(ResourceType)
 
 """
-    "type": "ActionAddResources",
-    "payload": { "money": 2000, "scraps": 1000, },
+    {
+        "type": "ActionAddResources",
+        "conditions": true
+    }
+    payload: { "money": 2000, "scraps": 1000, },
 """
 
 

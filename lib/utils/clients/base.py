@@ -90,7 +90,10 @@ class SmsClient(BaseClient):
 class TelegramClient(BaseClient):
     """Клиент для отправки сообщений в Telegram"""
 
-    def __init__(self, config: BaseConfig):
+    def __init__(
+        self,
+        config: BaseConfig,
+    ):
         super().__init__(config)
 
     async def send(
@@ -101,8 +104,8 @@ class TelegramClient(BaseClient):
     ) -> None:
         """Отправка сообщения в Telegram"""
         try:
-            # Формирование URL для API Telegram
-            url = f"https://api.telegram.org/bot{self.config.TG_TOKEN}/sendMessage"
+            # Формирование URL для API Telegram https://api.telegram.org
+            url = f"{self.config.TG_BASE_URL}/bot{self.config.TG_TOKEN}/sendMessage"
 
             # Параметры запроса
             payload = {
@@ -110,6 +113,10 @@ class TelegramClient(BaseClient):
                 "text": message,
                 "parse_mode": "HTML",
             }
+            logger.info("type of token: %s", type(self.config.TG_TOKEN))
+            logger.info("tg base url: %s", self.config.TG_BASE_URL)
+            if isinstance(self.config.TG_TOKEN, str):
+                logger.info("token: %s", self.config.TG_TOKEN[:5])
 
             # Отправка запроса
             response = requests.post(url, data=payload, timeout=30)
@@ -122,3 +129,4 @@ class TelegramClient(BaseClient):
 
         except Exception as e:
             logger.error("Ошибка отправки в Telegram: %s", e)
+            raise RuntimeError from e
