@@ -11,7 +11,7 @@ class CronTask(models.Model):
     id = models.AutoField(
         primary_key=True,
     )
-    name = models.EmailField(
+    name = models.CharField(
         unique=True,
         max_length=255,
         verbose_name="Название задачи",

@@ -51,3 +51,6 @@ class ActionBase(ABC):
     #         'contains': lambda a, b: b in a if a else False,
     #     }
     #     return operators[operator](field_value, value)
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}"
