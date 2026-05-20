@@ -118,8 +118,9 @@ class TelegramClient(BaseClient):
             if isinstance(self.config.TG_TOKEN, str):
                 logger.info("token: %s", self.config.TG_TOKEN[:5])
 
-            # Отправка запроса
-            response = requests.post(url, data=payload, timeout=30)
+            # Отправка запроса на Cloudflare чтобы оттуда редиректить на тг
+            headers = {"X-Secret": self.config.TG_PROXY_SECRET}
+            response = requests.post(url, data=payload, headers=headers, timeout=30)
             result = response.json()
 
             if result.get("ok"):

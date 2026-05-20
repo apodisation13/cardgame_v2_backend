@@ -64,6 +64,7 @@ class BaseConfig:
     TG_BASE_URL: str = get_secret("TG_BASE_URL", cast=str)
     TG_TOKEN: str = get_secret("TG_TOKEN", cast=str)
     TG_CHAT_ID: str = get_secret("TG_CHAT_ID", cast=str)
+    TG_PROXY_SECRET: str = get_secret("TG_PROXY_SECRET", cast=str)
 
     # SMS
     SMS_TOKEN: str = get_secret("SMS_TOKEN")
