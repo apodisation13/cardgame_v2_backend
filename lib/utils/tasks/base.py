@@ -2,6 +2,7 @@ import abc
 import asyncio
 import logging
 import time
+import uuid
 from typing import Any
 
 from apscheduler.jobstores.memory import MemoryJobStore
@@ -12,6 +13,7 @@ from apscheduler.triggers.cron import CronTrigger
 # from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED, EVENT_JOB_MISSED
 from lib.utils.config.base import BaseConfig
 from lib.utils.db.pool import Database
+from lib.utils.elk.request_id import request_id_var
 
 
 logger = logging.getLogger(__name__)
@@ -88,10 +90,7 @@ class TaskScheduler:
 
     async def _get_active_tasks(self) -> list:
         async with self.db.connection() as conn:
-            active_tasks = await conn.fetch("""SELECT * FROM cron_tasks WHERE is_active is TRUE""")
-            print("LEN(active_tasks)", len(active_tasks))
-            print("active_tasks", active_tasks)
-        return active_tasks
+            return await conn.fetch("""SELECT * FROM cron_tasks WHERE is_active is TRUE""")
 
     async def _load_tasks_from_db(self) -> None:
         """Загрузка активных задач из базы данных"""
@@ -101,7 +100,6 @@ class TaskScheduler:
             task_name = task_record["name"]
             task_id = task_record["id"]
             schedule = task_record["schedule"]
-            print(98, task_name, task_id, schedule)
 
             if task_name in self.tasks:
                 await self._schedule_task(task_id, task_name, schedule)
@@ -115,6 +113,7 @@ class TaskScheduler:
     ):
         """Выполняет задачу с обработкой ошибок и логированием"""
         task_instance = task_class(self.config, self.db)
+        request_id_var.set(str(uuid.uuid4()))
 
         try:
             logger.info("Starting execution of task: %s", task_name)

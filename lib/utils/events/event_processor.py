@@ -26,7 +26,6 @@ class EventProcessor:
     ):
         event_type: EventType = event_message.event_type
         payload: dict = event_message.payload
-        print("STR24", event_type, payload)
 
         await self._update_processing_state(
             event_id=event_message.id,
@@ -95,7 +94,7 @@ class EventProcessor:
                 logger.info("Executing action %s", action_class)
                 await action_instance.execute()
             else:
-                print("failed conditions")
+                ...
         except RuntimeError as e:
             raise Exception(f"Action {action_class} execution failed") from e
 
