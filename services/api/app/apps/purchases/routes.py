@@ -41,3 +41,16 @@ async def get_purchase_status(
         user_id=user_id,
         purchase_id=purchase_id,
     )
+
+
+@router.get("/payment-notification")
+async def payment_notification(
+    _=Depends(auth_dependencies.validate_user),
+    purchase_service: PurchasesService = Depends(get_purchase_service),
+    user_id: int = Path(..., gt=0),
+    purchase_id: int = Path(..., gt=0),
+) -> PurchaseStatus:
+    return await purchase_service.get_purchase_status(
+        user_id=user_id,
+        purchase_id=purchase_id,
+    )

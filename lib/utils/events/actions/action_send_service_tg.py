@@ -1,4 +1,4 @@
-from lib.utils.clients.base import TelegramClient
+from lib.utils.clients import TelegramClient
 from lib.utils.config.base import BaseConfig
 from lib.utils.db.pool import Database
 from lib.utils.events.actions.base import ActionBase

@@ -76,6 +76,12 @@ class BaseConfig:
     ELASTIC_APM_SERVER_URL: str = get_secret("ELASTIC_APM_SERVER_URL", default="http://apm-server:8200")
     ELASTIC_APM_SECRET_TOKEN: str = get_secret("ELASTIC_APM_SECRET_TOKEN")
 
+    # CKassa payments
+    CKASSA_BASE_URL: str = get_secret("CKASSA_BASE_URL", cast=str)
+    CKASSA_API_LOGIN: str = get_secret("CKASSA_API_LOGIN", cast=str)
+    CKASSA_API_SECRET_KEY: str = get_secret("CKASSA_API_SECRET_KEY", cast=str)
+    CKASSA_SERV_CODE: str = get_secret("CKASSA_SERV_CODE", cast=str)
+
 
 class BaseTestingConfig(BaseConfig):
     ENV_TYPE = EnvType.TESTING

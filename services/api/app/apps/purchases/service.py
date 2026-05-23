@@ -69,7 +69,7 @@ class PurchasesService:
             if not product_info:
                 raise ProductDoesNotExistError()
 
-            # TODO: вот тут будет вызов юкассы, которая вернет 2 параметра включая transaction_id
+            # TODO: вот тут будет вызов скассы, которая вернет 2 параметра включая transaction_id
             transaction_id = str(uuid.uuid4())
 
             purchase_id: int = await connection.fetchval(
