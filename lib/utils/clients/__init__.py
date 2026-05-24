@@ -8,6 +8,6 @@ __all__ = [
     "BaseClient",
     "BaseHttpClient",
     "EmailClient",
-    "TelegramClient",
     "SmsClient",
+    "TelegramClient",
 ]

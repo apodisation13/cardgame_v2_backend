@@ -3,7 +3,7 @@ from lib.utils.config.base import BaseConfig
 from lib.utils.db.pool import Database
 from lib.utils.events.actions.base import ActionBase
 from lib.utils.events.uuu import render_template
-from lib.utils.schemas.events import ActionConfigData
+from lib.utils.schemas.events import ActionContext
 
 
 """
@@ -20,11 +20,10 @@ class ActionSendServiceTg(ActionBase):
     def __init__(
         self,
         config: BaseConfig,
-        action_config: ActionConfigData,
-        payload: dict,
+        context: ActionContext,
         db: Database = None,
     ) -> None:
-        super().__init__(config=config, payload=payload, action_config=action_config, db=db)
+        super().__init__(config=config, context=context, db=db)
 
         self.tg_client = TelegramClient(config)
 
