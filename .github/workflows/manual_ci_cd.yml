@@ -71,6 +71,11 @@ jobs:
           TG_BASE_URL=${{ secrets.TG_BASE_URL }}
           TG_PROXY_SECRET=${{ secrets.TG_PROXY_SECRET }}
           
+          CKASSA_BASE_URL=${{ secrets.CKASSA_BASE_URL }}
+          CKASSA_API_LOGIN=${{ secrets.CKASSA_API_LOGIN }}
+          CKASSA_API_SECRET_KEY=${{ secrets.CKASSA_API_SECRET_KEY }}
+          CKASSA_SERV_CODE=${{ secrets.CKASSA_SERV_CODE }}
+          
           EOF
           
           echo "✅ .env создан для Environment: ${{ env.MODE }}"
@@ -146,6 +151,11 @@ jobs:
             TG_TOKEN=${{ secrets.TG_TOKEN }}
             TG_BASE_URL=${{ secrets.TG_BASE_URL }}
             TG_PROXY_SECRET=${{ secrets.TG_PROXY_SECRET }}
+            
+            CKASSA_BASE_URL=${{ secrets.CKASSA_BASE_URL }}
+            CKASSA_API_LOGIN=${{ secrets.CKASSA_API_LOGIN }}
+            CKASSA_API_SECRET_KEY=${{ secrets.CKASSA_API_SECRET_KEY }}
+            CKASSA_SERV_CODE=${{ secrets.CKASSA_SERV_CODE }}
 
         with:
           host: ${{ secrets.SSH_SERVER }}

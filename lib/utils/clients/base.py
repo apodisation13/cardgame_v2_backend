@@ -1,10 +1,8 @@
-import asyncio
 from abc import ABC, abstractmethod
+import asyncio
 import logging
 
-
 import httpx
-
 from lib.utils.config.base import BaseConfig
 
 
@@ -22,7 +20,7 @@ class BaseClient(ABC):
         """Отправка сообщения"""
 
 
-class BaseHttpClient(ABC):
+class BaseHttpClient:
     """Базовый класс для HTTP-клиентов с ретраями"""
 
     def __init__(
@@ -62,10 +60,10 @@ class BaseHttpClient(ABC):
                         logger.error("BaseHttpClient error: %s", e)
                         raise
                     logger.warning("BaseHttpClient retry number %s", attempt)
-                    await asyncio.sleep(2 ** attempt)
+                    await asyncio.sleep(2**attempt)
                 except httpx.RequestError as e:
                     if attempt == retries - 1:
                         logger.error("BaseHttpClient request failed: %s", e)
                         raise
                     logger.warning("BaseHttpClient retry number %s", attempt)
-                    await asyncio.sleep(2 ** attempt)
+                    await asyncio.sleep(2**attempt)

@@ -7,21 +7,32 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from lib.utils.config.base import BaseConfig
     from lib.utils.db.pool import Database
-    from lib.utils.schemas.events import ActionConfigData
+    from lib.utils.events.event_types import EventType
+    from lib.utils.schemas.events import ActionConfigData, ActionContext
 
 
 class ActionBase(ABC):
     def __init__(
         self,
         config: BaseConfig,
-        action_config: ActionConfigData,
-        payload: dict,
+        context: ActionContext,
         db: Database | None = None,
     ):
         self.config = config
-        self.action_config = action_config
-        self.payload = payload
+        self.context = context
         self.db = db
+
+    @property
+    def payload(self) -> dict:
+        return self.context.payload
+
+    @property
+    def action_config(self) -> ActionConfigData:
+        return self.context.action_config
+
+    @property
+    def event_type(self) -> EventType:
+        return self.context.event_type
 
     @abstractmethod
     async def execute(self) -> None:

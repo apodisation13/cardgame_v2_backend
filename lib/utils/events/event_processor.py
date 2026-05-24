@@ -5,7 +5,7 @@ from lib.utils.config.base import BaseConfig
 from lib.utils.db.pool import Database
 from lib.utils.events.actions import ACTION_REGISTRY
 from lib.utils.events.event_types import EventProcessingActionStatus, EventProcessingState, EventType
-from lib.utils.schemas.events import ActionConfigData, EventMessage
+from lib.utils.schemas.events import ActionConfigData, ActionContext, EventMessage
 
 
 logger = logging.getLogger(__name__)
@@ -68,6 +68,7 @@ class EventProcessor:
         actions_log = await self._run_actions(
             processing=processing,
             payload=payload,
+            event_type=event_type,
         )
 
         final_state = (
@@ -115,6 +116,7 @@ class EventProcessor:
                 status: EventProcessingActionStatus = await self._execute_action(
                     action_config=action_config_data,
                     payload=payload,
+                    event_type=event_type,
                 )
 
                 for entry in updated_log:
@@ -162,6 +164,7 @@ class EventProcessor:
         self,
         processing: list[ActionConfigData],
         payload: dict,
+        event_type: EventType,
     ) -> list[dict]:
         actions_log = []
         for action_config_data in processing:
@@ -169,6 +172,7 @@ class EventProcessor:
                 status: EventProcessingActionStatus = await self._execute_action(
                     action_config=action_config_data,
                     payload=payload,
+                    event_type=event_type,
                 )
                 actions_log.append(
                     {
@@ -191,16 +195,21 @@ class EventProcessor:
         self,
         action_config: ActionConfigData,
         payload: dict,
+        event_type: EventType,
     ) -> EventProcessingActionStatus:
         action_class = ACTION_REGISTRY.get(action_config.type)
 
         if not action_class:
             raise ValueError(f"Unknown action type: {action_config.type}")
 
+        context = ActionContext(
+            event_type=event_type,
+            payload=payload,
+            action_config=action_config,
+        )
         action_instance = action_class(
             config=self.config,
-            action_config=action_config,
-            payload=payload,
+            context=context,
             db=self.db,
         )
 

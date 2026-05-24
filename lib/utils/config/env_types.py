@@ -35,6 +35,14 @@ class EnvType(StrEnum):
             cls.TEST_LOCAL,
         ]
 
+    @classmethod
+    def payments(cls) -> list:
+        return [
+            cls.TESTING,
+            cls.PRODUCTION,
+            cls.TEST_LOCAL,
+        ]
+
 
 def get_secret(
     secret_name: str,

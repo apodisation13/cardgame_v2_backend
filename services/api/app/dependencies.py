@@ -1,4 +1,5 @@
 from fastapi import Depends, FastAPI
+from lib.utils.clients.ckassa import CKassaClient
 from lib.utils.db.pool import Database
 from services.api.app.apps.auth.service import AuthService
 from services.api.app.apps.cards.service import CardsService
@@ -29,6 +30,10 @@ async def get_config() -> Config:
 
 async def get_db() -> Database:
     return _app.state.db
+
+
+def get_ckassa_client() -> CKassaClient:
+    return _app.state.ckassa_client
 
 
 async def get_auth_service(

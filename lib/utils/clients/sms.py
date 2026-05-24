@@ -1,7 +1,7 @@
-import logging
-import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import logging
+import smtplib
 
 from lib.utils.clients.base import BaseClient
 from lib.utils.config.base import BaseConfig

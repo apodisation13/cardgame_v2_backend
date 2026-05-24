@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 import logging.config
 
 from fastapi import APIRouter, FastAPI
+from lib.utils.clients.ckassa import CKassaClient
 from lib.utils.db.pool import Database
 from lib.utils.elk.elastic_logger import ElasticLoggerManager
 from lib.utils.elk.elastic_tracer import ElasticTracerManager
@@ -50,6 +51,8 @@ async def lifespan(app: FastAPI):
     db = Database(config)
     await db.connect()
     app.state.db = db
+
+    app.state.ckassa_client = CKassaClient(config)
 
     set_global_app(app)
 

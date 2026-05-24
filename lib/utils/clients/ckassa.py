@@ -12,7 +12,7 @@ class CKassaClient(BaseHttpClient):
     def get_headers(self) -> dict:
         return {
             "ApiLoginAuthorization": self.config.CKASSA_API_LOGIN,
-            "ApiAuthorization": self.config.CKASSA_API_SECRET_KEY
+            "ApiAuthorization": self.config.CKASSA_API_SECRET_KEY,
         }
 
     async def create_invoice(
@@ -26,7 +26,7 @@ class CKassaClient(BaseHttpClient):
             "invType": "READ_ONLY",
             "properties": [
                 transaction_id,
-            ]
+            ],
         }
 
         response = await self.request(
@@ -35,3 +35,11 @@ class CKassaClient(BaseHttpClient):
             json=payload,
         )
         return response.text
+
+    async def get_payments(self) -> list:
+        response = await self.request(
+            method="GET",
+            path="/api-shop/rs/open/payments/new",
+        )
+        response_json = response.json()
+        return response_json["payments"]

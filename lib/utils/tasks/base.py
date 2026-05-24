@@ -3,7 +3,6 @@ import asyncio
 import logging
 import time
 from typing import Any
-import uuid
 
 from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -14,6 +13,7 @@ from apscheduler.triggers.cron import CronTrigger
 from lib.utils.config.base import BaseConfig
 from lib.utils.db.pool import Database
 from lib.utils.elk.request_id import request_id_var
+from lib.utils.schemas.base import generate_uuid4_str
 
 
 logger = logging.getLogger(__name__)
@@ -113,7 +113,7 @@ class TaskScheduler:
     ):
         """Выполняет задачу с обработкой ошибок и логированием"""
         task_instance = task_class(self.config, self.db)
-        request_id_var.set(str(uuid.uuid4()))
+        request_id_var.set(generate_uuid4_str())
 
         try:
             logger.info("Starting execution of task: %s", task_name)

@@ -5,7 +5,7 @@ from lib.utils.schemas.products import PurchaseStatus
 
 
 class TestPurchaseStatusAPI:
-    endpoint = "user/{user_id}/purchase-status/{purchase_id}"
+    endpoint = "/purchase-status/{purchase_id}"
 
     @pytest.mark.asyncio
     async def test_get_purchase_status(
@@ -25,7 +25,7 @@ class TestPurchaseStatusAPI:
         purchase = await purchase_factory(product_id=product.id, user_id=user_id)
 
         response = await client.get(
-            self.endpoint.format(user_id=user_id, purchase_id=purchase.id),
+            self.endpoint.format(purchase_id=purchase.id),
             headers={"Authorization": f"Bearer {access_token}"},
         )
 
@@ -41,7 +41,7 @@ class TestPurchaseStatusAPI:
         )
 
         response = await client.get(
-            self.endpoint.format(user_id=user_id, purchase_id=purchase.id),
+            self.endpoint.format(purchase_id=purchase.id),
             headers={"Authorization": f"Bearer {access_token}"},
         )
 
@@ -52,7 +52,7 @@ class TestPurchaseStatusAPI:
 
         # попытка вызвать несуществующую покупку
         response = await client.get(
-            self.endpoint.format(user_id=user_id, purchase_id=2),
+            self.endpoint.format(purchase_id=2),
             headers={"Authorization": f"Bearer {access_token}"},
         )
 
