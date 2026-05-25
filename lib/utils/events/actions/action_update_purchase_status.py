@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 class ActionUpdatePurchaseStatus(ActionBase):
     async def execute(self) -> None:
         event_type: EventType = self.event_type
+        logger.info("Trying to update purchase status, payload %s", self.payload)
 
         event_status_map = {
             EventType.SUCCESS_PAYMENT: PurchaseStatus.SUCCESS,
@@ -30,6 +31,9 @@ class ActionUpdatePurchaseStatus(ActionBase):
 
         if not status:
             raise RuntimeError(f"Unknown event type: {event_type}")
+
+        purchase_id: int = self.payload["purchase_id"]
+        user_id: int = self.payload["user_id"]
 
         async with self.db.connection() as connection:
             await connection.execute(
@@ -44,6 +48,8 @@ class ActionUpdatePurchaseStatus(ActionBase):
                     AND purchases.user_id = $3
                 """,
                 status,
-                self.payload["purchase_id"],
-                self.payload["user_id"],
+                purchase_id,
+                user_id,
             )
+
+        logger.info("Updated user: %s, purchase: %s, status: %s", user_id, purchase_id, status)

@@ -10,7 +10,11 @@ from lib.utils.schemas.events import AddResourcesSubtype
 from lib.utils.schemas.products import PaymentNotificationPaymentStatus, PurchaseStatus
 from services.api.app.apps.purchases.schemas import Product, PurchaseProductResponse
 from services.api.app.config import Config
-from services.api.app.exceptions.exceptions import ProductDoesNotExistError, PurchaseDoesNotExistError
+from services.api.app.exceptions.exceptions import (
+    PaymentNotificationProcessError,
+    ProductDoesNotExistError,
+    PurchaseDoesNotExistError,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -75,7 +79,6 @@ class PurchasesService:
             if not product_info:
                 raise ProductDoesNotExistError()
 
-            # TODO: вот тут будет вызов скассы, которая вернет 2 параметра включая transaction_id
             transaction_id = generate_uuid4_str()
 
             payment_url: str | None = None
@@ -84,7 +87,7 @@ class PurchasesService:
                     amount_rub=product_info["price"],
                     transaction_id=transaction_id,
                 )
-                logger.info("Payment url %s for transation %s", payment_url, transaction_id)
+                logger.info("Payment url %s for transaction %s", payment_url, transaction_id)
 
             purchase_id: int = await connection.fetchval(
                 """
@@ -133,23 +136,26 @@ class PurchasesService:
         self,
         data: dict,
     ) -> None:
-        logger.info("Processing payment notification %s", data)
+        logger.info("Processing payment notification: %s", data)
 
         transaction_id: str | None = data.get("property", {}).get("ФИО")
 
         if not transaction_id:
-            logger.error("No transaction provided for payment notification %s", data)
-            raise PurchaseDoesNotExistError()
+            msg = "No transaction provided for payment notification: %s"
+            logger.error(msg, data)
+            raise PaymentNotificationProcessError(msg % data)
 
         state: PaymentNotificationPaymentStatus | None = data.get("state")
 
         if not state:
-            logger.error("No status provided for payment notification %s", data)
-            raise PurchaseDoesNotExistError()
+            msg = "No status provided for payment notification: %s"
+            logger.error(msg, data)
+            raise PaymentNotificationProcessError(msg % data)
 
-        if state not in PaymentNotificationPaymentStatus.processable_states():
-            logger.error("Unknown state for payment notification: %s", state)
-            raise PurchaseDoesNotExistError()
+        if state.lower() not in PaymentNotificationPaymentStatus.processable_states():
+            msg = "Unknown state for payment notification: %s"
+            logger.error(msg, state)
+            raise PaymentNotificationProcessError(msg % state)
 
         async with self.db_pool.connection() as connection:
             purchase: dict | None = await connection.fetchrow(
@@ -167,9 +173,11 @@ class PurchasesService:
             )
 
         if not purchase:
-            raise PurchaseDoesNotExistError()
+            msg = "No purchase such purchase (transaction) found: %s"
+            logger.error(msg, transaction_id)
+            raise PaymentNotificationProcessError(msg % transaction_id)
 
-        if state == PaymentNotificationPaymentStatus.PAYED:
+        if state in PaymentNotificationPaymentStatus.success_states():
             await event_sender.create_event(
                 event_type=EventType.SUCCESS_PAYMENT,
                 payload={
@@ -177,6 +185,8 @@ class PurchasesService:
                     "purchase_id": purchase["id"],
                     "product_id": purchase["product_id"],
                     "subtype": AddResourcesSubtype.SUCCESS_PAYMENT,
+                    "state": state,
+                    "transaction_id": transaction_id,
                 },
                 config=self.config,
             )
@@ -188,6 +198,8 @@ class PurchasesService:
                     "user_id": purchase["user_id"],
                     "purchase_id": purchase["id"],
                     "product_id": purchase["product_id"],
+                    "state": state,
+                    "transaction_id": transaction_id,
                 },
                 config=self.config,
             )

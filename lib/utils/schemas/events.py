@@ -36,3 +36,7 @@ class ActionContext(Base):
 class AddResourcesSubtype(StrEnum):
     DIRECT = "direct"
     SUCCESS_PAYMENT = "success_payment"
+
+    @classmethod
+    def processable_subtypes(cls) -> set:
+        return {cls.DIRECT, cls.SUCCESS_PAYMENT}

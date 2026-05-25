@@ -13,12 +13,22 @@ class PurchaseStatus(StrEnumChoices):
 
 
 class PaymentNotificationPaymentStatus(StrEnumChoices):
-    PAYED = "PAYED"
-    REJECTED = "REJECTED"
+    PAYED = "payed"
+    PROCESSED = "processed"
+    ERROR = "error"
+
+    REJECTED = "rejected"
+    CREATED = "created"
+    CREATED_ERROR = "created_error"
+    REFUNDED = "refunded"
 
     @classmethod
     def processable_states(cls) -> set:
+        return set(cls)
+
+    @classmethod
+    def success_states(cls) -> set:
         return {
             cls.PAYED,
-            cls.REJECTED,
+            cls.PROCESSED,
         }

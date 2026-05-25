@@ -29,6 +29,9 @@ class ActionAddResources(ActionBase):
 
         logger.info("Adding resources for user %s, subtype %s", user_id, subtype)
 
+        if subtype not in AddResourcesSubtype.processable_subtypes():
+            raise RuntimeError(f"Invalid subtype {subtype}")
+
         if subtype == AddResourcesSubtype.DIRECT:
             resources = {k: v for k, v in self.payload["resources"].items() if k in _RESOURCE_FIELDS}
 
@@ -71,6 +74,7 @@ class ActionAddResources(ActionBase):
                 resources = {k: v for k, v in purchased_product_resources.items() if k in _RESOURCE_FIELDS}
 
         if not resources:
+            logger.warning("No resources to add for user %s, payload %s", user_id, self.payload)
             return
 
         set_clauses = ", ".join(f"{col} = {col} + ${i + 2}" for i, col in enumerate(resources))
