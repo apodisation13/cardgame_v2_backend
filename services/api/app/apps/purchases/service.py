@@ -81,14 +81,6 @@ class PurchasesService:
 
             transaction_id = generate_uuid4_str()
 
-            payment_url: str | None = None
-            if self.config.ENV_TYPE in EnvType.payments():
-                payment_url: str = await ckassa_client.create_invoice(
-                    amount_rub=product_info["price"],
-                    transaction_id=transaction_id,
-                )
-                logger.info("Payment url %s for transaction %s", payment_url, transaction_id)
-
             purchase_id: int = await connection.fetchval(
                 """
                 INSERT INTO purchases
@@ -102,6 +94,14 @@ class PurchasesService:
                 transaction_id,
             )
             logger.info("Purchase created, %s", purchase_id)
+
+            payment_url: str | None = None
+            if self.config.ENV_TYPE in EnvType.payments():
+                payment_url: str = await ckassa_client.create_invoice(
+                    amount_rub=product_info["price"],
+                    transaction_id=transaction_id,
+                )
+                logger.info("Payment url %s for transaction %s", payment_url, transaction_id)
 
         return PurchaseProductResponse(
             purchase_id=purchase_id,
@@ -138,6 +138,8 @@ class PurchasesService:
     ) -> None:
         logger.info("Processing payment notification: %s", data)
 
+        # Да, вот именно так и будет лежать уникальное поле - в графе ФИО
+        # техническая особенность платежной системы
         transaction_id: str | None = data.get("property", {}).get("ФИО")
 
         if not transaction_id:
@@ -168,8 +170,10 @@ class PurchasesService:
                     purchases
                 WHERE
                     transaction_id = $1
+                    AND purchases.status = $2
                 """,
                 transaction_id,
+                PurchaseStatus.PENDING,
             )
 
         if not purchase:
@@ -189,6 +193,7 @@ class PurchasesService:
                     "transaction_id": transaction_id,
                 },
                 config=self.config,
+                dedup_key=transaction_id,
             )
 
         else:
@@ -202,4 +207,5 @@ class PurchasesService:
                     "transaction_id": transaction_id,
                 },
                 config=self.config,
+                dedup_key=transaction_id,
             )

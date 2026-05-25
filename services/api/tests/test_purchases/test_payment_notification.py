@@ -106,6 +106,40 @@ class TestPaymentNotificationAPI:
         assert user_resources[0]["wood"] == 1000 + 1000
         assert user_resources[0]["scraps"] == 2000 + 1500
 
+        # Тот же самый запрос второй раз уже не пройдет - потому что статус покупки УЖЕ обновлен
+        response = await client.post(
+            self.endpoint,
+            json={
+                "regPayNum": "1310958041",
+                "property": {
+                    "ФИО": transaction_id,
+                },
+                "rrn": "315659894693",
+                "irn": "f631e778-fs4d-dc19-sdc6-251e02666345",
+                "approvalCode": "123456789",
+                "cardPan": "411111*****1111",
+                "amount": "100000",
+                "state": PaymentNotificationPaymentStatus.PAYED,
+                "result": {
+                    "code": "0",
+                    "message": "null",
+                    "details": "null",
+                },
+                "created": "20-06-2023 17:56:36",
+            },
+        )
+
+        assert response.status_code == 400
+
+        msg = f"No purchase such purchase (transaction) found: {transaction_id}"
+        assert response.json() == {
+            "error": {
+                "code": "BAD_REQUEST",
+                "message": msg,
+                "details": f"PaymentNotificationProcessError('{msg}')",
+            },
+        }
+
     @pytest.mark.usefixtures("event_processor_fixture")
     @pytest.mark.asyncio
     async def test_payment_notification_failed_payment(

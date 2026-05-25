@@ -10,6 +10,7 @@ class EventMessage(Base):
     id: UUID = Field(default_factory=uuid4)
     event_type: EventType
     payload: dict
+    dedup_key: str | None = None
 
     @model_serializer
     def serialize_model(self) -> dict:
@@ -17,6 +18,7 @@ class EventMessage(Base):
             "id": str(self.id),
             "event_type": self.event_type.value,
             "payload": self.payload,
+            "dedup_key": self.dedup_key,
         }
 
 

@@ -185,10 +185,10 @@ async def event_processor_fixture(db_pool):
     from lib.utils.events.event_processor import EventProcessor
     from lib.utils.schemas.events import EventMessage
 
-    async def _run_processor(event_type, payload, config):
+    async def _run_processor(event_type, payload, config, dedup_key=None):
         db = Database(config)
         db.pool = db_pool
-        event = EventMessage(id=uuid.uuid4(), event_type=event_type, payload=payload)
+        event = EventMessage(id=uuid.uuid4(), event_type=event_type, payload=payload, dedup_key=dedup_key)
         processor = EventProcessor(config=config, db=db)
         await processor.process_event(event)
 
