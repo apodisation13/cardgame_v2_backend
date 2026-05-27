@@ -81,6 +81,10 @@ class PurchasesService:
 
             transaction_id = generate_uuid4_str()
 
+            # костыль для локального запуска: в тесте у них можно передать только небольшое значение
+            if self.config.ENV_TYPE == EnvType.DEVELOPMENT_LOCAL:
+                transaction_id = transaction_id[:15]
+
             purchase_id: int = await connection.fetchval(
                 """
                 INSERT INTO purchases
@@ -95,18 +99,14 @@ class PurchasesService:
             )
             logger.info("Purchase created, %s", purchase_id)
 
-            payment_url: str | None = None
-            if self.config.ENV_TYPE in EnvType.payments():
-                payment_url: str = await ckassa_client.create_invoice(
-                    amount_rub=product_info["price"],
-                    transaction_id=transaction_id,
-                )
-                logger.info("Payment url %s for transaction %s", payment_url, transaction_id)
+            payment_url: str = await ckassa_client.create_invoice(
+                amount_rub=product_info["price"],
+                transaction_id=transaction_id,
+            )
+            logger.info("Payment url %s for transaction %s", payment_url, transaction_id)
 
         return PurchaseProductResponse(
             purchase_id=purchase_id,
-            # confirmation_url=f"http://localhost:8080/payment/result?payment_id={purchase_id}",
-            # confirmation_url=None,
             payment_url=payment_url,
             transaction_id=transaction_id,
         )
@@ -121,10 +121,16 @@ class PurchasesService:
         async with self.db_pool.connection() as connection:
             status: PurchaseStatus | None = await connection.fetchval(
                 """
-                    SELECT status FROM purchases WHERE user_id = $1 AND id = $2
+                    SELECT
+                        status
+                    FROM
+                        purchases
+                    WHERE
+                        purchases.id = $1
+                        AND purchases.user_id = $2
                 """,
-                user_id,
                 purchase_id,
+                user_id,
             )
 
         if not status:

@@ -46,4 +46,4 @@ class EventLog(BaseModel, TimestampMixin):
         server_default="0",
         nullable=False,
     )
-    dedup_key: Mapped[str] = mapped_column(String(255), nullable=True)
+    dedup_key: Mapped[str] = mapped_column(String(255), nullable=True, unique=True)

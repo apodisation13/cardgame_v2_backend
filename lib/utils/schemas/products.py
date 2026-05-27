@@ -10,6 +10,7 @@ class PurchaseStatus(StrEnumChoices):
     PENDING = "pending"
     SUCCESS = "success"
     FAILED = "failed"
+    ABANDONED = "abandoned"
 
 
 class PaymentNotificationPaymentStatus(StrEnumChoices):
@@ -31,4 +32,12 @@ class PaymentNotificationPaymentStatus(StrEnumChoices):
         return {
             cls.PAYED,
             cls.PROCESSED,
+        }
+
+    @classmethod
+    def failed_states(cls) -> set:
+        return {
+            cls.REJECTED,
+            cls.CREATED,
+            cls.CREATED_ERROR,
         }

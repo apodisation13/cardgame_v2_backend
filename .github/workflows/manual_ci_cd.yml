@@ -42,43 +42,14 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🔐 Создаем .env из Environment secrets
+        env:
+          SECRETS_JSON: ${{ toJSON(secrets) }}
         run: |
-          cat > .env << EOF
-          APP_PORT_OUTSIDE=${{ secrets.APP_PORT_OUTSIDE }}
-          
-          DB_PORT_OUTSIDE=${{ secrets.DB_PORT_OUTSIDE }}
-          DB_NAME=${{ secrets.DB_NAME }}
-          DB_HOST=${{ secrets.DB_HOST }} 
-          DB_USER=${{ secrets.DB_USER }}
-          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-          
-          DJANGO_SUPERUSER_USERNAME=${{ secrets.DJANGO_SUPERUSER_USERNAME }}
-          DJANGO_SUPERUSER_EMAIL=${{ secrets.DJANGO_SUPERUSER_EMAIL }}
-          DJANGO_SUPERUSER_PASSWORD=${{ secrets.DJANGO_SUPERUSER_PASSWORD }}
-          
-          KAFKA_BOOTSTRAP_SERVERS=${{ secrets.KAFKA_BOOTSTRAP_SERVERS }}
-          
-          ELASTIC_USERNAME=${{ secrets.ELASTIC_USERNAME }}
-          ELASTIC_PASSWORD=${{ secrets.ELASTIC_PASSWORD }}
-          KIBANA_SYSTEM_PASSWORD=${{ secrets.KIBANA_SYSTEM_PASSWORD }}
-          APM_SECRET_TOKEN=${{ secrets.APM_SECRET_TOKEN }}
-          
-          DOMAIN_NAME=${{ secrets.DOMAIN_NAME }}
-          LETSENCRYPT_EMAIL=${{ secrets.LETSENCRYPT_EMAIL }}
-          
-          TG_CHAT_ID=${{ secrets.TG_CHAT_ID }}
-          TG_TOKEN=${{ secrets.TG_TOKEN }}
-          TG_BASE_URL=${{ secrets.TG_BASE_URL }}
-          TG_PROXY_SECRET=${{ secrets.TG_PROXY_SECRET }}
-          
-          CKASSA_BASE_URL=${{ secrets.CKASSA_BASE_URL }}
-          CKASSA_API_LOGIN=${{ secrets.CKASSA_API_LOGIN }}
-          CKASSA_API_SECRET_KEY=${{ secrets.CKASSA_API_SECRET_KEY }}
-          CKASSA_SERV_CODE=${{ secrets.CKASSA_SERV_CODE }}
-          
-          EOF
-          
-          echo "✅ .env создан для Environment: ${{ env.MODE }}"
+          echo "$SECRETS_JSON" \
+            | jq -r 'to_entries | map(select(.key != "GITHUB_TOKEN")) | .[] | "\(.key)=\(.value)"' \
+            > .env
+          cp .env .env.docker
+          echo "✅ .env и .env.docker созданы для Environment: ${{ env.MODE }}"
 
       - name: 🔨 Билдим свои сервисы
         run: |
@@ -110,7 +81,7 @@ jobs:
           host: ${{ secrets.SSH_SERVER }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          source: "docker-compose.yaml,nginx/nginx.conf"
+          source: "docker-compose.yaml,nginx/nginx.conf,.env.docker"
           target: "/srv/cardgame/backend/${{ env.MODE }}"
 
       - name: 🚀 Деплой на сервер
@@ -119,57 +90,17 @@ jobs:
           TAG: ${{ env.MODE }}
           MODE: ${{ env.MODE }}
           BACKEND_IMAGE_NAME: ${{ github.repository }}
-          ENV_CONTENT: |
-            CONFIG=${{ secrets.CONFIG }}
-            
-            APP_PORT_OUTSIDE=${{ secrets.APP_PORT_OUTSIDE }}
-            
-            DB_PORT_OUTSIDE=${{ secrets.DB_PORT_OUTSIDE }}
-            DB_NAME=${{ secrets.DB_NAME }}
-            DB_HOST=${{ secrets.DB_HOST }} 
-            DB_USER=${{ secrets.DB_USER }}
-            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            
-            DJANGO_SUPERUSER_USERNAME=${{ secrets.DJANGO_SUPERUSER_USERNAME }}
-            DJANGO_SUPERUSER_EMAIL=${{ secrets.DJANGO_SUPERUSER_EMAIL }}
-            DJANGO_SUPERUSER_PASSWORD=${{ secrets.DJANGO_SUPERUSER_PASSWORD }}
-            CSRF_TRUSTED_ORIGINS=${{ secrets.CSRF_TRUSTED_ORIGINS }}
-            
-            USER_PASSWORD_SECRET_KEY=${{ secrets.USER_PASSWORD_SECRET_KEY }}
-            
-            KAFKA_BOOTSTRAP_SERVERS=${{ secrets.KAFKA_BOOTSTRAP_SERVERS }}
-            
-            ELASTIC_USERNAME=${{ secrets.ELASTIC_USERNAME }}
-            ELASTIC_PASSWORD=${{ secrets.ELASTIC_PASSWORD }}
-            KIBANA_SYSTEM_PASSWORD=${{ secrets.KIBANA_SYSTEM_PASSWORD }}
-            APM_SECRET_TOKEN=${{ secrets.APM_SECRET_TOKEN }}
-            
-            DOMAIN_NAME=${{ secrets.DOMAIN_NAME }}
-            LETSENCRYPT_EMAIL=${{ secrets.LETSENCRYPT_EMAIL }}
-            
-            TG_CHAT_ID=${{ secrets.TG_CHAT_ID }}
-            TG_TOKEN=${{ secrets.TG_TOKEN }}
-            TG_BASE_URL=${{ secrets.TG_BASE_URL }}
-            TG_PROXY_SECRET=${{ secrets.TG_PROXY_SECRET }}
-            
-            CKASSA_BASE_URL=${{ secrets.CKASSA_BASE_URL }}
-            CKASSA_API_LOGIN=${{ secrets.CKASSA_API_LOGIN }}
-            CKASSA_API_SECRET_KEY=${{ secrets.CKASSA_API_SECRET_KEY }}
-            CKASSA_SERV_CODE=${{ secrets.CKASSA_SERV_CODE }}
-
         with:
           host: ${{ secrets.SSH_SERVER }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          envs: ENV_CONTENT,MODE,TAG,BACKEND_IMAGE_NAME
+          envs: MODE,TAG,BACKEND_IMAGE_NAME
           script: |
             export TAG="$TAG"
             export MODE="$MODE"
             export BACKEND_IMAGE_NAME="$BACKEND_IMAGE_NAME"
 
             cd /srv/cardgame/backend/$MODE
-            
-            printf '%s\n' "$ENV_CONTENT" > .env.docker
             
             echo "📥 Логинимся в registry..."
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin

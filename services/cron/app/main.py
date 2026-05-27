@@ -6,14 +6,12 @@ import signal
 import sys
 from types import FrameType
 
-from lib.utils.elk.elastic_logger import ElasticLoggerManager
-
 
 # Добавляем корневую директорию проекта в Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 
-
 from lib.utils.db.pool import Database
+from lib.utils.elk.elastic_logger import ElasticLoggerManager
 from lib.utils.tasks.base import TaskScheduler
 from services.cron.app.config import get_config
 

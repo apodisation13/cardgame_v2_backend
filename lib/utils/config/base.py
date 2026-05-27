@@ -81,6 +81,11 @@ class BaseConfig:
     CKASSA_API_LOGIN: str = get_secret("CKASSA_API_LOGIN", cast=str)
     CKASSA_API_SECRET_KEY: str = get_secret("CKASSA_API_SECRET_KEY", cast=str)
     CKASSA_SERV_CODE: str = get_secret("CKASSA_SERV_CODE", cast=str)
+    PENDING_PURCHASES_THRESHOLD_MINUTES: int = get_secret(
+        "PENDING_PURCHASES_THRESHOLD_MINUTES",
+        cast=int,
+        default=30,
+    )
 
 
 class BaseTestingConfig(BaseConfig):

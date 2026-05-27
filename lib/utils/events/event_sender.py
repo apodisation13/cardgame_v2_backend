@@ -72,19 +72,32 @@ class EventSender:
     ) -> bool:
         """Возвращает True если запись вставлена, False если дубль по dedup_key"""
         async with self.db.connection() as connection:
-            result = await connection.execute(
-                """
-                INSERT INTO event_log
-                (id, type, state, payload, dedup_key)
-                VALUES ($1, $2, $3, $4, $5)
-                ON CONFLICT (dedup_key) DO NOTHING
-                """,
-                message.id,
-                message.event_type,
-                EventProcessingState.SENT,
-                payload,
-                message.dedup_key,
-            )
+            if message.dedup_key is not None:
+                result = await connection.execute(
+                    """
+                    INSERT INTO event_log
+                    (id, type, state, payload, dedup_key)
+                    VALUES ($1, $2, $3, $4, $5)
+                    ON CONFLICT (dedup_key) DO NOTHING
+                    """,
+                    message.id,
+                    message.event_type,
+                    EventProcessingState.SENT,
+                    payload,
+                    message.dedup_key,
+                )
+            else:
+                result = await connection.execute(
+                    """
+                    INSERT INTO event_log
+                    (id, type, state, payload)
+                    VALUES ($1, $2, $3, $4)
+                    """,
+                    message.id,
+                    message.event_type,
+                    EventProcessingState.SENT,
+                    payload,
+                )
         return result == "INSERT 0 1"
 
 

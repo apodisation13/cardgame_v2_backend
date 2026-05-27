@@ -10,6 +10,7 @@ class CKassaClient(BaseHttpClient):
         super().__init__(config=config, base_url=config.CKASSA_BASE_URL)
 
     def get_headers(self) -> dict:
+        print(self.config.CKASSA_SERV_CODE, self.config.CKASSA_API_LOGIN, self.config.CKASSA_BASE_URL)
         return {
             "ApiLoginAuthorization": self.config.CKASSA_API_LOGIN,
             "ApiAuthorization": self.config.CKASSA_API_SECRET_KEY,
@@ -22,7 +23,8 @@ class CKassaClient(BaseHttpClient):
     ) -> str:
         payload = {
             "servCode": self.config.CKASSA_SERV_CODE,
-            "amount": amount_rub * 100,  # копейки
+            "tgInvPayer": "string",  # только для демо-контура, для прода - вообще не влияет
+            "amount": int(amount_rub * 100),  # копейки
             "invType": "READ_ONLY",
             "properties": [
                 transaction_id,
