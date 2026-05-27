@@ -153,14 +153,14 @@ class PurchasesService:
             logger.error(msg, data)
             raise PaymentNotificationProcessError(msg % data)
 
-        state: PaymentNotificationPaymentStatus | None = data.get("state")
+        state: PaymentNotificationPaymentStatus | str = data.get("state", "").lower()
 
         if not state:
             msg = "No status provided for payment notification: %s"
             logger.error(msg, data)
             raise PaymentNotificationProcessError(msg % data)
 
-        if state.lower() not in PaymentNotificationPaymentStatus.processable_states():
+        if state not in PaymentNotificationPaymentStatus.processable_states():
             msg = "Unknown state for payment notification: %s"
             logger.error(msg, state)
             raise PaymentNotificationProcessError(msg % state)
