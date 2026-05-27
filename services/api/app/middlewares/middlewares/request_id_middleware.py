@@ -1,10 +1,10 @@
 from collections.abc import Callable
-import uuid
 
 import elasticapm
 from fastapi import FastAPI, Request, Response
 from lib.utils.config.env_types import EnvType
 from lib.utils.elk.request_id import request_id_var
+from lib.utils.schemas.base import generate_uuid4_str
 from services.api.app.config import Config
 
 
@@ -17,7 +17,7 @@ async def request_id_middleware(
     if request_id_header:
         request_id = request_id_header
     else:
-        request_id = str(uuid.uuid4())
+        request_id = generate_uuid4_str()
 
     request_id_var.set(request_id)
 

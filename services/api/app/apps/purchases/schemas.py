@@ -22,4 +22,5 @@ class Product(Base):
 
 class PurchaseProductResponse(Base):
     purchase_id: int
-    confirmation_url: str | None = None
+    transaction_id: str
+    payment_url: str | None = None

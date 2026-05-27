@@ -2,11 +2,11 @@ import pytest
 
 from lib.utils.events.action_types import ActionType
 from lib.utils.events.actions.action_add_resources import ActionAddResources
-from lib.utils.schemas.events import ActionConfigData
+from lib.utils.schemas.events import ActionConfigData, ActionContext, AddResourcesSubtype
 
 
 @pytest.mark.asyncio
-async def test_add_resources_credits_user(
+async def test_add_resources_direct_success(
     # service fixtures
     config,
     db,
@@ -21,17 +21,29 @@ async def test_add_resources_credits_user(
 
     event = event_message_factory(
         event_type="event_1",
-        payload={"user_id": user.id, "wood": 100, "money": 500},
+        payload={
+            "subtype": AddResourcesSubtype.DIRECT,
+            "user_id": user.id,
+            "resources": {
+                "wood": 100,
+                "money": 500,
+            },
+        },
     )
 
-    action = ActionAddResources(
-        config=config,
+    action_context = ActionContext(
         action_config=ActionConfigData(
             type=ActionType.ADD_RESOURCES,
             conditions=True,
             receiver=None,
         ),
         payload=event.payload,
+        event_type=event.event_type,
+    )
+
+    action = ActionAddResources(
+        config=config,
+        context=action_context,
         db=db,
     )
 
@@ -46,7 +58,7 @@ async def test_add_resources_credits_user(
 
 
 @pytest.mark.asyncio
-async def test_add_resources_partial_fields(
+async def test_add_resources_direct_partial_fields(
     config,
     db,
     db_connection,
@@ -59,17 +71,29 @@ async def test_add_resources_partial_fields(
     await user_resource_factory(id=user.id, scraps=500, wood=1000, money=2000)
 
     event = event_message_factory(
-        payload={"user_id": user.id, "scraps": 200},
+        event_type="event_1",
+        payload={
+            "subtype": AddResourcesSubtype.DIRECT,
+            "user_id": user.id,
+            "resources": {
+                "scraps": 200,
+            },
+        },
     )
 
-    action = ActionAddResources(
-        config=config,
+    action_context = ActionContext(
         action_config=ActionConfigData(
             type=ActionType.ADD_RESOURCES,
             conditions=True,
             receiver=None,
         ),
         payload=event.payload,
+        event_type=event.event_type,
+    )
+
+    action = ActionAddResources(
+        config=config,
+        context=action_context,
         db=db,
     )
 
@@ -85,7 +109,7 @@ async def test_add_resources_partial_fields(
 
 
 @pytest.mark.asyncio
-async def test_add_resources_skips_unknown_fields(
+async def test_add_resources_direct_skips_unknown_fields(
     config,
     db,
     db_connection,
@@ -98,17 +122,27 @@ async def test_add_resources_skips_unknown_fields(
     await user_resource_factory(id=user.id, money=2000)
 
     event = event_message_factory(
-        payload={"user_id": user.id, "unknown_field": 999},
+        event_type="event_1",
+        payload={
+            "user_id": user.id,
+            "subtype": AddResourcesSubtype.DIRECT,
+            "resources": {"unknown_field": 999},
+        },
     )
 
-    action = ActionAddResources(
-        config=config,
+    action_context = ActionContext(
         action_config=ActionConfigData(
             type=ActionType.ADD_RESOURCES,
             conditions=True,
             receiver=None,
         ),
         payload=event.payload,
+        event_type=event.event_type,
+    )
+
+    action = ActionAddResources(
+        config=config,
+        context=action_context,
         db=db,
     )
 
@@ -119,3 +153,38 @@ async def test_add_resources_skips_unknown_fields(
         user.id,
     )
     assert row["money"] == 2000
+
+
+@pytest.mark.asyncio
+async def test_add_resources_wrong_subtype(
+    config,
+    db,
+    db_connection,
+    event_message_factory,
+):
+    event = event_message_factory(
+        event_type="event_1",
+        payload={
+            "user_id": 1,
+            "subtype": "UNKNOWN",
+        },
+    )
+
+    action_context = ActionContext(
+        action_config=ActionConfigData(
+            type=ActionType.ADD_RESOURCES,
+            conditions=True,
+            receiver=None,
+        ),
+        payload=event.payload,
+        event_type=event.event_type,
+    )
+
+    action = ActionAddResources(
+        config=config,
+        context=action_context,
+        db=db,
+    )
+
+    with pytest.raises(RuntimeError):
+        await action.execute()

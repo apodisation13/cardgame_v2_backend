@@ -1,3 +1,4 @@
+from enum import StrEnum
 from uuid import UUID, uuid4
 
 from lib.utils.events.event_types import EventType
@@ -9,6 +10,7 @@ class EventMessage(Base):
     id: UUID = Field(default_factory=uuid4)
     event_type: EventType
     payload: dict
+    dedup_key: str | None = None
 
     @model_serializer
     def serialize_model(self) -> dict:
@@ -16,6 +18,7 @@ class EventMessage(Base):
             "id": str(self.id),
             "event_type": self.event_type.value,
             "payload": self.payload,
+            "dedup_key": self.dedup_key,
         }
 
 
@@ -24,3 +27,18 @@ class ActionConfigData(Base):
     conditions: bool | list[dict]
     receiver: str | None = None
     message: str | None = None
+
+
+class ActionContext(Base):
+    event_type: EventType
+    payload: dict
+    action_config: ActionConfigData
+
+
+class AddResourcesSubtype(StrEnum):
+    DIRECT = "direct"
+    SUCCESS_PAYMENT = "success_payment"
+
+    @classmethod
+    def processable_subtypes(cls) -> set:
+        return {cls.DIRECT, cls.SUCCESS_PAYMENT}

@@ -175,3 +175,22 @@ def event_sender_mock():
 @pytest.fixture
 def processor(db, config):
     return EventProcessor(db=db, config=config)
+
+
+@pytest_asyncio.fixture
+async def event_processor_fixture(db_pool):
+    import uuid
+
+    from lib.utils.db.pool import Database
+    from lib.utils.events.event_processor import EventProcessor
+    from lib.utils.schemas.events import EventMessage
+
+    async def _run_processor(event_type, payload, config, dedup_key=None):
+        db = Database(config)
+        db.pool = db_pool
+        event = EventMessage(id=uuid.uuid4(), event_type=event_type, payload=payload, dedup_key=dedup_key)
+        processor = EventProcessor(config=config, db=db)
+        await processor.process_event(event)
+
+    with patch("lib.utils.events.event_sender.create_event", side_effect=_run_processor):
+        yield

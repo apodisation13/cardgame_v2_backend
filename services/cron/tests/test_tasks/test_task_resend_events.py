@@ -6,7 +6,6 @@ from services.cron.app.tasks import TaskResendEvents
 
 
 @pytest.mark.asyncio
-@pytest.mark.usefixtures("setup_database")
 async def test_task_resend_events(
     config,
     db,

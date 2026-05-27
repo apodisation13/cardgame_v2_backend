@@ -101,3 +101,4 @@ class EventLogFactory(BaseModelFactory, TimeStampMixinFactory):
     payload = factory.LazyFunction(dict)
     actions_log = factory.LazyFunction(list)
     retry_count = 0
+    dedup_key = None

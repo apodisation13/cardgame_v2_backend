@@ -36,3 +36,7 @@ class ProductDoesNotExistError(Exception):
 
 class PurchaseDoesNotExistError(Exception):
     pass
+
+
+class PaymentNotificationProcessError(Exception):
+    pass

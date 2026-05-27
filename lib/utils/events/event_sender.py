@@ -37,23 +37,28 @@ class EventSender:
         self,
         event_type: EventType,
         payload: dict,
+        dedup_key: str | None = None,
     ) -> None:
         """Отправка события в Kafka"""
         logger.info("Sending event %s", event_type)
-        await self._ensure_initialized()
 
         message = EventMessage(
             event_type=event_type,
             payload=payload,
+            dedup_key=dedup_key,
         )
-        topic = self.config.KAFKA_TOPIC
+
+        inserted = await self._log_event(message=message, payload=payload)
+        if not inserted:
+            logger.warning("Duplicate event skipped: %s dedup_key=%s", event_type, dedup_key)
+            return
+
+        await self._ensure_initialized()
 
         try:
-            await self._producer.send_and_wait(topic, message.model_dump(mode="json"))
-            await self._log_event(message=message, payload=payload)
+            await self._producer.send_and_wait(self.config.KAFKA_TOPIC, message.model_dump(mode="json"))
             logger.info("Event %s has been sent", message)
         except Exception as e:
-            # При ошибке сбрасываем состояние и пробуем переинициализировать при следующем вызове
             self._initialized = False
             if self._producer:
                 await self._producer.stop()
@@ -64,19 +69,36 @@ class EventSender:
         self,
         message: EventMessage,
         payload: dict,
-    ) -> None:
+    ) -> bool:
+        """Возвращает True если запись вставлена, False если дубль по dedup_key"""
         async with self.db.connection() as connection:
-            await connection.execute(
-                """
-                INSERT INTO event_log
-                (id, type, state, payload)
-                VALUES ($1, $2, $3, $4)
-                """,
-                message.id,
-                message.event_type,
-                EventProcessingState.SENT,
-                payload,
-            )
+            if message.dedup_key is not None:
+                result = await connection.execute(
+                    """
+                    INSERT INTO event_log
+                    (id, type, state, payload, dedup_key)
+                    VALUES ($1, $2, $3, $4, $5)
+                    ON CONFLICT (dedup_key) DO NOTHING
+                    """,
+                    message.id,
+                    message.event_type,
+                    EventProcessingState.SENT,
+                    payload,
+                    message.dedup_key,
+                )
+            else:
+                result = await connection.execute(
+                    """
+                    INSERT INTO event_log
+                    (id, type, state, payload)
+                    VALUES ($1, $2, $3, $4)
+                    """,
+                    message.id,
+                    message.event_type,
+                    EventProcessingState.SENT,
+                    payload,
+                )
+        return result == "INSERT 0 1"
 
 
 # глобальный инстанс сендера
@@ -101,6 +123,7 @@ async def create_event(
     event_type: EventType,
     payload: dict,
     config: BaseConfig,
+    dedup_key: str | None = None,
 ) -> None:
     sender: EventSender = await get_event_sender(config)
-    await sender.send_event(event_type=event_type, payload=payload)
+    await sender.send_event(event_type=event_type, payload=payload, dedup_key=dedup_key)

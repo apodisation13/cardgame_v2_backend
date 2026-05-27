@@ -1,3 +1,5 @@
+from unittest.mock import AsyncMock
+
 import pytest
 
 from fastapi import FastAPI
@@ -24,6 +26,11 @@ async def app(
     # Переопределяем метод connect чтобы использовать существующий пул
     db.pool = db_pool
     fastapi_app.state.db = db
+
+    mock_ckassa = AsyncMock()
+    mock_ckassa.create_invoice.return_value = "https://ckassa.ru/payment-link"
+    mock_ckassa.get_payments.return_value = []
+    fastapi_app.state.ckassa_client = mock_ckassa
 
     # Устанавливаем глобальное приложение
     from services.api.app.dependencies import set_global_app
