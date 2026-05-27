@@ -303,7 +303,7 @@ class TestPaymentNotificationAPI:
 
         assert response.status_code == 400
 
-        error_msg = f"Unknown state for payment notification: some_wrong_state"
+        error_msg = "Unknown state for payment notification: some_wrong_state"
         assert response.json() == {
             "error": {
                 "code": "BAD_REQUEST",
