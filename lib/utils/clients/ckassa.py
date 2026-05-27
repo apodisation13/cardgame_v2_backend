@@ -1,4 +1,4 @@
-from datetime import datetime, timezone, timedelta
+from datetime import UTC, datetime, timedelta
 
 from lib.utils.clients import BaseHttpClient
 from lib.utils.config.base import BaseConfig
@@ -23,7 +23,7 @@ class CKassaClient(BaseHttpClient):
         amount_rub: float,
         transaction_id: str,
     ) -> str:
-        deadline = datetime.now(tz=timezone.utc) + timedelta(minutes=self.config.CKASSA_PAYMENT_TIMEOUT_MINUTES)
+        deadline = datetime.now(tz=UTC) + timedelta(minutes=self.config.CKASSA_PAYMENT_TIMEOUT_MINUTES)
         deadline.strftime("%d-%m-%Y %H:%M:%S +0000")
 
         payload = {
