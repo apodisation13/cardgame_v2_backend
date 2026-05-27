@@ -1,3 +1,5 @@
+from datetime import datetime, timezone, timedelta
+
 from lib.utils.clients import BaseHttpClient
 from lib.utils.config.base import BaseConfig
 
@@ -21,6 +23,9 @@ class CKassaClient(BaseHttpClient):
         amount_rub: float,
         transaction_id: str,
     ) -> str:
+        deadline = datetime.now(tz=timezone.utc) + timedelta(minutes=self.config.CKASSA_PAYMENT_TIMEOUT_MINUTES)
+        deadline.strftime("%d-%m-%Y %H:%M:%S +0000")
+
         payload = {
             "servCode": self.config.CKASSA_SERV_CODE,
             "tgInvPayer": "string",  # только для демо-контура, для прода - вообще не влияет
@@ -29,6 +34,7 @@ class CKassaClient(BaseHttpClient):
             "properties": [
                 transaction_id,
             ],
+            "bestBefore": str(deadline),
         }
 
         response = await self.request(
