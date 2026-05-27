@@ -153,14 +153,14 @@ class PurchasesService:
             logger.error(msg, data)
             raise PaymentNotificationProcessError(msg % data)
 
-        state: PaymentNotificationPaymentStatus | None = data.get("state")
+        state: PaymentNotificationPaymentStatus | str = data.get("state", "").lower()
 
         if not state:
             msg = "No status provided for payment notification: %s"
             logger.error(msg, data)
             raise PaymentNotificationProcessError(msg % data)
 
-        if state.lower() not in PaymentNotificationPaymentStatus.processable_states():
+        if state not in PaymentNotificationPaymentStatus.processable_states():
             msg = "Unknown state for payment notification: %s"
             logger.error(msg, state)
             raise PaymentNotificationProcessError(msg % state)
@@ -202,7 +202,7 @@ class PurchasesService:
                 dedup_key=transaction_id,
             )
 
-        else:
+        elif state in PaymentNotificationPaymentStatus.failed_states():
             await event_sender.create_event(
                 event_type=EventType.FAILED_PAYMENT,
                 payload={
@@ -215,3 +215,6 @@ class PurchasesService:
                 config=self.config,
                 dedup_key=transaction_id,
             )
+
+        else:
+            logger.error("Unknown state for payment notification: %s", state)
