@@ -202,7 +202,7 @@ class PurchasesService:
                 dedup_key=transaction_id,
             )
 
-        else:
+        elif state in PaymentNotificationPaymentStatus.failed_states():
             await event_sender.create_event(
                 event_type=EventType.FAILED_PAYMENT,
                 payload={
@@ -215,3 +215,6 @@ class PurchasesService:
                 config=self.config,
                 dedup_key=transaction_id,
             )
+
+        else:
+            logger.error("Unknown state for payment notification: %s", state)
