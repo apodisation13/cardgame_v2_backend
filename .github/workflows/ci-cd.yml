@@ -234,7 +234,7 @@ jobs:
           SECRETS_JSON: ${{ toJSON(secrets) }}
         run: |
           echo "$SECRETS_JSON" \
-            | jq -r 'to_entries | map(select(.key != "GITHUB_TOKEN")) | .[] | "\(.key)=\(.value)"' \
+            | jq -r 'to_entries | map(select(.key != "GITHUB_TOKEN")) | .[] | "\(.key)=\(.value | @json)"' \
             > .env
           cp .env .env.docker
           echo "✅ .env и .env.docker созданы для Environment: ${{ env.MODE }}"
