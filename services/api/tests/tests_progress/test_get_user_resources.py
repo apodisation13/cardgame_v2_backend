@@ -1,25 +1,21 @@
 import pytest
 
 from httpx import AsyncClient
+from services.api.app.apps.progress.schemas import UserResources
 
 
-class TestGetUserProgressAPI:
-    endpoint = "user-progress/{user_id}"
+class TestGetUserResourcesAPI:
+    endpoint = "user-progress/{user_id}/resource"
 
     @pytest.mark.usefixtures("init_db_cards")
     @pytest.mark.asyncio
-    async def test_get_user_progress(
+    async def test_get_user_resources(
         self,
         # service fixtures
         client: AsyncClient,
         user_login_fixture,
         # fixtures for test
         user_resource_factory,
-        user_level_factory,
-        user_season_factory,
-        user_deck_factory,
-        user_card_factory,
-        user_leader_factory,
     ):
         """
         Базовая фикстура добавила уже 3 разных уровня
@@ -34,27 +30,31 @@ class TestGetUserProgressAPI:
 
         await user_resource_factory(id=user_id)
 
-        await user_level_factory(user_id=user_id, level_id=1)
-        await user_season_factory(user_id=user_id, season_id=1)
-
-        await user_card_factory(
-            user_id=user_id,
-            card_id=1,
-        )
-        await user_leader_factory(
-            leader_id=1,
-            user_id=user_id,
-        )
-
-        await user_deck_factory(
-            user_id=user_id,
-            deck_id=1,
-        )
-
         response = await client.get(
             self.endpoint.format(user_id=user_id),
             headers={"Authorization": f"Bearer {access_token}"},
         )
 
         response_json = response.json()
-        print(response_json)
+
+        assert (
+            response_json
+            == UserResources(
+                scraps=1000,
+                raw_bronze=0,
+                raw_silver=0,
+                raw_gold=0,
+                bronze_ingots=0,
+                silver_ingots=0,
+                gold_ingots=0,
+                crops=1000,
+                wood=1000,
+                silk=0,
+                kegs=3,
+                big_kegs=1,
+                chests=0,
+                keys=3,
+                rare_gem=0,
+                money=2000,
+            ).model_dump()
+        )
