@@ -132,6 +132,7 @@ class PurchasesService:
                 purchase_id,
                 user_id,
             )
+            logger.info("Purchase: %s, status: %s", purchase_id, status)
 
         if not status:
             raise PurchaseDoesNotExistError()
