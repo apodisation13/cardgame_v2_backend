@@ -42,6 +42,8 @@ class CKassaClient(BaseHttpClient):
             path="/api-shop/rs/open/invoice/create2",
             json=payload,
         )
+        if response.status_code != 200:
+            raise ValueError(f"CKassa create_invoice failed ({response.status_code}): {response.text}")
         return response.text
 
     async def get_payments(self) -> list:
