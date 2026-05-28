@@ -332,6 +332,16 @@ class UserProgressService:
             case _:
                 raise TypeError(f"Invalid subtype {subtype}")
 
+    async def get_user_resources(
+        self,
+        user_id: int,
+    ) -> UserResources:
+        async with self.db_pool.connection() as connection:
+            return await logic.get_user_resources(
+                user_id=user_id,
+                connection=connection,
+            )
+
     async def manage_craft_mill_process(
         self,
         user_id: int,

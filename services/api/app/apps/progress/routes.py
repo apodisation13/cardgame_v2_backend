@@ -84,6 +84,17 @@ async def manage_resources(
     )
 
 
+@router.get("/{user_id}/resource")
+async def get_resources(
+    _=Depends(auth_dependencies.validate_user),
+    user_progress_service: UserProgressService = Depends(get_user_progress_service),
+    user_id: int = Path(..., gt=0),
+) -> UserResources:
+    return await user_progress_service.get_user_resources(
+        user_id=user_id,
+    )
+
+
 @router.post("/{user_id}/card/{card_id}")
 async def manage_craft_mill_card(
     card_request: CardCraftMillRequest,
