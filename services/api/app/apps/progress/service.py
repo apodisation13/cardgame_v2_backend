@@ -229,108 +229,107 @@ class UserProgressService:
         logger.info("Got here for user %s, resource request: %s", user_id, resource_request)
         subtype: ResourceActionSubtype = resource_request.subtype
 
-        match subtype:
-            case subtype.WIN_SEASON_LEVEL | subtype.ACCEPT_KEY_REWARD:
-                """
-                data: { wood: 201, scraps: 185, etc }
-                Тут придет словарь с ресурсами, которые нужно начислить
-                """
-                async with self.db_pool.connection() as connection:
-                    return await logic.change_resources(
-                        connection=connection,
-                        user_id=user_id,
-                        resources_to_change=resource_request.data,
-                        scenario=f"Manage resources: subtype {subtype}",
-                    )
+        if subtype in ResourceActionSubtype.to_increase_resources():
+            """
+            data: { wood: 201, scraps: 185, etc }
+            Тут придет словарь с ресурсами, которые нужно начислить
+            """
+            async with self.db_pool.connection() as connection:
+                return await logic.change_resources(
+                    connection=connection,
+                    user_id=user_id,
+                    resources_to_change=resource_request.data,
+                    scenario=f"Manage resources: subtype {subtype}",
+                )
 
-            case subtype.RESOURCE_TRANSITION:
-                """
-                data: { action: craft, resource: wood, quantity: 3, recipe (за один): { wood: 100, scraps: 100} }
-                Тут придет словарь с ресурсами, которые нужно списать или наоборот начислить
-                """
-                async with self.db_pool.transaction() as connection:
-                    game_constants: dict = await game_const_logic.get_game_constants(
-                        connection=connection,
-                    )
-                    resources_transitions: dict = game_constants["resources_transitions"]
+        elif subtype == ResourceActionSubtype.RESOURCE_TRANSITION:
+            """
+            data: { action: craft, resource: wood, quantity: 3, recipe (за один): { wood: 100, scraps: 100} }
+            Тут придет словарь с ресурсами, которые нужно списать или наоборот начислить
+            """
+            async with self.db_pool.transaction() as connection:
+                game_constants: dict = await game_const_logic.get_game_constants(
+                    connection=connection,
+                )
+                resources_transitions: dict = game_constants["resources_transitions"]
 
-                    action: ResourceTransitionActionType = resource_request.data["action"]
+                action: ResourceTransitionActionType = resource_request.data["action"]
 
-                    resource: ResourceType = resource_request.data["resource"]
-                    quantity: int = resource_request.data["quantity"]
-                    recipe = resource_request.data["recipe"]
+                resource: ResourceType = resource_request.data["resource"]
+                quantity: int = resource_request.data["quantity"]
+                recipe = resource_request.data["recipe"]
 
-                    # вот тут упадет для тех ресурсов, у кого нет переходов (keys, rare_gem, money)
-                    step: int | None = resources_transitions.get(resource, {}).get("step")
-                    if not step:
-                        msg = "Can not process bonus resource %s (%s), action %s, recipe %s for user %s: no resource"
-                        logger.error(msg, resource, quantity, action, recipe, user_id)
-                        raise ManageResourcesProcessError(msg % (resource, quantity, action, recipe, user_id))
+                # вот тут упадет для тех ресурсов, у кого нет переходов (keys, rare_gem, money)
+                step: int | None = resources_transitions.get(resource, {}).get("step")
+                if not step:
+                    msg = "Can not process bonus resource %s (%s), action %s, recipe %s for user %s: no resource"
+                    logger.error(msg, resource, quantity, action, recipe, user_id)
+                    raise ManageResourcesProcessError(msg % (resource, quantity, action, recipe, user_id))
 
-                    # это те ресурсы, которые из констант - цена милла/крафта итп
-                    # они там с правильным знаком, плюс или минус, списать или начислить
-                    resources_to_change: dict[ResourceType, int] = {}
-                    all_recipes: list = resources_transitions[resource][action]
-                    for r_ in all_recipes:
-                        if r_ == recipe:
-                            resources_to_change = r_
+                # это те ресурсы, которые из констант - цена милла/крафта итп
+                # они там с правильным знаком, плюс или минус, списать или начислить
+                resources_to_change: dict[ResourceType, int] = {}
+                all_recipes: list = resources_transitions[resource][action]
+                for r_ in all_recipes:
+                    if r_ == recipe:
+                        resources_to_change = r_
 
-                    if not resources_to_change:
-                        msg = "Can not process bonus resource %s (%s), action %s, recipe %s for user %s: no config"
-                        logger.error(msg, resource, quantity, action, recipe, user_id)
-                        raise ManageResourcesProcessError(msg % (resource, quantity, action, recipe, user_id))
+                if not resources_to_change:
+                    msg = "Can not process bonus resource %s (%s), action %s, recipe %s for user %s: no config"
+                    logger.error(msg, resource, quantity, action, recipe, user_id)
+                    raise ManageResourcesProcessError(msg % (resource, quantity, action, recipe, user_id))
 
-                    # а это собственно сам тот ресурс, который надо крафтить/миллить
-                    # но тут нужно понять, начислять и наоборот отнимать исходный ресурс
-                    if action in ResourceTransitionActionType.to_decrease_resources():
-                        resources_to_change[resource] = -step
-                    elif action in ResourceTransitionActionType.to_increase_resources():
-                        resources_to_change[resource] = step
-                    else:
-                        msg = "Unknown action %s for resource %s for user %s"
-                        logger.error(msg, resource, action, user_id)
-                        raise ManageResourcesProcessError(msg % (resource, action, user_id))
+                # а это собственно сам тот ресурс, который надо крафтить/миллить
+                # но тут нужно понять, начислять и наоборот отнимать исходный ресурс
+                if action in ResourceTransitionActionType.to_decrease_resources():
+                    resources_to_change[resource] = -step
+                elif action in ResourceTransitionActionType.to_increase_resources():
+                    resources_to_change[resource] = step
+                else:
+                    msg = "Unknown action %s for resource %s for user %s"
+                    logger.error(msg, resource, action, user_id)
+                    raise ManageResourcesProcessError(msg % (resource, action, user_id))
 
-                    # а тут мы все ресурсы умножаем на количество, как в плюс, так и в минус
-                    for key, value in resources_to_change.items():
-                        resources_to_change[key] = value * quantity
+                # а тут мы все ресурсы умножаем на количество, как в плюс, так и в минус
+                for key, value in resources_to_change.items():
+                    resources_to_change[key] = value * quantity
 
-                    logger.info("Resources to change: %s for user %s", resources_to_change, user_id)
+                logger.info("Resources to change: %s for user %s", resources_to_change, user_id)
 
-                    user_resources: UserResources = await logic.change_resources(
-                        connection=connection,
-                        user_id=user_id,
-                        resources_to_change=resources_to_change,
-                        scenario=f"Manage resources: subtype {subtype}, action {action}, recipe {recipe}",
-                    )
+                user_resources: UserResources = await logic.change_resources(
+                    connection=connection,
+                    user_id=user_id,
+                    resources_to_change=resources_to_change,
+                    scenario=f"Manage resources: subtype {subtype}, action {action}, recipe {recipe}",
+                )
 
-                return user_resources
+            return user_resources
 
-            case subtype.START_SEASON_LEVEL | subtype.OPEN_BONUS_RESOURCE:
-                """
-                data: { kegs: -1 }, { wood: -40, crops: -200, etc }
-                Тут придет словарь с ресурсами, которые нужно отнять
-                """
+        elif subtype in ResourceActionSubtype.to_decrease_resources():
+            """
+            data: { kegs: -1 }, { wood: -40, crops: -200, etc }
+            Тут придет словарь с ресурсами, которые нужно отнять
+            """
 
-                # на случай запросов из постмана с положительными ресурсами вместо отрицательных :)
-                for resource, value in resource_request.data.items():
-                    if value >= 0:
-                        msg = "Can not process subtype %s for user %s, wrong value: %s %s"
-                        logger.error(msg, subtype, user_id, value, resource)
-                        raise ManageResourcesProcessError(msg % (subtype, user_id, value, resource))
+            # на случай запросов из постмана с положительными ресурсами вместо отрицательных :)
+            for resource, value in resource_request.data.items():
+                if value >= 0:
+                    msg = "Can not process subtype %s for user %s, wrong value: %s %s"
+                    logger.error(msg, subtype, user_id, value, resource)
+                    raise ManageResourcesProcessError(msg % (subtype, user_id, value, resource))
 
-                async with self.db_pool.transaction() as connection:
-                    user_resources: UserResources = await logic.change_resources(
-                        connection=connection,
-                        user_id=user_id,
-                        resources_to_change=resource_request.data,
-                        scenario=f"Manage resources: subtype {subtype}",
-                    )
+            async with self.db_pool.transaction() as connection:
+                user_resources: UserResources = await logic.change_resources(
+                    connection=connection,
+                    user_id=user_id,
+                    resources_to_change=resource_request.data,
+                    scenario=f"Manage resources: subtype {subtype}",
+                )
 
-                return user_resources
+            return user_resources
 
-            case _:
-                raise TypeError(f"Invalid subtype {subtype}")
+        else:
+            raise TypeError(f"Invalid subtype {subtype}")
 
     async def get_user_resources(
         self,

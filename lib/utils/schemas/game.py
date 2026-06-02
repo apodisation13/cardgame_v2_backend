@@ -34,6 +34,28 @@ class ResourceActionSubtype(StrEnum):
     OPEN_BONUS_RESOURCE = "open_bonus_resource"
     ACCEPT_KEY_REWARD = "accept_key_reward"
     RESOURCE_TRANSITION = "resource_transition"
+    ENTER_ARENA = "enter_arena"
+    START_ARENA_LEVEL = "start_arena_level"
+    WIN_ARENA_LEVEL = "win_arena_level"
+    UPGRADE_IN_ARENA = "upgrade_in_arena"
+
+    @classmethod
+    def to_increase_resources(cls) -> set:
+        return {
+            cls.WIN_SEASON_LEVEL,
+            cls.ACCEPT_KEY_REWARD,
+            cls.WIN_ARENA_LEVEL,
+        }
+
+    @classmethod
+    def to_decrease_resources(cls) -> set:
+        return {
+            cls.START_SEASON_LEVEL,
+            cls.OPEN_BONUS_RESOURCE,
+            cls.START_ARENA_LEVEL,
+            cls.ENTER_ARENA,
+            cls.UPGRADE_IN_ARENA,
+        }
 
 
 class CardActionSubtype(StrEnum):
@@ -544,6 +566,14 @@ class UpgradeSubtype(StrEnumChoices):
     WOOD = "wood"
     INGOTS = "ingots"
     RAW = "raw"
+
+    ARENA_DRAW_EXACT_CARD = "arena_draw_exact_card"
+    ARENA_REDRAW_CARD = "arena_redraw_card"
+    ARENA_RESURRECT = "arena_resurrect"
+    ARENA_MAX_CARDS_IN_DECK = "arena_max_cards_in_deck"
+    ARENA_HAND_SIZE = "arena_hand_size"
+    ARENA_MAX_HP = "arena_max_hp"
+    ARENA_MAX_ARMOR = "arena_max_armor"
 
 
 DEFAULT_USER_UPGRADES = {
@@ -1638,6 +1668,208 @@ DEFAULT_UPGRADES: dict[UpgradeType, dict] = {
                     },
                     10: {"value": 5000, "next": None},
                 },
+            },
+        },
+    },
+}
+
+DEFAULT_ARENA_UPGRADES: dict[str, str | dict] = {
+    "title": "Апгрейды арены",
+    "upgrades": {
+        UpgradeSubtype.ARENA_DRAW_EXACT_CARD: {
+            "ordering": 2,
+            "title": "Взять любую карту",
+            "upgrades": {
+                0: {
+                    "value": False,
+                    "next": {
+                        ResourceType.MONEY: -5000,
+                        ResourceType.RAW_BRONZE: -200,
+                        ResourceType.RAW_SILVER: -150,
+                        ResourceType.RAW_GOLD: -100,
+                    },
+                },
+                1: {"value": True, "next": None},
+            },
+        },
+        UpgradeSubtype.ARENA_REDRAW_CARD: {
+            "ordering": 1,
+            "title": "Заменить одну карту",
+            "upgrades": {
+                0: {
+                    "value": False,
+                    "next": {
+                        ResourceType.MONEY: -2000,
+                        ResourceType.RAW_BRONZE: -50,
+                        ResourceType.RAW_SILVER: -40,
+                        ResourceType.RAW_GOLD: -30,
+                    },
+                },
+                1: {"value": True, "next": None},
+            },
+        },
+        UpgradeSubtype.ARENA_RESURRECT: {
+            "ordering": 3,
+            "title": "Восстановить жизни до 100 после смерти",
+            "upgrades": {
+                0: {
+                    "value": False,
+                    "next": {
+                        ResourceType.MONEY: -5000,
+                        ResourceType.RAW_BRONZE: -200,
+                        ResourceType.RAW_SILVER: -150,
+                        ResourceType.RAW_GOLD: -100,
+                    },
+                },
+                1: {"value": True, "next": None},
+            },
+        },
+        UpgradeSubtype.MAX_CARDS_IN_DECK: {
+            "ordering": 4,
+            "title": "Карт в колоде",
+            "upgrades": {
+                0: {
+                    "value": 12,
+                    "next": {
+                        ResourceType.MONEY: -2000,
+                        ResourceType.RAW_BRONZE: -100,
+                        ResourceType.RAW_SILVER: -75,
+                        ResourceType.RAW_GOLD: -50,
+                    },
+                },
+                1: {
+                    "value": 13,
+                    "next": {
+                        ResourceType.MONEY: -2500,
+                        ResourceType.RAW_BRONZE: -125,
+                        ResourceType.RAW_SILVER: -100,
+                        ResourceType.RAW_GOLD: -75,
+                    },
+                },
+                2: {
+                    "value": 14,
+                    "next": {
+                        ResourceType.MONEY: -3000,
+                        ResourceType.RAW_BRONZE: -150,
+                        ResourceType.RAW_SILVER: -125,
+                        ResourceType.RAW_GOLD: -100,
+                    },
+                },
+                3: {
+                    "value": 15,
+                    "next": {
+                        ResourceType.MONEY: -4000,
+                        ResourceType.RAW_BRONZE: -300,
+                        ResourceType.RAW_SILVER: -250,
+                        ResourceType.RAW_GOLD: -150,
+                    },
+                },
+                4: {"value": 16, "next": None},
+            },
+        },
+        UpgradeSubtype.HAND_SIZE: {
+            "ordering": 5,
+            "title": "Размер руки",
+            "upgrades": {
+                0: {
+                    "value": 6,
+                    "next": {
+                        ResourceType.MONEY: -3000,
+                        ResourceType.RAW_BRONZE: -300,
+                        ResourceType.RAW_SILVER: -250,
+                        ResourceType.RAW_GOLD: -200,
+                    },
+                },
+                1: {
+                    "value": 7,
+                    "next": {
+                        ResourceType.MONEY: -5000,
+                        ResourceType.RAW_BRONZE: -300,
+                        ResourceType.RAW_SILVER: -250,
+                        ResourceType.RAW_GOLD: -200,
+                    },
+                },
+                2: {"value": 8, "next": None},
+            },
+        },
+        UpgradeSubtype.MAX_ARMOR: {
+            "ordering": 7,
+            "title": "Броня лидера",
+            "upgrades": {
+                0: {
+                    "value": 5,
+                    "next": {
+                        ResourceType.MONEY: -1000,
+                        ResourceType.WOOD: -500,
+                        ResourceType.CROPS: -500,
+                    },
+                },
+                1: {
+                    "value": 10,
+                    "next": {
+                        ResourceType.MONEY: -2000,
+                        ResourceType.WOOD: -1000,
+                        ResourceType.CROPS: -1000,
+                        ResourceType.SILK: -3,
+                    },
+                },
+                2: {
+                    "value": 20,
+                    "next": {
+                        ResourceType.MONEY: -3000,
+                        ResourceType.WOOD: -2000,
+                        ResourceType.CROPS: -2000,
+                        ResourceType.SILK: -5,
+                    },
+                },
+                3: {
+                    "value": 30,
+                    "next": {
+                        ResourceType.MONEY: -4000,
+                        ResourceType.WOOD: -3000,
+                        ResourceType.CROPS: -3000,
+                        ResourceType.SILK: -10,
+                    },
+                },
+                4: {"value": 50, "next": None},
+            },
+        },
+        UpgradeSubtype.MAX_HP: {
+            "ordering": 6,
+            "title": "Здоровье колоды",
+            "upgrades": {
+                0: {
+                    "value": 100,
+                    "next": {
+                        ResourceType.MONEY: -1000,
+                        ResourceType.SCRAPS: -500,
+                    },
+                },
+                1: {
+                    "value": 150,
+                    "next": {
+                        ResourceType.MONEY: -2000,
+                        ResourceType.SCRAPS: -1000,
+                    },
+                },
+                2: {
+                    "value": 200,
+                    "next": {
+                        ResourceType.MONEY: -3000,
+                        ResourceType.WOOD: -2000,
+                        ResourceType.CROPS: -2000,
+                    },
+                },
+                3: {
+                    "value": 250,
+                    "next": {
+                        ResourceType.MONEY: -5000,
+                        ResourceType.WOOD: -4000,
+                        ResourceType.CROPS: -4000,
+                        ResourceType.SILK: -10,
+                    },
+                },
+                4: {"value": 300, "next": None},
             },
         },
     },
