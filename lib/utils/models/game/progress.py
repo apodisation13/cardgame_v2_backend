@@ -91,6 +91,21 @@ class UserResource(BaseModel, TimestampMixin):
         nullable=False,
         server_default="3000",
     )
+    flowers: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="0",
+    )
+    first_aid_kits: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="0",
+    )
+    shields: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="0",
+    )
 
 
 class UserCard(BaseModel, TimestampMixin):

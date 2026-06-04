@@ -388,7 +388,10 @@ async def get_user_resources(
                 chests,
                 keys,
                 rare_gem,
-                money
+                money,
+                flowers,
+                first_aid_kits,
+                shields
             FROM user_resources
             WHERE id = $1
         """,
@@ -502,6 +505,12 @@ async def cap_resources_to_max(
             correct_upgrade_subtype = UpgradeSubtype.RAW
         elif resource_type in (ResourceType.KEGS, ResourceType.BIG_KEGS, ResourceType.CHESTS):
             correct_upgrade_subtype = UpgradeSubtype.KEGS
+        elif resource_type == ResourceType.FLOWERS:
+            correct_upgrade_subtype = UpgradeSubtype.FLOWERS
+        elif resource_type == ResourceType.FIRST_AID_KITS:
+            correct_upgrade_subtype = UpgradeSubtype.FIRST_AID_KITS
+        elif resource_type == ResourceType.SHIELDS:
+            correct_upgrade_subtype = UpgradeSubtype.SHIELDS
         else:
             raise ValueError(f"Unknown resource type for max cap: {resource_type}")
 

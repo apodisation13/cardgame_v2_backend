@@ -20,6 +20,9 @@ class UserResources(Base):
     keys: int
     rare_gem: int
     money: int
+    flowers: int
+    first_aid_kits: int
+    shields: int
 
     @staticmethod
     def get_one(
@@ -42,6 +45,9 @@ class UserResources(Base):
             keys=row["keys"],
             rare_gem=row["rare_gem"],
             money=row["money"],
+            flowers=row["flowers"],
+            first_aid_kits=row["first_aid_kits"],
+            shields=row["shields"],
         )
 
 
