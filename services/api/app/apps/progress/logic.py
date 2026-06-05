@@ -514,7 +514,8 @@ async def cap_resources_to_max(
         else:
             raise ValueError(f"Unknown resource type for max cap: {resource_type}")
 
-        user_upgrade_level: int = user_upgrades[UpgradeType.RESOURCES][correct_upgrade_subtype]
+        # почему тут 0 по умолчанию - если апгрейд новый (добавленный недавно), его еще нет у юзера, берем 0 тогда
+        user_upgrade_level: int = user_upgrades[UpgradeType.RESOURCES].get(correct_upgrade_subtype, 0)
         level_data: dict = upgrades_config[UpgradeType.RESOURCES]["upgrades"][correct_upgrade_subtype]["upgrades"][
             str(user_upgrade_level)
         ]
