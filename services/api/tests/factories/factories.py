@@ -33,6 +33,7 @@ from lib.utils.models import (
     UserUpgrades,
 )
 from lib.utils.schemas.game import (
+    DEFAULT_ARENA_UPGRADES,
     DEFAULT_CARDS_PRICES,
     DEFAULT_KEY_REWARDS,
     DEFAULT_RESOURCES_TRANSITIONS,
@@ -73,6 +74,7 @@ class GameConstantsFactory(BaseModelFactory):
         "start_level_prices": DEFAULT_START_LEVEL_PRICES,
         "cards_resources_prices": DEFAULT_CARDS_PRICES,
         "upgrades": DEFAULT_UPGRADES,
+        "arena_upgrades": DEFAULT_ARENA_UPGRADES,
     }
 
 

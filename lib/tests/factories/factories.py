@@ -52,6 +52,9 @@ class UserResourceFactory(BaseModelFactory):
     keys = 3
     rare_gem = 0
     money = 2000
+    flowers = 0
+    first_aid_kits = 0
+    shields = 0
 
 
 class ProductFactory(BaseModelFactory, TimeStampMixinFactory):

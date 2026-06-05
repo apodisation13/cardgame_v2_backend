@@ -68,6 +68,9 @@ class TestManageResourcesLevelStartWinAPI:
                 keys=user_resources.keys,
                 rare_gem=0,
                 money=user_resources.money - 1000,
+                flowers=0,
+                first_aid_kits=0,
+                shields=0,
             ).model_dump()
         )
 
@@ -202,6 +205,9 @@ class TestManageResourcesLevelStartWinAPI:
                 keys=user_resources.keys,
                 rare_gem=0,
                 money=user_resources.money + 1000,
+                flowers=0,
+                first_aid_kits=0,
+                shields=0,
             ).model_dump()
         )
 
@@ -273,6 +279,9 @@ class TestManageResourcesOpenResourceAPI:
                 keys=1 if resource_type != ResourceType.KEYS else 0,
                 rare_gem=0,
                 money=user_resources.money,
+                flowers=0,
+                first_aid_kits=0,
+                shields=0,
             ).model_dump()
         )
 
@@ -426,6 +435,9 @@ class TestManageResourcesTransitionAPI:
                 keys=user_resources.keys,
                 rare_gem=0,
                 money=expected_result_money,  # а тут списали деньги
+                flowers=0,
+                first_aid_kits=0,
+                shields=0,
             ).model_dump()
         )
 
@@ -599,6 +611,9 @@ class TestManageResourcesTransitionAPI:
                 keys=user_resources.keys,
                 rare_gem=0,
                 money=expected_result_money,  # а тут списали деньги
+                flowers=0,
+                first_aid_kits=0,
+                shields=0,
             ).model_dump()
         )
 
@@ -675,6 +690,9 @@ class TestManageResourcesTransitionAPI:
                 keys=user_resources.keys,
                 rare_gem=0,
                 money=expected_result_money,  # а тут списали деньги
+                flowers=0,
+                first_aid_kits=0,
+                shields=0,
             ).model_dump()
         )
 
@@ -751,6 +769,9 @@ class TestManageResourcesTransitionAPI:
                 keys=user_resources.keys,
                 rare_gem=0,
                 money=expected_result_money,  # а тут списали деньги
+                flowers=0,
+                first_aid_kits=0,
+                shields=0,
             ).model_dump()
         )
 
@@ -907,5 +928,8 @@ class TestManageResourcesTransitionAPI:
                 keys=user_resources.keys,
                 rare_gem=0,
                 money=expected_result_money,  # а тут списали деньги
+                flowers=0,
+                first_aid_kits=0,
+                shields=0,
             ).model_dump()
         )

@@ -100,7 +100,10 @@ class TestUserRegisterAPI:
                 chests,
                 keys,
                 rare_gem,
-                money
+                money,
+                flowers,
+                first_aid_kits,
+                shields
             FROM user_resources
             """,
         )
@@ -125,6 +128,9 @@ class TestUserRegisterAPI:
                 keys=1,
                 rare_gem=0,
                 money=3000,
+                flowers=0,
+                first_aid_kits=0,
+                shields=0,
             ).model_dump()
         )
 

@@ -26,6 +26,9 @@ class ResourceType(StrEnum):
     RARE_GEM = "rare_gem"
     KEYS = "keys"
     MONEY = "money"
+    FLOWERS = "flowers"
+    FIRST_AID_KITS = "first_aid_kits"
+    SHIELDS = "shields"
 
 
 class ResourceActionSubtype(StrEnum):
@@ -38,6 +41,8 @@ class ResourceActionSubtype(StrEnum):
     START_ARENA_LEVEL = "start_arena_level"
     WIN_ARENA_LEVEL = "win_arena_level"
     UPGRADE_IN_ARENA = "upgrade_in_arena"
+    USE_FIRST_AID_KIT = "use_first_aid_kit"
+    USE_SHIELDS = "use_shields"
 
     @classmethod
     def to_increase_resources(cls) -> set:
@@ -55,6 +60,8 @@ class ResourceActionSubtype(StrEnum):
             cls.START_ARENA_LEVEL,
             cls.ENTER_ARENA,
             cls.UPGRADE_IN_ARENA,
+            cls.USE_SHIELDS,
+            cls.USE_FIRST_AID_KIT,
         }
 
 
@@ -173,13 +180,48 @@ DEFAULT_RESOURCES_TRANSITIONS = {
         "step": 1,
         "index": 10,
     },
+    ResourceType.FLOWERS: {
+        ResourceTransitionActionType.BUY: [{ResourceType.MONEY: -300}],
+        ResourceTransitionActionType.SELL: [{ResourceType.MONEY: 70}],
+        "step": 10,
+        "index": 11,
+    },
+    ResourceType.FIRST_AID_KITS: {
+        ResourceTransitionActionType.CRAFT: [
+            {ResourceType.FLOWERS: -100, ResourceType.SCRAPS: 500, ResourceType.MONEY: -1000},
+        ],
+        ResourceTransitionActionType.MILL: [
+            {ResourceType.FLOWERS: 30, ResourceType.SCRAPS: 150, ResourceType.MONEY: -100},
+        ],
+        "step": 1,
+        "index": 12,
+    },
+    ResourceType.SHIELDS: {
+        ResourceTransitionActionType.CRAFT: [
+            {
+                ResourceType.WOOD: -700,
+                ResourceType.CROPS: -1000,
+                ResourceType.SILK: -5,
+                ResourceType.MONEY: -2000,
+            },
+            {
+                ResourceType.BRONZE_INGOTS: -6,
+                ResourceType.SILVER_INGOTS: -6,
+                ResourceType.GOLD_INGOTS: -4,
+                ResourceType.MONEY: -2000,
+            },
+        ],
+        ResourceTransitionActionType.SELL: [{ResourceType.MONEY: 500}],
+        "step": 1,
+        "index": 13,
+    },
 }
 
 DEFAULT_KEY_REWARDS = {
     ResourceType.SCRAPS: {
         "min": 100,
         "max": 200,
-        "probability": 17,
+        "probability": 16,
         "type": "diapason",
     },
     ResourceType.RAW_BRONZE: {
@@ -221,13 +263,13 @@ DEFAULT_KEY_REWARDS = {
     ResourceType.CROPS: {
         "min": 175,
         "max": 275,
-        "probability": 17,
+        "probability": 15,
         "type": "diapason",
     },
     ResourceType.WOOD: {
         "min": 150,
         "max": 250,
-        "probability": 17,
+        "probability": 15,
         "type": "diapason",
     },
     ResourceType.SILK: {
@@ -259,8 +301,24 @@ DEFAULT_KEY_REWARDS = {
     ResourceType.MONEY: {
         "min": 1000,
         "max": 2000,
-        "probability": 20,
+        "probability": 18,
         "type": "diapason",
+    },
+    ResourceType.FLOWERS: {
+        "min": 20,
+        "max": 40,
+        "probability": 5,
+        "type": "diapason",
+    },
+    ResourceType.FIRST_AID_KITS: {
+        "value": 1,
+        "probability": 0.5,
+        "type": "simple",
+    },
+    ResourceType.SHIELDS: {
+        "value": 1,
+        "probability": 0.5,
+        "type": "simple",
     },
 }
 
@@ -290,6 +348,11 @@ DEFAULT_WIN_LEVEL_REWARDS = {
             "value": 1,
             "type": "simple",
             "probability": 0.5,
+        },
+        ResourceType.FLOWERS: {
+            "value": 10,
+            "type": "simple",
+            "probability": 20,
         },
     },
     LevelDifficulty.NORMAL: {
@@ -322,6 +385,11 @@ DEFAULT_WIN_LEVEL_REWARDS = {
             "value": 1,
             "type": "simple",
             "probability": 0.5,
+        },
+        ResourceType.FLOWERS: {
+            "value": 10,
+            "type": "simple",
+            "probability": 20,
         },
     },
     LevelDifficulty.HARD: {
@@ -359,6 +427,11 @@ DEFAULT_WIN_LEVEL_REWARDS = {
             "value": 1,
             "type": "simple",
             "probability": 1,
+        },
+        ResourceType.FLOWERS: {
+            "value": 10,
+            "type": "simple",
+            "probability": 20,
         },
     },
 }
@@ -554,6 +627,11 @@ class UpgradeSubtype(StrEnumChoices):
     MAX_ARMOR = "max_armor"
     MAX_HP = "max_hp"
     MAX_DECKS = "max_decks"
+    FIRST_AID_KIT_HEAL = "first_aid_kit_heal"
+    SHIELD_ARMOR = "shield_armor"
+    REDRAWS_INITIAL = "redraws_initial"
+    REDRAWS_DRAWN = "redraws_drawn"
+    CARDS_DRAWN = "cards_drawn"
 
     AVATAR = "avatar"
     THEME = "theme"
@@ -566,6 +644,9 @@ class UpgradeSubtype(StrEnumChoices):
     WOOD = "wood"
     INGOTS = "ingots"
     RAW = "raw"
+    FLOWERS = "flowers"
+    FIRST_AID_KITS = "first_aid_kits"
+    SHIELDS = "shields"
 
     ARENA_DRAW_EXACT_CARD = "arena_draw_exact_card"
     ARENA_REDRAW_CARD = "arena_redraw_card"
@@ -583,6 +664,11 @@ DEFAULT_USER_UPGRADES = {
         UpgradeSubtype.MAX_ARMOR: 0,
         UpgradeSubtype.MAX_HP: 0,
         UpgradeSubtype.MAX_DECKS: 0,
+        UpgradeSubtype.FIRST_AID_KIT_HEAL: 0,
+        UpgradeSubtype.SHIELD_ARMOR: 0,
+        UpgradeSubtype.REDRAWS_INITIAL: 0,
+        UpgradeSubtype.REDRAWS_DRAWN: 0,
+        UpgradeSubtype.CARDS_DRAWN: 0,
     },
     UpgradeType.SETTINGS: {
         UpgradeSubtype.AVATAR: 0,
@@ -597,6 +683,9 @@ DEFAULT_USER_UPGRADES = {
         UpgradeSubtype.RAW: 0,  # all 3 raw
         UpgradeSubtype.SILK: 0,
         UpgradeSubtype.KEGS: 0,  # KEGS, BIG_KEGS, CHESTS
+        UpgradeSubtype.FLOWERS: 0,
+        UpgradeSubtype.FIRST_AID_KITS: 0,
+        UpgradeSubtype.SHIELDS: 0,
     },
 }
 
@@ -721,9 +810,9 @@ DEFAULT_UPGRADES: dict[UpgradeType, dict] = {
                             ResourceType.RAW_BRONZE: -200,
                             ResourceType.RAW_SILVER: -100,
                             ResourceType.RAW_GOLD: -100,
-                            ResourceType.BRONZE_INGOTS: 10,
-                            ResourceType.SILVER_INGOTS: 8,
-                            ResourceType.GOLD_INGOTS: 5,
+                            ResourceType.BRONZE_INGOTS: -10,
+                            ResourceType.SILVER_INGOTS: -8,
+                            ResourceType.GOLD_INGOTS: -5,
                         },
                     },
                     2: {
@@ -734,9 +823,9 @@ DEFAULT_UPGRADES: dict[UpgradeType, dict] = {
                             ResourceType.RAW_BRONZE: -500,
                             ResourceType.RAW_SILVER: -300,
                             ResourceType.RAW_GOLD: -250,
-                            ResourceType.BRONZE_INGOTS: 30,
-                            ResourceType.SILVER_INGOTS: 20,
-                            ResourceType.GOLD_INGOTS: 15,
+                            ResourceType.BRONZE_INGOTS: -30,
+                            ResourceType.SILVER_INGOTS: -20,
+                            ResourceType.GOLD_INGOTS: -15,
                         },
                     },
                     3: {"value": 8, "next": None},
@@ -958,6 +1047,212 @@ DEFAULT_UPGRADES: dict[UpgradeType, dict] = {
                         },
                     },
                     5: {"value": 10, "next": None},
+                },
+            },
+            UpgradeSubtype.FIRST_AID_KIT_HEAL: {
+                "ordering": 5,
+                "title": "Лечение от аптечки (используется в игре)",
+                "upgrades": {
+                    0: {
+                        "value": 15,
+                        "next": {
+                            ResourceType.MONEY: -2000,
+                            ResourceType.FLOWERS: -100,
+                        },
+                    },
+                    1: {
+                        "value": 25,
+                        "next": {
+                            ResourceType.MONEY: -3000,
+                            ResourceType.FLOWERS: -150,
+                        },
+                    },
+                    2: {
+                        "value": 40,
+                        "next": {
+                            ResourceType.MONEY: -5000,
+                            ResourceType.FLOWERS: -200,
+                            ResourceType.SCRAPS: -2000,
+                        },
+                    },
+                    3: {
+                        "value": 50,
+                        "next": {
+                            ResourceType.MONEY: -7500,
+                            ResourceType.FLOWERS: -250,
+                            ResourceType.SCRAPS: -3000,
+                        },
+                    },
+                    4: {
+                        "value": 65,
+                        "next": {
+                            ResourceType.MONEY: -10000,
+                            ResourceType.FLOWERS: -300,
+                            ResourceType.SCRAPS: -4000,
+                        },
+                    },
+                    5: {
+                        "value": 80,
+                        "next": {
+                            ResourceType.MONEY: -15000,
+                            ResourceType.FLOWERS: -400,
+                            ResourceType.SCRAPS: -5000,
+                            ResourceType.SILK: -100,
+                        },
+                    },
+                    6: {"value": 100, "next": None},
+                },
+            },
+            UpgradeSubtype.SHIELD_ARMOR: {
+                "ordering": 6,
+                "title": "Броня от магического щитка (используется в игре)",
+                "upgrades": {
+                    0: {
+                        "value": 2,
+                        "next": {
+                            ResourceType.MONEY: -1000,
+                            ResourceType.RAW_BRONZE: -100,
+                            ResourceType.BRONZE_INGOTS: -5,
+                        },
+                    },
+                    1: {
+                        "value": 3,
+                        "next": {
+                            ResourceType.MONEY: -2000,
+                            ResourceType.RAW_BRONZE: -150,
+                            ResourceType.BRONZE_INGOTS: -7,
+                            ResourceType.SILVER_INGOTS: -5,
+                        },
+                    },
+                    2: {
+                        "value": 4,
+                        "next": {
+                            ResourceType.MONEY: -3000,
+                            ResourceType.RAW_BRONZE: -200,
+                            ResourceType.RAW_SILVER: -100,
+                            ResourceType.BRONZE_INGOTS: -10,
+                            ResourceType.SILVER_INGOTS: -7,
+                        },
+                    },
+                    3: {
+                        "value": 5,
+                        "next": {
+                            ResourceType.MONEY: -4000,
+                            ResourceType.RAW_BRONZE: -250,
+                            ResourceType.RAW_SILVER: -100,
+                            ResourceType.RAW_GOLD: -30,
+                            ResourceType.BRONZE_INGOTS: -10,
+                            ResourceType.SILVER_INGOTS: -5,
+                        },
+                    },
+                    4: {
+                        "value": 6,
+                        "next": {
+                            ResourceType.MONEY: -5000,
+                            ResourceType.RAW_BRONZE: -300,
+                            ResourceType.RAW_SILVER: -100,
+                            ResourceType.RAW_GOLD: -50,
+                            ResourceType.BRONZE_INGOTS: -10,
+                            ResourceType.SILVER_INGOTS: -7,
+                            ResourceType.GOLD_INGOTS: -5,
+                        },
+                    },
+                    5: {
+                        "value": 8,
+                        "next": {
+                            ResourceType.MONEY: -7500,
+                            ResourceType.RAW_BRONZE: -500,
+                            ResourceType.RAW_SILVER: -300,
+                            ResourceType.RAW_GOLD: -200,
+                            ResourceType.BRONZE_INGOTS: -20,
+                            ResourceType.SILVER_INGOTS: -15,
+                            ResourceType.GOLD_INGOTS: -10,
+                        },
+                    },
+                    6: {"value": 10, "next": None},
+                },
+            },
+            UpgradeSubtype.REDRAWS_INITIAL: {
+                "ordering": 7,
+                "title": "Замена карт в начале игры",
+                "upgrades": {
+                    0: {
+                        "value": 1,
+                        "next": {
+                            ResourceType.MONEY: -3000,
+                            ResourceType.RAW_BRONZE: -100,
+                            ResourceType.RAW_SILVER: -80,
+                            ResourceType.RAW_GOLD: -50,
+                        },
+                    },
+                    1: {
+                        "value": 2,
+                        "next": {
+                            ResourceType.MONEY: -5000,
+                            ResourceType.RAW_BRONZE: -300,
+                            ResourceType.RAW_SILVER: -200,
+                            ResourceType.RAW_GOLD: -150,
+                            ResourceType.BRONZE_INGOTS: -10,
+                            ResourceType.SILVER_INGOTS: -10,
+                            ResourceType.GOLD_INGOTS: -8,
+                        },
+                    },
+                    2: {"value": 3, "next": None},
+                },
+            },
+            UpgradeSubtype.REDRAWS_DRAWN: {
+                "ordering": 8,
+                "title": "Замена карт после дро",
+                "upgrades": {
+                    0: {
+                        "value": 0,
+                        "next": {
+                            ResourceType.MONEY: -3000,
+                            ResourceType.RAW_BRONZE: -100,
+                            ResourceType.RAW_SILVER: -80,
+                            ResourceType.RAW_GOLD: -50,
+                        },
+                    },
+                    1: {
+                        "value": 1,
+                        "next": {
+                            ResourceType.MONEY: -5000,
+                            ResourceType.RAW_BRONZE: -300,
+                            ResourceType.RAW_SILVER: -200,
+                            ResourceType.RAW_GOLD: -150,
+                            ResourceType.BRONZE_INGOTS: -10,
+                            ResourceType.SILVER_INGOTS: -10,
+                            ResourceType.GOLD_INGOTS: -8,
+                        },
+                    },
+                    2: {"value": 2, "next": None},
+                },
+            },
+            UpgradeSubtype.CARDS_DRAWN: {
+                "ordering": 8,
+                "title": "Количество взятых карт",
+                "upgrades": {
+                    0: {
+                        "value": 1,
+                        "next": {
+                            ResourceType.MONEY: -3000,
+                            ResourceType.BRONZE_INGOTS: -10,
+                            ResourceType.SILVER_INGOTS: -10,
+                            ResourceType.GOLD_INGOTS: -8,
+                            ResourceType.FLOWERS: -50,
+                        },
+                    },
+                    1: {
+                        "value": 2,
+                        "next": {
+                            ResourceType.MONEY: -10000,
+                            ResourceType.BRONZE_INGOTS: -30,
+                            ResourceType.SILVER_INGOTS: -30,
+                            ResourceType.GOLD_INGOTS: -20,
+                            ResourceType.FLOWERS: -150,
+                        },
+                    },
+                    2: {"value": 3, "next": None},
                 },
             },
         },
@@ -1667,6 +1962,192 @@ DEFAULT_UPGRADES: dict[UpgradeType, dict] = {
                         },
                     },
                     10: {"value": 5000, "next": None},
+                },
+            },
+            UpgradeSubtype.FLOWERS: {
+                "ordering": 8,
+                "title": "Запас магических цветов",
+                "upgrades": {
+                    0: {
+                        "value": 100,
+                        "next": {
+                            ResourceType.MONEY: -1000,
+                            ResourceType.CROPS: -500,
+                        },
+                    },
+                    1: {
+                        "value": 150,
+                        "next": {
+                            ResourceType.MONEY: -1500,
+                            ResourceType.CROPS: -700,
+                            ResourceType.WOOD: -400,
+                        },
+                    },
+                    2: {
+                        "value": 200,
+                        "next": {
+                            ResourceType.MONEY: -2000,
+                            ResourceType.CROPS: -1000,
+                            ResourceType.WOOD: -500,
+                            ResourceType.FLOWERS: -50,
+                        },
+                    },
+                    3: {
+                        "value": 250,
+                        "next": {
+                            ResourceType.MONEY: -2500,
+                            ResourceType.CROPS: -1500,
+                            ResourceType.WOOD: -700,
+                            ResourceType.FLOWERS: -100,
+                        },
+                    },
+                    4: {
+                        "value": 300,
+                        "next": {
+                            ResourceType.MONEY: -3000,
+                            ResourceType.CROPS: -2000,
+                            ResourceType.WOOD: -1200,
+                            ResourceType.SILK: -10,
+                            ResourceType.FLOWERS: -150,
+                        },
+                    },
+                    5: {
+                        "value": 400,
+                        "next": {
+                            ResourceType.MONEY: -3500,
+                            ResourceType.CROPS: -2400,
+                            ResourceType.WOOD: -1500,
+                            ResourceType.SILK: -12,
+                            ResourceType.FLOWERS: -200,
+                        },
+                    },
+                    6: {
+                        "value": 600,
+                        "next": {
+                            ResourceType.MONEY: -4000,
+                            ResourceType.CROPS: -2900,
+                            ResourceType.WOOD: -1700,
+                            ResourceType.SILK: -15,
+                            ResourceType.FLOWERS: -250,
+                        },
+                    },
+                    7: {
+                        "value": 800,
+                        "next": {
+                            ResourceType.MONEY: -4500,
+                            ResourceType.CROPS: -3300,
+                            ResourceType.WOOD: -2200,
+                            ResourceType.SILK: -18,
+                            ResourceType.FLOWERS: -300,
+                        },
+                    },
+                    8: {"value": 1000, "next": None},
+                },
+            },
+            UpgradeSubtype.FIRST_AID_KITS: {
+                "ordering": 3,
+                "title": "Запас аптечек (для использования в игре)",
+                "upgrades": {
+                    0: {
+                        "value": 0,
+                        "next": {
+                            ResourceType.MONEY: -1000,
+                            ResourceType.FLOWERS: -50,
+                        },
+                    },
+                    1: {
+                        "value": 1,
+                        "next": {
+                            ResourceType.MONEY: -1500,
+                            ResourceType.FLOWERS: -80,
+                        },
+                    },
+                    2: {
+                        "value": 2,
+                        "next": {
+                            ResourceType.MONEY: -2000,
+                            ResourceType.FLOWERS: -120,
+                        },
+                    },
+                    3: {
+                        "value": 3,
+                        "next": {
+                            ResourceType.MONEY: -2500,
+                            ResourceType.FLOWERS: -150,
+                        },
+                    },
+                    4: {
+                        "value": 4,
+                        "next": {
+                            ResourceType.MONEY: -3000,
+                            ResourceType.FLOWERS: -200,
+                            ResourceType.SILK: -15,
+                        },
+                    },
+                    5: {
+                        "value": 5,
+                        "next": {
+                            ResourceType.MONEY: -3500,
+                            ResourceType.FLOWERS: -250,
+                            ResourceType.SILK: -25,
+                        },
+                    },
+                    6: {
+                        "value": 7,
+                        "next": {
+                            ResourceType.MONEY: -5000,
+                            ResourceType.FLOWERS: -500,
+                            ResourceType.SILK: -100,
+                        },
+                    },
+                    7: {"value": 10, "next": None},
+                },
+            },
+            UpgradeSubtype.SHIELDS: {
+                "ordering": 1,
+                "title": "Запас щитов (для использования в игре)",
+                "upgrades": {
+                    0: {
+                        "value": 0,
+                        "next": {
+                            ResourceType.MONEY: -1000,
+                            ResourceType.BRONZE_INGOTS: -3,
+                        },
+                    },
+                    1: {
+                        "value": 1,
+                        "next": {
+                            ResourceType.MONEY: -1500,
+                            ResourceType.BRONZE_INGOTS: -5,
+                        },
+                    },
+                    2: {
+                        "value": 2,
+                        "next": {
+                            ResourceType.MONEY: -2500,
+                            ResourceType.BRONZE_INGOTS: -7,
+                            ResourceType.SILVER_INGOTS: -4,
+                        },
+                    },
+                    3: {
+                        "value": 3,
+                        "next": {
+                            ResourceType.MONEY: -5000,
+                            ResourceType.BRONZE_INGOTS: -10,
+                            ResourceType.SILVER_INGOTS: -7,
+                            ResourceType.GOLD_INGOTS: -3,
+                        },
+                    },
+                    4: {
+                        "value": 4,
+                        "next": {
+                            ResourceType.MONEY: -10000,
+                            ResourceType.BRONZE_INGOTS: -30,
+                            ResourceType.SILVER_INGOTS: -30,
+                            ResourceType.GOLD_INGOTS: -20,
+                        },
+                    },
+                    5: {"value": 10, "next": None},
                 },
             },
         },
