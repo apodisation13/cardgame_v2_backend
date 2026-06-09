@@ -635,6 +635,7 @@ class UpgradeSubtype(StrEnumChoices):
 
     AVATAR = "avatar"
     THEME = "theme"
+    FIELD = "field"
 
     MONEY = "money"
     SCRAPS = "scraps"
@@ -673,6 +674,7 @@ DEFAULT_USER_UPGRADES = {
     UpgradeType.SETTINGS: {
         UpgradeSubtype.AVATAR: 0,
         UpgradeSubtype.THEME: 0,
+        UpgradeSubtype.FIELD: 0,
     },
     UpgradeType.RESOURCES: {
         UpgradeSubtype.MONEY: 0,
@@ -1285,6 +1287,22 @@ DEFAULT_UPGRADES: dict[UpgradeType, dict] = {
                             ResourceType.MONEY: -10000,
                             ResourceType.WOOD: -3000,
                             ResourceType.SCRAPS: -3000,
+                        },
+                    },
+                    1: {"value": True, "next": None},
+                },
+            },
+            UpgradeSubtype.FIELD: {
+                "ordering": 2,
+                "title": "Поле",
+                "upgrades": {
+                    0: {
+                        "value": False,
+                        "next": {
+                            ResourceType.MONEY: -3000,
+                            ResourceType.BRONZE_INGOTS: -5,
+                            ResourceType.SILVER_INGOTS: -5,
+                            ResourceType.GOLD_INGOTS: -5,
                         },
                     },
                     1: {"value": True, "next": None},
