@@ -2,18 +2,19 @@ import time
 from unittest.mock import patch
 
 import pytest
-from starlette.testclient import TestClient
 
 from services.ws.app.apps.matchmaking.events import WSEvent
+from starlette.testclient import TestClient
+from starlette.websockets import WebSocketDisconnect
+
 
 PLAYER_1_ID = 1
 PLAYER_2_ID = 2
 
 AUTH_PATCH = "services.ws.app.apps.matchmaking.routes.get_user_id_from_token"
-SLEEP_PATCH = "services.ws.app.apps.matchmaking.routes.asyncio.sleep"
 
 
-async def auth_by_token(token, config, db):
+async def auth_by_token(token, config, db) -> int:
     """Заглушка авторизации: token1 -> player 1, token2 -> player 2, иначе None."""
     return {
         "token1": PLAYER_1_ID,
@@ -32,8 +33,7 @@ class TestMatchmakingAuth:
                 assert msg["event"] == WSEvent.AUTH_ERROR
 
     def test_missing_token_rejected(self, client: TestClient):
-        # WebSocket-роут без обязательного token должен разорвать соединение
-        with pytest.raises(Exception):
+        with pytest.raises(WebSocketDisconnect, match="token"):
             with client.websocket_connect("/ws/matchmaking") as ws:
                 ws.receive_json()
 
@@ -89,7 +89,7 @@ class TestMatchmakingFlow:
 
 class TestMatchmakingDisconnect:
     def test_disconnect_notifies_opponent(self, client: TestClient):
-        with patch(AUTH_PATCH, new=auth_by_token), patch(SLEEP_PATCH):
+        with patch(AUTH_PATCH, new=auth_by_token):
             with client.websocket_connect("/ws/matchmaking?token=token1") as ws1:
                 ws1.receive_json()  # WAITING
 

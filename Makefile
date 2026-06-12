@@ -54,3 +54,4 @@ install-all:
 	$(PIP) install -r services/events/requirements.txt
 	$(PIP) install -r services/migrant/requirements.txt
 	$(PIP) install -r services/rest/requirements.txt
+	$(PIP) install -r services/ws/requirements.txt

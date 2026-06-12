@@ -1,10 +1,10 @@
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from fastapi import FastAPI
-from starlette.testclient import TestClient
 
+from fastapi import FastAPI
 from services.ws.app.apps.matchmaking.routes import router
+from starlette.testclient import TestClient
 
 
 @pytest.fixture(autouse=True)

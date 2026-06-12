@@ -1,7 +1,6 @@
 import logging
 
 from jose import ExpiredSignatureError, JWTError, jwt
-
 from lib.utils.db.pool import Database
 from services.ws.app.config import Config
 

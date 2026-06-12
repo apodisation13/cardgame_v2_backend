@@ -1,8 +1,6 @@
-import asyncio
 import logging
 
 from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
-
 from services.ws.app.apps.matchmaking.events import WSEvent
 from services.ws.app.apps.matchmaking.manager import Player, manager
 from services.ws.app.auth import get_user_id_from_token
@@ -53,18 +51,22 @@ async def matchmaking_endpoint(
         await websocket.send_json({"event": WSEvent.WAITING_FOR_OPPONENT})
     else:
         # Нашли пару — уведомляем обоих
-        await room.host.ws.send_json({
-            "event": WSEvent.GAME_STARTED,
-            "room_id": room.room_id,
-            "role": "host",
-            "opponent_id": room.guest.user_id,
-        })
-        await websocket.send_json({
-            "event": WSEvent.GAME_STARTED,
-            "room_id": room.room_id,
-            "role": "guest",
-            "opponent_id": room.host.user_id,
-        })
+        await room.host.ws.send_json(
+            {
+                "event": WSEvent.GAME_STARTED,
+                "room_id": room.room_id,
+                "role": "host",
+                "opponent_id": room.guest.user_id,
+            },
+        )
+        await websocket.send_json(
+            {
+                "event": WSEvent.GAME_STARTED,
+                "room_id": room.room_id,
+                "role": "guest",
+                "opponent_id": room.host.user_id,
+            },
+        )
 
     # Основной цикл: получаем сообщения и пересылаем противнику.
     # Пока игрок в ожидании (нет комнаты) — сообщения игнорируются.
@@ -89,8 +91,6 @@ async def matchmaking_endpoint(
             manager.remove_room(current_room.room_id)
             try:
                 await opponent.ws.send_json({"event": WSEvent.OPPONENT_DISCONNECTED})
-                await asyncio.sleep(10)
-                await opponent.ws.close(code=1000)
             except Exception:
                 pass
         else:

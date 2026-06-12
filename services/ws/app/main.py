@@ -1,5 +1,5 @@
-import logging.config
 from contextlib import asynccontextmanager
+import logging.config
 
 from fastapi import FastAPI
 from lib.utils.db.pool import Database

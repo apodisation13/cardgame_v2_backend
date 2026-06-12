@@ -1,4 +1,3 @@
-from lib.utils.config.env_types import EnvType, get_secret, load_env
 from lib.utils.config.base import (
     BaseConfig,
     BaseDevelopmentLocalConfig,
@@ -7,6 +6,8 @@ from lib.utils.config.base import (
     BaseTestLocalConfig,
     BaseTestingConfig,
 )
+from lib.utils.config.env_types import EnvType, get_secret, load_env
+
 
 load_env()
 

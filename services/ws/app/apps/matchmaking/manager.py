@@ -1,6 +1,6 @@
+from dataclasses import dataclass
 import logging
 import uuid
-from dataclasses import dataclass
 
 from fastapi import WebSocket
 
