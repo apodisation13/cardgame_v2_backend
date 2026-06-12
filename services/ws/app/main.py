@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
     elastic_logger_manager = ElasticLoggerManager()
     elastic_logger_manager.initialize(
         config=config,
-        service_name="fast-api",
+        service_name="ws",
         delay_seconds=5,
     )
 
