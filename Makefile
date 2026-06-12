@@ -26,6 +26,8 @@ ruff-format-check:
 # ----------------------------RUN APPS----------------------------
 run-api:
 	$(UVICORN) services.api.app.main:app --reload --host 0.0.0.0 --port 8001
+run-ws:
+	$(UVICORN) services.ws.app.main:app --reload --host 0.0.0.0 --port 8002
 run-cron:
 	$(PYTHON) services/cron/app/main.py
 run-events:
@@ -52,3 +54,4 @@ install-all:
 	$(PIP) install -r services/events/requirements.txt
 	$(PIP) install -r services/migrant/requirements.txt
 	$(PIP) install -r services/rest/requirements.txt
+	$(PIP) install -r services/ws/requirements.txt
