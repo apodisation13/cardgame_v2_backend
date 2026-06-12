@@ -79,6 +79,7 @@ jobs:
         pip install -r services/events/requirements.txt
         pip install -r services/migrant/requirements.txt
         pip install -r services/rest/requirements.txt
+        pip install -r services/ws/requirements.txt
 
     - name: Create test environment file
       run: |
@@ -174,14 +175,14 @@ jobs:
           if [[ "$LIB_UTILS_CHANGED" == "true" ]]; then
             echo "📚 Изменены общие утилиты — при мердже будем билдить ВСЕ сервисы"
             echo "build_all=true" >> $GITHUB_OUTPUT
-            echo "services=migrant api rest events cron" >> $GITHUB_OUTPUT
+            echo "services=migrant api rest events cron ws" >> $GITHUB_OUTPUT
             exit 0
           fi
 
           # ПРАВИЛО 3: Определяем измененные сервисы
           echo "🔎 Ищем измененные микросервисы..."
           CHANGED_SERVICES=""
-          ALL_SERVICES=("migrant" "api" "rest" "events" "cron")
+          ALL_SERVICES=("migrant" "api" "rest" "events" "cron" "ws")
 
           for service in "${ALL_SERVICES[@]}"; do
             for file in $CHANGED_FILES; do

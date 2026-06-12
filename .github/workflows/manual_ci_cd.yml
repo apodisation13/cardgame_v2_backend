@@ -56,7 +56,7 @@ jobs:
           export TAG="${{ env.MODE }}"
           
           # Сервисы у которых есть build: в docker-compose
-          OUR_SERVICES="migrant api rest events cron"
+          OUR_SERVICES="migrant api rest events cron ws"
           
           echo "🚀 Билдим: $OUR_SERVICES"
           echo "🏷️ Тег: $TAG"
@@ -68,7 +68,7 @@ jobs:
         run: |
           export TAG="${{ env.MODE }}"
           
-          OUR_SERVICES="migrant api rest events cron"
+          OUR_SERVICES="migrant api rest events cron ws"
           
           echo "📤 Пушим образы..."
           docker compose push $OUR_SERVICES
@@ -106,7 +106,7 @@ jobs:
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
             echo "📥 Пуллим новые образы..."
-            docker-compose pull migrant api rest events cron
+            docker-compose pull migrant api rest events cron ws
             
             echo "🔄 Перезапускаем сервисы..."
             docker-compose --env-file .env.docker up -d

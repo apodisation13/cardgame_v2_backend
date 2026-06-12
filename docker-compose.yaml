@@ -288,6 +288,21 @@ services:
       - ELASTIC_APM_ENVIRONMENT=development
       - ELASTIC_APM_ENABLED=true
 
+  ws:
+    <<: *common
+    image: ${REGISTRY:-ghcr.io}/${BACKEND_IMAGE_NAME:-gridways_backend}/ws:${MODE:-latest}
+    container_name: gridways-ws
+    depends_on:
+      - migrant
+      - elasticsearch
+      - kibana
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: services/ws/docker/Dockerfile
+    expose:
+      - "8002"
+
   rest:
     <<: *common
     image: ${REGISTRY:-ghcr.io}/${BACKEND_IMAGE_NAME:-gridways_backend}/rest:${MODE:-latest}
@@ -340,6 +355,7 @@ services:
     depends_on:
       - rest
       - api
+      - ws
       - kibana
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro  # так мы подгружаем туда свой nginx.conf файл!
