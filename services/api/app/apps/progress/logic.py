@@ -391,7 +391,8 @@ async def get_user_resources(
                 money,
                 flowers,
                 first_aid_kits,
-                shields
+                shields,
+                immune_magics
             FROM user_resources
             WHERE id = $1
         """,
@@ -511,6 +512,8 @@ async def cap_resources_to_max(
             correct_upgrade_subtype = UpgradeSubtype.FIRST_AID_KITS
         elif resource_type == ResourceType.SHIELDS:
             correct_upgrade_subtype = UpgradeSubtype.SHIELDS
+        elif resource_type == ResourceType.IMMUNE_MAGICS:
+            correct_upgrade_subtype = UpgradeSubtype.IMMUNE_MAGICS
         else:
             raise ValueError(f"Unknown resource type for max cap: {resource_type}")
 

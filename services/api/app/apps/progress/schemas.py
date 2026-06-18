@@ -23,6 +23,7 @@ class UserResources(Base):
     flowers: int
     first_aid_kits: int
     shields: int
+    immune_magics: int
 
     @staticmethod
     def get_one(
@@ -48,6 +49,7 @@ class UserResources(Base):
             flowers=row["flowers"],
             first_aid_kits=row["first_aid_kits"],
             shields=row["shields"],
+            immune_magics=row["immune_magics"],
         )
 
 

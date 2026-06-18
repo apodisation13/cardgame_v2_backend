@@ -29,6 +29,7 @@ class ResourceType(StrEnum):
     FLOWERS = "flowers"
     FIRST_AID_KITS = "first_aid_kits"
     SHIELDS = "shields"
+    IMMUNE_MAGICS = "immune_magics"
 
 
 class ResourceActionSubtype(StrEnum):
@@ -43,6 +44,7 @@ class ResourceActionSubtype(StrEnum):
     UPGRADE_IN_ARENA = "upgrade_in_arena"
     USE_FIRST_AID_KIT = "use_first_aid_kit"
     USE_SHIELDS = "use_shields"
+    USE_IMMUNE_MAGICS = "use_immune_magics"
 
     @classmethod
     def to_increase_resources(cls) -> set:
@@ -62,6 +64,7 @@ class ResourceActionSubtype(StrEnum):
             cls.UPGRADE_IN_ARENA,
             cls.USE_SHIELDS,
             cls.USE_FIRST_AID_KIT,
+            cls.USE_IMMUNE_MAGICS,
         }
 
 
@@ -188,7 +191,7 @@ DEFAULT_RESOURCES_TRANSITIONS = {
     },
     ResourceType.FIRST_AID_KITS: {
         ResourceTransitionActionType.CRAFT: [
-            {ResourceType.FLOWERS: -100, ResourceType.SCRAPS: 500, ResourceType.MONEY: -1000},
+            {ResourceType.FLOWERS: -100, ResourceType.SCRAPS: -500, ResourceType.MONEY: -1000},
         ],
         ResourceTransitionActionType.MILL: [
             {ResourceType.FLOWERS: 30, ResourceType.SCRAPS: 150, ResourceType.MONEY: -100},
@@ -214,6 +217,21 @@ DEFAULT_RESOURCES_TRANSITIONS = {
         ResourceTransitionActionType.SELL: [{ResourceType.MONEY: 500}],
         "step": 1,
         "index": 13,
+    },
+    ResourceType.IMMUNE_MAGICS: {
+        ResourceTransitionActionType.CRAFT: [
+            {
+                ResourceType.FLOWERS: -100,
+                ResourceType.SCRAPS: -1000,
+                ResourceType.SILVER_INGOTS: -5,
+                ResourceType.MONEY: -2000,
+            },
+        ],
+        ResourceTransitionActionType.SELL: [
+            {ResourceType.MONEY: 1000},
+        ],
+        "step": 1,
+        "index": 14,
     },
 }
 
@@ -626,9 +644,11 @@ class UpgradeSubtype(StrEnumChoices):
     HAND_SIZE = "hand_size"
     MAX_ARMOR = "max_armor"
     MAX_HP = "max_hp"
+    MAX_IMMUNE_TURNS = "max_immune_turns"
     MAX_DECKS = "max_decks"
     FIRST_AID_KIT_HEAL = "first_aid_kit_heal"
     SHIELD_ARMOR = "shield_armor"
+    IMMUNE_MAGICS_TURNS = "immune_magics_turns"
     REDRAWS_INITIAL = "redraws_initial"
     REDRAWS_DRAWN = "redraws_drawn"
     CARDS_DRAWN = "cards_drawn"
@@ -648,6 +668,7 @@ class UpgradeSubtype(StrEnumChoices):
     FLOWERS = "flowers"
     FIRST_AID_KITS = "first_aid_kits"
     SHIELDS = "shields"
+    IMMUNE_MAGICS = "immune_magics"
 
     ARENA_DRAW_EXACT_CARD = "arena_draw_exact_card"
     ARENA_REDRAW_CARD = "arena_redraw_card"
@@ -670,6 +691,8 @@ DEFAULT_USER_UPGRADES = {
         UpgradeSubtype.REDRAWS_INITIAL: 0,
         UpgradeSubtype.REDRAWS_DRAWN: 0,
         UpgradeSubtype.CARDS_DRAWN: 0,
+        UpgradeSubtype.MAX_IMMUNE_TURNS: 0,
+        UpgradeSubtype.IMMUNE_MAGICS_TURNS: 0,
     },
     UpgradeType.SETTINGS: {
         UpgradeSubtype.AVATAR: 0,
@@ -688,6 +711,7 @@ DEFAULT_USER_UPGRADES = {
         UpgradeSubtype.FLOWERS: 0,
         UpgradeSubtype.FIRST_AID_KITS: 0,
         UpgradeSubtype.SHIELDS: 0,
+        UpgradeSubtype.IMMUNE_MAGICS: 0,
     },
 }
 
@@ -1255,6 +1279,103 @@ DEFAULT_UPGRADES: dict[UpgradeType, dict] = {
                         },
                     },
                     2: {"value": 3, "next": None},
+                },
+            },
+            UpgradeSubtype.MAX_IMMUNE_TURNS: {
+                "ordering": 9,
+                "title": "Максимальный запас ходов неуязвимости",
+                "upgrades": {
+                    0: {
+                        "value": 0,
+                        "next": {
+                            ResourceType.MONEY: -1000,
+                            ResourceType.FLOWERS: -50,
+                            ResourceType.SCRAPS: -500,
+                        },
+                    },
+                    1: {
+                        "value": 2,
+                        "next": {
+                            ResourceType.MONEY: -2000,
+                            ResourceType.FLOWERS: -100,
+                            ResourceType.SCRAPS: -1000,
+                        },
+                    },
+                    2: {
+                        "value": 4,
+                        "next": {
+                            ResourceType.MONEY: -3000,
+                            ResourceType.FLOWERS: -150,
+                            ResourceType.SCRAPS: -1500,
+                            ResourceType.RAW_SILVER: -50,
+                        },
+                    },
+                    3: {
+                        "value": 6,
+                        "next": {
+                            ResourceType.MONEY: -5000,
+                            ResourceType.FLOWERS: -200,
+                            ResourceType.SCRAPS: -3000,
+                            ResourceType.RAW_SILVER: -150,
+                        },
+                    },
+                    4: {
+                        "value": 8,
+                        "next": {
+                            ResourceType.MONEY: -10000,
+                            ResourceType.FLOWERS: -300,
+                            ResourceType.SCRAPS: -5000,
+                            ResourceType.RAW_SILVER: -300,
+                        },
+                    },
+                    5: {"value": 10, "next": None},
+                },
+            },
+            UpgradeSubtype.IMMUNE_MAGICS_TURNS: {
+                "ordering": 10,
+                "title": "Ходов неуязвимости (используется в игре)",
+                "upgrades": {
+                    0: {
+                        "value": 1,
+                        "next": {
+                            ResourceType.MONEY: -2000,
+                            ResourceType.FLOWERS: -100,
+                            ResourceType.SCRAPS: -1000,
+                            ResourceType.RAW_SILVER: -100,
+                            ResourceType.RAW_GOLD: -50,
+                        },
+                    },
+                    1: {
+                        "value": 2,
+                        "next": {
+                            ResourceType.MONEY: -4000,
+                            ResourceType.FLOWERS: -200,
+                            ResourceType.SCRAPS: -2000,
+                            ResourceType.RAW_SILVER: -200,
+                            ResourceType.RAW_GOLD: -100,
+                        },
+                    },
+                    2: {
+                        "value": 3,
+                        "next": {
+                            ResourceType.MONEY: -7000,
+                            ResourceType.FLOWERS: -300,
+                            ResourceType.SCRAPS: -4000,
+                            ResourceType.RAW_SILVER: -400,
+                            ResourceType.RAW_GOLD: -200,
+                        },
+                    },
+                    3: {
+                        "value": 4,
+                        "next": {
+                            ResourceType.MONEY: -10000,
+                            ResourceType.FLOWERS: -500,
+                            ResourceType.SCRAPS: -5000,
+                            ResourceType.RAW_SILVER: -500,
+                            ResourceType.RAW_GOLD: -400,
+                        },
+                    },
+                    4: {"value": 5, "next": None},
                 },
             },
         },
@@ -2166,6 +2287,67 @@ DEFAULT_UPGRADES: dict[UpgradeType, dict] = {
                         },
                     },
                     5: {"value": 10, "next": None},
+                },
+            },
+            UpgradeSubtype.IMMUNE_MAGICS: {
+                "ordering": 11,
+                "title": "Запас магической неуязвимости",
+                "upgrades": {
+                    0: {
+                        "value": 0,
+                        "next": {
+                            ResourceType.MONEY: -1000,
+                            ResourceType.SCRAPS: -500,
+                            ResourceType.RAW_SILVER: -10,
+                            ResourceType.FLOWERS: -50,
+                        },
+                    },
+                    1: {
+                        "value": 1,
+                        "next": {
+                            ResourceType.MONEY: -2000,
+                            ResourceType.SCRAPS: -1500,
+                            ResourceType.RAW_SILVER: -25,
+                            ResourceType.FLOWERS: -100,
+                        },
+                    },
+                    2: {
+                        "value": 2,
+                        "next": {
+                            ResourceType.MONEY: -3000,
+                            ResourceType.SCRAPS: -3000,
+                            ResourceType.RAW_SILVER: -50,
+                            ResourceType.FLOWERS: -150,
+                        },
+                    },
+                    3: {
+                        "value": 3,
+                        "next": {
+                            ResourceType.MONEY: -5000,
+                            ResourceType.SCRAPS: -4000,
+                            ResourceType.RAW_SILVER: -100,
+                            ResourceType.FLOWERS: -200,
+                        },
+                    },
+                    4: {
+                        "value": 4,
+                        "next": {
+                            ResourceType.MONEY: -7000,
+                            ResourceType.SCRAPS: -5000,
+                            ResourceType.RAW_SILVER: -300,
+                            ResourceType.FLOWERS: -300,
+                        },
+                    },
+                    5: {
+                        "value": 6,
+                        "next": {
+                            ResourceType.MONEY: -20000,
+                            ResourceType.SCRAPS: -10000,
+                            ResourceType.RAW_SILVER: -500,
+                            ResourceType.FLOWERS: -500,
+                        },
+                    },
+                    6: {"value": 10, "next": None},
                 },
             },
         },

@@ -59,5 +59,6 @@ class TestGetUserResourcesAPI:
                 flowers=0,
                 first_aid_kits=0,
                 shields=0,
+                immune_magics=0,
             ).model_dump()
         )

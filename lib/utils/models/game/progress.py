@@ -106,6 +106,11 @@ class UserResource(BaseModel, TimestampMixin):
         nullable=False,
         server_default="0",
     )
+    immune_magics: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default="0",
+    )
 
 
 class UserCard(BaseModel, TimestampMixin):
