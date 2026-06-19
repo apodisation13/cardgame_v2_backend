@@ -71,6 +71,7 @@ class TestManageResourcesLevelStartWinAPI:
                 flowers=0,
                 first_aid_kits=0,
                 shields=0,
+                immune_magics=0,
             ).model_dump()
         )
 
@@ -208,6 +209,7 @@ class TestManageResourcesLevelStartWinAPI:
                 flowers=0,
                 first_aid_kits=0,
                 shields=0,
+                immune_magics=0,
             ).model_dump()
         )
 
@@ -282,6 +284,7 @@ class TestManageResourcesOpenResourceAPI:
                 flowers=0,
                 first_aid_kits=0,
                 shields=0,
+                immune_magics=0,
             ).model_dump()
         )
 
@@ -438,6 +441,7 @@ class TestManageResourcesTransitionAPI:
                 flowers=0,
                 first_aid_kits=0,
                 shields=0,
+                immune_magics=0,
             ).model_dump()
         )
 
@@ -614,6 +618,7 @@ class TestManageResourcesTransitionAPI:
                 flowers=0,
                 first_aid_kits=0,
                 shields=0,
+                immune_magics=0,
             ).model_dump()
         )
 
@@ -693,6 +698,7 @@ class TestManageResourcesTransitionAPI:
                 flowers=0,
                 first_aid_kits=0,
                 shields=0,
+                immune_magics=0,
             ).model_dump()
         )
 
@@ -772,6 +778,7 @@ class TestManageResourcesTransitionAPI:
                 flowers=0,
                 first_aid_kits=0,
                 shields=0,
+                immune_magics=0,
             ).model_dump()
         )
 
@@ -931,5 +938,6 @@ class TestManageResourcesTransitionAPI:
                 flowers=0,
                 first_aid_kits=0,
                 shields=0,
+                immune_magics=0,
             ).model_dump()
         )

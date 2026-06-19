@@ -55,6 +55,7 @@ class UserResourceFactory(BaseModelFactory):
     flowers = 0
     first_aid_kits = 0
     shields = 0
+    immune_magics = 0
 
 
 class ProductFactory(BaseModelFactory, TimeStampMixinFactory):

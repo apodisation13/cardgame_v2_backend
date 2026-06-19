@@ -103,7 +103,8 @@ class TestUserRegisterAPI:
                 money,
                 flowers,
                 first_aid_kits,
-                shields
+                shields,
+                immune_magics
             FROM user_resources
             """,
         )
@@ -131,6 +132,7 @@ class TestUserRegisterAPI:
                 flowers=0,
                 first_aid_kits=0,
                 shields=0,
+                immune_magics=0,
             ).model_dump()
         )
 
